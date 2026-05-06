@@ -155,8 +155,8 @@ export function MheImpactResponsibilityAnalysis() {
 
   return (
     <Card className="col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ height: "540px" }}>
-      <CardHeader className="pb-3 border-b border-[var(--border)]">
-        <div className="flex items-start justify-between w-full gap-3">
+      <CardHeader className="pb-2 border-b border-[var(--border)]" style={{ padding: "16px 20px" }}>
+        <div className="flex items-center justify-between w-full gap-4">
           <div className="flex flex-col gap-0.5 flex-1">
             <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] leading-tight">
               MHE Impact Responsibility Analysis
@@ -165,11 +165,11 @@ export function MheImpactResponsibilityAnalysis() {
               Stacked impact events by severity level
             </CardDescription>
           </div>
-          <div className="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2.5 flex-shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-1">
               <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">Type:</label>
               <Select value={selectedMheType} onValueChange={setSelectedMheType}>
-                <SelectTrigger className="h-7 text-xs w-24">
+                <SelectTrigger className="h-6 text-xs w-20" style={{ padding: "4px 8px" }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,10 +179,10 @@ export function MheImpactResponsibilityAnalysis() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">Zone:</label>
               <Select value={selectedZone} onValueChange={setSelectedZone}>
-                <SelectTrigger className="h-7 text-xs w-24">
+                <SelectTrigger className="h-6 text-xs w-20" style={{ padding: "4px 8px" }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -195,7 +195,7 @@ export function MheImpactResponsibilityAnalysis() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-4 py-0 pb-0 overflow-hidden flex flex-col flex-1">
+      <CardContent className="overflow-hidden flex flex-col flex-1" style={{ padding: "12px 20px 0 20px" }}>
         {hasData ? (
           <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
             <ChartContainer config={impactChartConfig} style={{ width: "100%", height: "100%" }}>
@@ -203,8 +203,9 @@ export function MheImpactResponsibilityAnalysis() {
                 accessibilityLayer
                 data={filteredData}
                 layout="vertical"
-                margin={{ top: 8, right: 16, left: 20, bottom: 35 }}
-                barCategoryGap="8%"
+                margin={{ top: 12, right: 24, left: 8, bottom: 32 }}
+                barCategoryGap="10%"
+                barSize={26}
               >
                 <XAxis
                   type="number"
@@ -225,7 +226,7 @@ export function MheImpactResponsibilityAnalysis() {
                   tickLine={false}
                   axisLine={false}
                   tick={{ fontSize: 10 }}
-                  width={45}
+                  width={50}
                 />
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                 <Bar dataKey="High" stackId="a" fill="#1B59F8" radius={[0, 0, 0, 0]} />
@@ -247,10 +248,10 @@ export function MheImpactResponsibilityAnalysis() {
           {/* Legend Row - Compact */}
           <div
             style={{
-              padding: "8px 24px",
+              padding: "10px 20px",
               display: "flex",
               justifyContent: "center",
-              gap: "20px",
+              gap: "24px",
               flexWrap: "wrap",
               zIndex: 10,
               backgroundColor: "var(--background)",
@@ -274,16 +275,17 @@ export function MheImpactResponsibilityAnalysis() {
           {insights && (
             <div
               style={{
-                borderTop: "1px solid var(--border)",
-                padding: "12px 24px",
+                borderTop: "1px solid #E5E7EB",
+                padding: "10px 20px",
                 zIndex: 10,
                 backgroundColor: "var(--background)",
+                minHeight: "auto",
               }}
             >
-              <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
+              <p style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.3" }}>
                 <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> • <span style={{ fontWeight: "600" }}>{insights.severityLabel}</span>
               </p>
-              <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: "2px 0 0 0", lineHeight: "1.4" }}>
+              <p style={{ fontSize: "11px", fontWeight: "400", color: "#6B7280", margin: "1px 0 0 0", lineHeight: "1.3" }}>
                 {insights.filterContext}
               </p>
             </div>
