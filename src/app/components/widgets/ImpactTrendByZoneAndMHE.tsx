@@ -518,9 +518,9 @@ export function ImpactTrendByZoneAndMHE() {
       className="col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden"
       style={{ height: "540px" }}
     >
-      <CardHeader className="pb-4 border-b border-[var(--border)]">
-        <div className="flex items-start justify-between w-full gap-4">
-          <div className="flex flex-col gap-1">
+      <CardHeader className="pb-3 border-b border-[var(--border)]">
+        <div className="flex items-start justify-between w-full gap-3">
+          <div className="flex flex-col gap-0.5">
             <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">
               Impact Trend by Zone & MHE
             </CardTitle>
@@ -529,12 +529,12 @@ export function ImpactTrendByZoneAndMHE() {
             </CardDescription>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
-            <div className="flex items-center gap-2">
-              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">
+            <div className="flex items-center gap-1.5">
+              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">
                 Zone:
               </label>
               <Select value={selectedZone} onValueChange={setSelectedZone}>
-                <SelectTrigger className="h-8 text-xs w-28">
+                <SelectTrigger className="h-7 text-xs w-24">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -546,12 +546,12 @@ export function ImpactTrendByZoneAndMHE() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">
-                MHE Type:
+            <div className="flex items-center gap-1.5">
+              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">
+                Type:
               </label>
               <Select value={selectedMheType} onValueChange={setSelectedMheType}>
-                <SelectTrigger className="h-8 text-xs w-32">
+                <SelectTrigger className="h-7 text-xs w-24">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -567,14 +567,14 @@ export function ImpactTrendByZoneAndMHE() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-6 py-3 pb-0 overflow-hidden flex flex-col flex-1">
+      <CardContent className="px-4 py-0 pb-0 overflow-hidden flex flex-col flex-1">
         {hasData ? (
           <div style={{ flex: 1, minHeight: 0 }}>
             <ChartContainer config={chartConfig} style={{ height: "100%" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart
                   data={displayData}
-                  margin={{ top: 10, right: 20, left: 24, bottom: 50 }}
+                  margin={{ top: 8, right: 16, left: 20, bottom: 40 }}
                 >
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -584,26 +584,27 @@ export function ImpactTrendByZoneAndMHE() {
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fill: "#6B7280" }}
+                    tick={{ fontSize: 10, fill: "#6B7280" }}
                     tickLine={false}
                     axisLine={{ stroke: "#E5E7EB" }}
-                    height={40}
+                    height={35}
                     interval="preserveStartEnd"
                     padding={{ left: 10, right: 10 }}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "#6B7280" }}
+                    tick={{ fontSize: 10, fill: "#6B7280" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => Math.round(value).toString()}
                     type="number"
                     domain={[0, "dataMax + 1"]}
+                    width={45}
                     label={{
                       value: "Impact Events",
                       angle: -90,
                       position: "insideLeft",
-                      offset: 10,
-                      fontSize: 11,
+                      offset: 8,
+                      fontSize: 10,
                       fill: "#6B7280",
                     }}
                   />
@@ -635,7 +636,7 @@ export function ImpactTrendByZoneAndMHE() {
       {hasData && (
         <>
           {/* Legend Section - No Divider */}
-          <div style={{ padding: "12px 24px", zIndex: 10 }}>
+          <div style={{ padding: "8px 24px", zIndex: 10, backgroundColor: "var(--background)" }}>
             <div
               style={{
                 textAlign: "center",
@@ -653,22 +654,22 @@ export function ImpactTrendByZoneAndMHE() {
               style={{
                 display: "flex",
                 justifyContent: "center",
-                gap: "16px",
+                gap: "20px",
                 flexWrap: "wrap",
               }}
             >
               {topKeys.map((key, idx) => (
-                <div key={key} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                   <div
                     style={{
                       width: "8px",
                       height: "8px",
                       backgroundColor: colorSystem.filtered[idx % colorSystem.filtered.length],
-                      borderRadius: "2px",
+                      borderRadius: "1px",
                       flexShrink: 0,
                     }}
                   ></div>
-                  <span style={{ fontSize: "12px", color: "#64748B" }}>{key}</span>
+                  <span style={{ fontSize: "11px", color: "#64748B" }}>{key}</span>
                 </div>
               ))}
             </div>
@@ -679,15 +680,16 @@ export function ImpactTrendByZoneAndMHE() {
             <div
               style={{
                 borderTop: "1px solid var(--border)",
-                padding: "12px 24px",
+                padding: "8px 24px",
                 zIndex: 10,
+                backgroundColor: "var(--background)",
               }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
+                <p style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.3" }}>
                   <span style={{ fontWeight: "600" }}>{insights.topZone}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.secondaryZone}</span>
                 </p>
-                <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
+                <p style={{ fontSize: "11px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.2" }}>
                   {insights.dateRange}
                 </p>
               </div>
