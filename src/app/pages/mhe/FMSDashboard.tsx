@@ -974,87 +974,91 @@ export function FMSDashboard() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pb-0 flex flex-col flex-1">
-            <div className="grid grid-cols-2 items-start gap-6 flex-1">
-              {/* Donut Chart */}
-              <div className="flex justify-center">
-                <div style={{ width: "240px", height: "240px", position: "relative" }}>
-                  <ChartContainer config={donutChartConfig} className="w-full h-full">
-                    <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                      <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                      <Pie
-                        data={equipmentHealthDataByType[selectedHealthEquipment] || equipmentHealthData}
-                        cx="50%" cy="50%"
-                        innerRadius={70} outerRadius={100}
-                        paddingAngle={3}
-                        dataKey="value"
-                        nameKey="name"
-                        stroke="#ffffff" strokeWidth={3}
-                        activeIndex={activeIndex}
-                        activeShape={renderActiveShape}
-                        onMouseEnter={(_, index) => setActiveIndex(index)}
-                        onMouseLeave={() => setActiveIndex(maxIndex)}
-                      >
-                        {(equipmentHealthDataByType[selectedHealthEquipment] || equipmentHealthData).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={colorMap[entry.name] || COLORS.noIssues} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ChartContainer>
-                  {/* Centre label */}
-                  <div
-                    style={{
-                      position: "absolute", top: "50%", left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      textAlign: "center", pointerEvents: "none",
-                    }}
+          <CardContent className="flex-1 flex items-center justify-center p-6 pb-0">
+            <div style={{ width: "240px", height: "240px", position: "relative" }}>
+              <ChartContainer config={donutChartConfig} className="w-full h-full">
+                <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                  <Pie
+                    data={equipmentHealthDataByType[selectedHealthEquipment] || equipmentHealthData}
+                    cx="50%" cy="50%"
+                    innerRadius={70} outerRadius={100}
+                    paddingAngle={3}
+                    dataKey="value"
+                    nameKey="name"
+                    stroke="#ffffff" strokeWidth={3}
+                    activeIndex={activeIndex}
+                    activeShape={renderActiveShape}
+                    onMouseEnter={(_, index) => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(maxIndex)}
                   >
-                    <div className="text-[length:var(--text-2xl)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
-                      {(equipmentHealthDataByType[selectedHealthEquipment] || equipmentHealthData).reduce((sum, item) => sum + item.value, 0)}
-                    </div>
-                    <div className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] mt-1">
-                      Total MHEs
-                    </div>
-                  </div>
+                    {(equipmentHealthDataByType[selectedHealthEquipment] || equipmentHealthData).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={colorMap[entry.name] || COLORS.noIssues} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+              {/* Centre label */}
+              <div
+                style={{
+                  position: "absolute", top: "50%", left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  textAlign: "center", pointerEvents: "none",
+                }}
+              >
+                <div className="text-[length:var(--text-2xl)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+                  {(equipmentHealthDataByType[selectedHealthEquipment] || equipmentHealthData).reduce((sum, item) => sum + item.value, 0)}
+                </div>
+                <div className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] mt-1">
+                  Total MHEs
                 </div>
               </div>
+            </div>
+          </CardContent>
 
-              {/* Legend */}
-              <div className="flex flex-col gap-4">
+          {/* Legend & Insight Footer - Full Width */}
+          <>
+            {/* Legend Section - No Divider */}
+            <div style={{ padding: "16px 24px", zIndex: 10 }}>
+              <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
                 {(equipmentHealthDataByType[selectedHealthEquipment] || equipmentHealthData).map((item) => (
-                  <div key={item.name} className="flex items-center gap-2">
+                  <div key={item.name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <div
-                      className="flex-shrink-0"
-                      style={{ width: "8px", height: "8px", backgroundColor: colorMap[item.name], borderRadius: "2px" }}
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        backgroundColor: colorMap[item.name],
+                        borderRadius: "2px",
+                      }}
                     />
-                    <span className="text-[length:var(--text-xs)] text-[var(--foreground)]">
+                    <span style={{ fontSize: "11px", color: "#64748B" }}>
                       {item.name.replace(" (Green)", "").replace(" (Amber)", "").replace(" (Red)", "")}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-          </CardContent>
 
-          {/* Insight Callout Footer - Full Width */}
-          {fleetHealthInsights && (
-            <div
-              style={{
-                borderTop: "1px solid var(--border)",
-                padding: "16px 24px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "2px",
-              }}
-            >
-              <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
-                <span style={{ fontWeight: "600" }}>{fleetHealthInsights.topStatus}</span> status reported most, mainly by <span style={{ fontWeight: "600" }}>{fleetHealthInsights.secondaryStatus}</span>
-              </p>
-              <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
-                {fleetHealthInsights.equipmentFilter === "Overall" ? "All Equipment Types" : fleetHealthInsights.equipmentFilter}
-              </p>
-            </div>
-          )}
+            {/* Insight Callout - Divider Above */}
+            {fleetHealthInsights && (
+              <div
+                style={{
+                  borderTop: "1px solid var(--border)",
+                  padding: "16px 24px",
+                  zIndex: 10,
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
+                    <span style={{ fontWeight: "600" }}>{fleetHealthInsights.topStatus}</span> status reported most, mainly by <span style={{ fontWeight: "600" }}>{fleetHealthInsights.secondaryStatus}</span>
+                  </p>
+                  <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
+                    {fleetHealthInsights.equipmentFilter === "Overall" ? "All Equipment Types" : fleetHealthInsights.equipmentFilter}
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
         </Card>
 
         {/* Widget 2: Component Failure Distribution */}
