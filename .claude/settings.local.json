@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5174/)",
+      "Bash(pkill -f \"node.*vite\\\\|vite\")",
+      "Bash(curl -s http://localhost:5175)",
+      "Bash(open *)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:5174)",
+      "Bash(awk '{print $2}')",
+      "Bash(npx tsc *)",
+      "Bash(pkill -f vite)",
+      "Bash(unzip -l \"RAMS First Half \\(IRDS\\).zip\")",
+      "Bash(unzip -q \"RAMS First Half \\(IRDS\\).zip\")",
+      "Bash(unzip -q \"RAMS First Half \\(IRDS\\).zip\" -d /tmp/irds_extract)",
+      "Read(//tmp/irds_extract/src/imports/**)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(python3 *)",
+      "Bash(pkill *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

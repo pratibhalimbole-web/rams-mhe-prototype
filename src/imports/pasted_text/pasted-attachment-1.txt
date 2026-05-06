@@ -1,0 +1,331 @@
+Your current UI is already **well structured**, so adding the **4th icon (Stability)** must be done **without breaking the existing 3 panels**. The key is to treat it exactly like the others — **a separate floating panel triggered by the icon**, not something that changes the canvas layout.
+
+Below is the **correct design approach + exact Figma prompt** so the existing functionality stays untouched.
+
+---
+
+# Goal
+
+Add a **4th right-side icon for Stability** that opens a **Stability panel** showing the saved rack status.
+
+**Must NOT affect:**
+
+* Rack Information panel
+* Insights panel
+* Observations panel
+* Canvas layout
+* Existing modal flow
+
+---
+
+# Current Structure (Keep Exactly the Same)
+
+Right icon stack:
+
+```
+ⓘ  Rack Info
+📊  Insights
+⚠  Observations
+```
+
+Each icon opens **one floating panel**.
+
+---
+
+# New Icon to Add
+
+Add **4th icon below Observations**
+
+```
+ⓘ  Rack Info
+📊  Insights
+⚠  Observations
+🛡  Stability
+```
+
+Recommended icon:
+
+```
+shield-check
+```
+
+Alternative:
+
+```
+clipboard-check
+```
+
+---
+
+# Icon Behavior
+
+Click **🛡 Stability**
+
+Open **floating right panel** identical style to other panels.
+
+Do **NOT** open modal here.
+
+Modal only opens when user clicks:
+
+```
+Evaluate Stability
+```
+
+---
+
+# Panel Position
+
+Exactly same container style as others.
+
+```
+Right margin: 24px
+Top margin: 24px
+Bottom margin: 24px
+Width: 360px
+Floating panel
+```
+
+Overlay on canvas.
+
+---
+
+# Panel Content
+
+### Case 1 — Rack Status Already Evaluated
+
+Panel title:
+
+```
+Rack Stability
+```
+
+Panel content:
+
+```
+Current Status
+Conditional
+(orange badge)
+
+Evaluated by
+John Martinez
+
+Evaluated on
+13 Mar 2026
+```
+
+Divider
+
+```
+Conditions
+Rack can operate at reduced load until damaged beam is replaced.
+```
+
+Optional:
+
+```
+Allowed Load Limit
+70%
+```
+
+Optional:
+
+```
+Reinspection Date
+20 Mar 2026
+```
+
+Bottom CTA:
+
+```
+Override Status
+```
+
+Click → open **Evaluate Stability modal**.
+
+---
+
+# Case 2 — Rack Not Evaluated
+
+Panel content:
+
+```
+Rack Stability
+
+Status
+Not Evaluated
+(gray badge)
+
+This rack has not yet been assessed for stability.
+Review inspection findings and assign a stability status.
+```
+
+CTA:
+
+```
+Evaluate Stability
+```
+
+Click → open modal.
+
+---
+
+# Important UX Rule
+
+Modal remains the **only place where status can be set**.
+
+Panel is for:
+
+```
+Viewing status
+Reviewing conditions
+Overriding status
+```
+
+---
+
+# Panel Layout
+
+```
+Rack Stability
+--------------------------------
+
+Current Status
+Conditional
+
+Evaluated by
+John Martinez
+
+Evaluated on
+13 Mar 2026
+
+--------------------------------
+
+Conditions
+Rack can operate at reduced load until beam replacement.
+
+--------------------------------
+
+Allowed Load Limit
+70%
+
+Reinspection Date
+20 Mar 2026
+
+--------------------------------
+
+[ Override Status ]
+```
+
+---
+
+# Interaction Logic
+
+| Action                   | Result               |
+| ------------------------ | -------------------- |
+| Click Stability icon     | Open stability panel |
+| Click Evaluate Stability | Open modal           |
+| Save in modal            | Update panel         |
+| Override Status          | Reopen modal         |
+
+---
+
+# Important: Do NOT Remove Current CTA
+
+Your existing button:
+
+```
+Evaluate Stability
+(bottom right)
+```
+
+Must remain.
+
+Because it helps first-time evaluation.
+
+---
+
+# Final Icon Stack
+
+```
+ⓘ Rack Info
+📊 Insights
+⚠ Observations
+🛡 Stability
+```
+
+All open floating panels.
+
+---
+
+# Figma Make Prompt
+
+Use this prompt for your designer:
+
+```
+Add a fourth icon to the existing right-side vertical icon stack used for contextual rack panels.
+
+Do not modify the existing three icons (Rack Info, Insights, Observations) or their behavior.
+
+Add a new icon below Observations using a shield-check icon representing Stability.
+
+When clicked, this icon should open a floating right-side panel identical in style and behavior to the existing panels.
+
+Panel specifications:
+- width: 360px
+- top margin: 24px
+- bottom margin: 24px
+- right margin: 24px
+- floating overlay on rack canvas
+
+Panel title: "Rack Stability"
+
+Panel content should show the rack stability evaluation result.
+
+If rack status exists:
+Show
+Current Status badge (Stable / Conditional / Not Stable)
+Evaluator name
+Evaluation date
+
+If Conditional:
+Display condition description
+Allowed load limit
+Reinspection date
+
+Add "Override Status" button that opens the existing Evaluate Rack Stability modal.
+
+If rack status does not exist:
+Show empty state with message:
+"This rack has not yet been evaluated for stability."
+
+Provide CTA:
+"Evaluate Stability"
+
+This CTA opens the existing stability evaluation modal.
+
+Ensure this new panel does not change or interfere with:
+- rack canvas layout
+- Rack Information panel
+- Insights panel
+- Observations panel
+- existing evaluation modal
+```
+
+---
+
+# Final Result
+
+Your right panel system becomes a **complete rack control hub**:
+
+```
+ⓘ Rack Info
+📊 Insights
+⚠ Observations
+🛡 Stability
+```
+
+Which is **very similar to Figma / Linear / Asana panel architecture**.
+
+---
+
+If you want, I can also show **one small improvement that will make the rack canvas itself visually show the stability status**, which will make this module much clearer for inspectors.

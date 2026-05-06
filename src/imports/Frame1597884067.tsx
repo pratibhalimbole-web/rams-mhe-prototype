@@ -1,0 +1,62 @@
+export default function Frame() {
+  return (
+    <div className="content-stretch flex gap-[2px] items-center relative size-full">
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#e11d48] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#f59e0b] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+      <div className="bg-[#16a34a] h-[14px] shrink-0 w-[3px]" />
+    </div>
+  );
+}

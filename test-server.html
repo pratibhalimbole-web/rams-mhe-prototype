@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Edge Function Test</title>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #f9fafb;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #111827;
+            margin: 0 0 24px 0;
+        }
+        .endpoint {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .endpoint h3 {
+            margin: 0 0 12px 0;
+            color: #374151;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Roboto Mono', 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+        .loading {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            color: #1e40af;
+        }
+        .info {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .info strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+        }
+        .url {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Supabase Edge Function Test</h1>
+        
+        <div class="info">
+            <strong>⚠️ Important:</strong>
+            This page tests the Supabase Edge Function deployment. If any tests fail with "Failed to fetch", 
+            the Edge Function needs to be deployed. See <code>/SUPABASE_SERVER_FIX.md</code> for instructions.
+        </div>
+
+        <div class="endpoint">
+            <h3>1. Health Check</h3>
+            <button onclick="testHealth()">Test /health</button>
+            <div class="url">GET /make-server-02ca646a/health</div>
+            <div id="health-result"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>2. Storage Status</h3>
+            <button onclick="testStorageStatus()">Test /storage-status</button>
+            <div class="url">GET /make-server-02ca646a/storage-status</div>
+            <div id="storage-result"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>3. Get Templates</h3>
+            <button onclick="testTemplates()">Test /templates</button>
+            <div class="url">GET /make-server-02ca646a/templates</div>
+            <div id="templates-result"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>4. Get Reports</h3>
+            <button onclick="testReports()">Test /reports</button>
+            <div class="url">GET /make-server-02ca646a/reports</div>
+            <div id="reports-result"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>5. Test All Endpoints</h3>
+            <button onclick="testAll()">Run All Tests</button>
+            <div id="all-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const PROJECT_ID = 'czqwmmqfduwppzvjzxbz';
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6cXdtbXFmZHV3cHB6dmp6eGJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNTM2NDEsImV4cCI6MjA4NTkyOTY0MX0.4f4PeISuqGILulQ4bcCjDni2YvJ0gG4QYPeqLKULgxo';
+        const BASE_URL = `https://${PROJECT_ID}.supabase.co/functions/v1/make-server-02ca646a`;
+
+        async function testEndpoint(endpoint, resultId) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Testing...';
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${BASE_URL}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const duration = Date.now() - startTime;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Success (${duration}ms)\n\nStatus: ${response.status}\n\nResponse:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Error (${duration}ms)\n\nStatus: ${response.status}\n\nResponse:\n${errorText}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Failed to Fetch\n\nError: ${error.message}\n\nThis usually means the Edge Function is not deployed or not responding.\n\nSee /SUPABASE_SERVER_FIX.md for deployment instructions.`;
+            }
+        }
+
+        async function testHealth() {
+            await testEndpoint('/health', 'health-result');
+        }
+
+        async function testStorageStatus() {
+            await testEndpoint('/storage-status', 'storage-result');
+        }
+
+        async function testTemplates() {
+            await testEndpoint('/templates', 'templates-result');
+        }
+
+        async function testReports() {
+            await testEndpoint('/reports', 'reports-result');
+        }
+
+        async function testAll() {
+            const resultDiv = document.getElementById('all-result');
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Running all tests...\n\n';
+
+            const tests = [
+                { name: 'Health Check', endpoint: '/health' },
+                { name: 'Storage Status', endpoint: '/storage-status' },
+                { name: 'Templates', endpoint: '/templates' },
+                { name: 'Reports', endpoint: '/reports' }
+            ];
+
+            let allPassed = true;
+            let results = [];
+
+            for (const test of tests) {
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(`${BASE_URL}${test.endpoint}`, {
+                        headers: {
+                            'Authorization': `Bearer ${ANON_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const duration = Date.now() - startTime;
+
+                    if (response.ok) {
+                        results.push(`✅ ${test.name}: PASS (${duration}ms)`);
+                    } else {
+                        results.push(`❌ ${test.name}: FAIL (${response.status}, ${duration}ms)`);
+                        allPassed = false;
+                    }
+                } catch (error) {
+                    results.push(`❌ ${test.name}: FAIL (${error.message})`);
+                    allPassed = false;
+                }
+            }
+
+            resultDiv.className = allPassed ? 'result success' : 'result error';
+            resultDiv.textContent = results.join('\n') + '\n\n' + 
+                (allPassed 
+                    ? '🎉 All tests passed! Server is responding correctly.' 
+                    : '⚠️ Some tests failed. The Edge Function may not be deployed.');
+        }
+    </script>
+</body>
+</html>

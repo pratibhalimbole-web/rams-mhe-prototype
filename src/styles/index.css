@@ -1,0 +1,212 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* 🎯 CRITICAL: Ensure Figma Make editing tools are NEVER blocked */
+[data-figma-make-overlay],
+[data-figma-make-edit-mode],
+[class*="figma-make"],
+[id*="figma-make"],
+[data-figma-overlay],
+[data-edit-mode],
+iframe[src*="figma"] {
+  pointer-events: auto !important;
+  z-index: 999999 !important;
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+/* 🔥 CRITICAL: DO NOT set position on portal wrappers - they need to float freely */
+[data-radix-popper-content-wrapper],
+[data-radix-portal] {
+  pointer-events: auto !important;
+  z-index: 999999 !important;
+  /* Removed position: relative - portals must maintain their own positioning */
+}
+
+/* Ensure Radix Select portal content is above modals */
+[data-slot="select-content"] {
+  z-index: 100000 !important;
+  pointer-events: auto !important;
+  position: fixed !important; /* ✅ Ensure portal content floats above modal */
+}
+
+/* 🔥 CRITICAL FIX: Ensure all dropdown portals appear above dialog overlays */
+body > div[data-radix-popper-content-wrapper] {
+  z-index: 100000 !important;
+  pointer-events: auto !important;
+}
+
+/* Additional safety: Ensure Select portal wrappers are always clickable */
+[data-radix-portal="true"] {
+  z-index: 100000 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure modal backdrop doesn't block dropdown interactions */
+[data-modal-backdrop="true"] {
+  z-index: 49 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure modal content is above backdrop */
+[data-modal-content="true"] {
+  z-index: 51 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure Figma Make tools can click through modals and overlays */
+body[data-modal-active] [data-figma-make-overlay],
+body[data-modal-active] [data-figma-make-edit-mode],
+body[data-modal-active] [class*="figma-make"],
+body[data-modal-active] [id*="figma-make"],
+body[data-modal-active] [data-figma-overlay],
+body[data-modal-active] iframe[src*="figma"] {
+  pointer-events: auto !important;
+  z-index: 10000000 !important;
+  isolation: isolate !important;
+}
+
+/* Prevent any overlay from blocking Figma tools */
+* {
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
+/* Custom range slider styling for chart controls */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid var(--background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid var(--background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+input[type="range"]::-moz-range-thumb:active {
+  transform: scale(1.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+input[type="range"]:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Minimal and smooth scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+/* Webkit scrollbar styling for Chrome, Safari, Edge */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: rgba(148, 163, 184, 0.6);
+  background-clip: padding-box;
+}
+
+/* Dark mode scrollbar */
+.dark *::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  background-clip: padding-box;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+  background-clip: padding-box;
+}
+
+.dark *::-webkit-scrollbar-thumb:active {
+  background: rgba(148, 163, 184, 0.7);
+  background-clip: padding-box;
+}
+
+/* Shake animation for validation errors */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

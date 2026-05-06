@@ -1,0 +1,180 @@
+You’re correct — the current visualization **looks wrong because the segments are equal width**, even though the counts are different. That creates a **misleading chart**.
+
+Right now the UI is behaving like a **static segmented strip**, not a **data-driven distribution bar**.
+
+Let’s fix it properly.
+
+---
+
+# Problem in Current Design
+
+You have counts:
+
+```
+Red   = 2
+Amber = 2
+Green = 1
+Total = 5
+```
+
+But the bar shows **equal segments**, which visually implies:
+
+```
+Red = Amber = Green
+```
+
+That’s incorrect.
+
+---
+
+# Correct Visualization Principle
+
+Segment width **must be proportional to the count**.
+
+Formula:
+
+```
+segment_width = (count / total) * 100%
+```
+
+---
+
+# Correct Result for Your Example
+
+```
+Red   = 2 / 5 = 40%
+Amber = 2 / 5 = 40%
+Green = 1 / 5 = 20%
+```
+
+Correct bar should look like:
+
+```
+████████████████        RED (40%)
+████████████████        AMBER (40%)
+████████                GREEN (20%)
+```
+
+Or visually:
+
+```
+[ RED RED RED RED ][ AMBER AMBER AMBER AMBER ][ GREEN GREEN ]
+```
+
+---
+
+# Correct UI Layout
+
+Instead of many tiny blocks, use **a proportional progress bar**.
+
+Example:
+
+```
+Installation                         Total 5
+
+|████████████████|████████████████|████████|
+   RED 2 (40%)      AMBER 2 (40%)   GREEN 1 (20%)
+
+● 2   ● 2   ● 1
+```
+
+---
+
+# Better SaaS Style (Stripe / Datadog pattern)
+
+```
+Installation                     Total 5
+
+[████████████████████████████████████████]
+
+🔴 2   🟠 2   🟢 1
+```
+
+Segments scale automatically.
+
+---
+
+# Recommended UI Structure
+
+```
+Installation                              Total 5
+
+|████████████████████████████████████████|
+   🔴 2        🟠 2        🟢 1
+```
+
+---
+
+# Correct Implementation Logic
+
+Example React logic:
+
+```javascript
+const total = red + amber + green;
+
+const redWidth = (red / total) * 100;
+const amberWidth = (amber / total) * 100;
+const greenWidth = (green / total) * 100;
+```
+
+Render:
+
+```jsx
+<div className="flex h-2 rounded overflow-hidden">
+  <div style={{ width: `${redWidth}%` }} className="bg-red-500" />
+  <div style={{ width: `${amberWidth}%` }} className="bg-amber-500" />
+  <div style={{ width: `${greenWidth}%` }} className="bg-green-500" />
+</div>
+```
+
+---
+
+# UX Improvement Recommendation
+
+Also remove the **multiple small blocks**.
+
+Modern SaaS tools use **one smooth segmented bar**.
+
+Better example:
+
+```
+Installation
+Total 5
+
+████████████████████████████████████████
+🔴 2 Critical   🟠 2 Warning   🟢 1 Safe
+```
+
+Cleaner and more accurate.
+
+---
+
+# Why Your Current Design Feels Wrong
+
+Because:
+
+• Equal blocks imply equal values
+• The brain reads visual area first, numbers second
+• Users trust the bar more than the numbers
+
+So it must be **data proportional**.
+
+---
+
+# Final Recommendation
+
+Replace this:
+
+```
+▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+```
+
+with:
+
+```
+[ proportional segmented progress bar ]
+```
+
+---
+
+If you'd like, I can also show you **the best stability analytics layout used in industrial inspection dashboards** — it will make this **Insights panel much more powerful and less cluttered.**
