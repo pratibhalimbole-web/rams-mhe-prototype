@@ -183,17 +183,17 @@ function KPICard({
 }) {
   return (
     <Card className="shadow-none">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-medium)]">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
+        <CardTitle className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)]">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-[var(--muted-foreground)]" />
+        <Icon className="h-3 w-3 text-[var(--muted-foreground)]" />
       </CardHeader>
-      <CardContent>
-        <div className="text-[length:var(--text-2xl)] font-[var(--font-weight-semi-bold)]">
+      <CardContent className="px-4 py-2">
+        <div className="text-[length:var(--text-lg)] font-[var(--font-weight-semi-bold)]">
           {value}
         </div>
-        <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
+        <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] leading-tight">
           {description}
         </p>
       </CardContent>
@@ -929,7 +929,7 @@ export function FMSDashboard() {
         <div className="space-y-6">
 
       {/* ── Row 1: KPI Cards — 4 × col-span-3 = 12 ── */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-4">
         <div className="col-span-3">
           <KPICard title="Fleet Size"        description="Total machines in operation" value="42"  icon={Truck}       />
         </div>
