@@ -273,10 +273,10 @@ export function MheImpactResponsibilityAnalysis() {
                 backgroundColor: "var(--background)",
               }}
             >
-              <p style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.3" }}>
+              <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
                 <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> • <span style={{ fontWeight: "600" }}>{insights.severityLabel}</span>
               </p>
-              <p style={{ fontSize: "11px", fontWeight: "400", color: "#6B7280", margin: "2px 0 0 0", lineHeight: "1.2" }}>
+              <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: "2px 0 0 0", lineHeight: "1.4" }}>
                 {insights.filterContext}
               </p>
             </div>

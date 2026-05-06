@@ -686,10 +686,10 @@ export function ImpactTrendByZoneAndMHE() {
               }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <p style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.3" }}>
+                <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
                   <span style={{ fontWeight: "600" }}>{insights.topZone}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.secondaryZone}</span>
                 </p>
-                <p style={{ fontSize: "11px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.2" }}>
+                <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
                   {insights.dateRange}
                 </p>
               </div>
