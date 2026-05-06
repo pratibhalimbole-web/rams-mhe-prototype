@@ -197,7 +197,7 @@ export function MheImpactResponsibilityAnalysis() {
       </CardHeader>
       <CardContent className="px-6 py-4 pb-0 overflow-hidden flex flex-col flex-1">
         {hasData ? (
-          <div style={{ height: "480px", marginTop: "16px" }}>
+          <div style={{ height: "480px" }}>
             <ChartContainer config={impactChartConfig} style={{ height: "100%" }}>
               <BarChart
                 accessibilityLayer
@@ -239,7 +239,7 @@ export function MheImpactResponsibilityAnalysis() {
           {/* Legend Row - No Divider */}
           <div
             style={{
-              padding: "16px 24px",
+              padding: "12px 24px",
               display: "flex",
               justifyContent: "center",
               gap: "24px",
@@ -266,7 +266,7 @@ export function MheImpactResponsibilityAnalysis() {
             <div
               style={{
                 borderTop: "1px solid var(--border)",
-                padding: "16px 24px",
+                padding: "12px 24px",
                 zIndex: 10,
               }}
             >

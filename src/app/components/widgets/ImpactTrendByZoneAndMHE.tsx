@@ -569,7 +569,7 @@ export function ImpactTrendByZoneAndMHE() {
 
       <CardContent className="px-6 py-4 pb-0 overflow-hidden flex flex-col flex-1">
         {hasData ? (
-          <div style={{ height: "420px", marginTop: "16px" }}>
+          <div style={{ height: "420px" }}>
             <ChartContainer config={chartConfig} style={{ height: "100%" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart
@@ -635,11 +635,11 @@ export function ImpactTrendByZoneAndMHE() {
       {hasData && (
         <>
           {/* Legend Section - No Divider */}
-          <div style={{ padding: "16px 24px", zIndex: 10 }}>
+          <div style={{ padding: "12px 24px", zIndex: 10 }}>
             <div
               style={{
                 textAlign: "center",
-                marginBottom: "8px",
+                marginBottom: "6px",
                 fontSize: "11px",
                 color: "#64748B",
                 fontWeight: "600",
@@ -679,7 +679,7 @@ export function ImpactTrendByZoneAndMHE() {
             <div
               style={{
                 borderTop: "1px solid var(--border)",
-                padding: "16px 24px",
+                padding: "12px 24px",
                 zIndex: 10,
               }}
             >
