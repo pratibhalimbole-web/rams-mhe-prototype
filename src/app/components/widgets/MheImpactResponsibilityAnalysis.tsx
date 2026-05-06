@@ -268,7 +268,7 @@ export function MheImpactResponsibilityAnalysis() {
             <div
               style={{
                 borderTop: "1px solid var(--border)",
-                padding: "8px 24px",
+                padding: "12px 24px",
                 zIndex: 10,
                 backgroundColor: "var(--background)",
               }}
