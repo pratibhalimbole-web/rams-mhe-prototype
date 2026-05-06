@@ -211,6 +211,13 @@ export function MheImpactResponsibilityAnalysis() {
                   tickLine={false}
                   axisLine={{ stroke: "var(--border)" }}
                   tick={{ fontSize: 10 }}
+                  label={{
+                    value: "No. of Impact Events",
+                    position: "bottom",
+                    offset: 5,
+                    fontSize: 11,
+                    fill: "#6B7280",
+                  }}
                 />
                 <YAxis
                   dataKey="mheId"
