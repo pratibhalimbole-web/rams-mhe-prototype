@@ -203,7 +203,7 @@ export function MheImpactResponsibilityAnalysis() {
                 accessibilityLayer
                 data={filteredData}
                 layout="vertical"
-                margin={{ top: 8, right: 16, left: 20, bottom: 8 }}
+                margin={{ top: 8, right: 16, left: 20, bottom: 35 }}
                 barCategoryGap="8%"
               >
                 <XAxis
