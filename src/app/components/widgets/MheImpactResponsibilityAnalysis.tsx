@@ -235,23 +235,16 @@ export function MheImpactResponsibilityAnalysis() {
         )}
       </CardContent>
       {hasData && (
-        <div
-          style={{
-            borderTop: "1px solid var(--border)",
-            padding: "16px 24px",
-            zIndex: 10,
-          }}
-        >
-          {/* Legend Row - Centered */}
+        <>
+          {/* Legend Row - No Divider */}
           <div
             style={{
+              padding: "16px 24px",
               display: "flex",
               justifyContent: "center",
               gap: "24px",
               flexWrap: "wrap",
-              marginBottom: "16px",
-              paddingBottom: "12px",
-              borderBottom: "1px solid var(--border)",
+              zIndex: 10,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -268,18 +261,26 @@ export function MheImpactResponsibilityAnalysis() {
             </div>
           </div>
 
-          {/* Insight Callout - Clean Text Style with Filter Context */}
+          {/* Insight Callout - Divider Above */}
           {insights && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
-                <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.severityLabel}</span>
-              </p>
-              <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
-                {insights.filterContext}
-              </p>
+            <div
+              style={{
+                borderTop: "1px solid var(--border)",
+                padding: "16px 24px",
+                zIndex: 10,
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
+                  <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.severityLabel}</span>
+                </p>
+                <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
+                  {insights.filterContext}
+                </p>
+              </div>
             </div>
           )}
-        </div>
+        </>
       )}
     </Card>
   );
