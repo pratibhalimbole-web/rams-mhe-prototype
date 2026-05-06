@@ -567,9 +567,9 @@ export function ImpactTrendByZoneAndMHE() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-6 py-4 pb-0 overflow-hidden flex flex-col flex-1">
+      <CardContent className="px-6 py-3 pb-0 overflow-hidden flex flex-col flex-1">
         {hasData ? (
-          <div style={{ height: "420px" }}>
+          <div style={{ flex: 1, minHeight: 0 }}>
             <ChartContainer config={chartConfig} style={{ height: "100%" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart

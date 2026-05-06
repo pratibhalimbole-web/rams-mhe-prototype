@@ -195,9 +195,9 @@ export function MheImpactResponsibilityAnalysis() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-6 py-4 pb-0 overflow-hidden flex flex-col flex-1">
+      <CardContent className="px-6 py-3 pb-0 overflow-hidden flex flex-col flex-1">
         {hasData ? (
-          <div style={{ height: "480px" }}>
+          <div style={{ flex: 1, minHeight: 0 }}>
             <ChartContainer config={impactChartConfig} style={{ height: "100%" }}>
               <BarChart
                 accessibilityLayer
