@@ -525,13 +525,15 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
           </div>
         </CardContent>
 
-        {/* Footer with Axis Label and Insight - Full Width */}
-        <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px", zIndex: 15 }}>
-          {/* Axis Label */}
-          <div style={{ display: "flex", justifyContent: "center", fontSize: "11px", fontWeight: "600", color: "#64748B", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+        {/* Axis Label - Above Divider */}
+        <div style={{ padding: "12px 16px", backgroundColor: "var(--background)" }}>
+          <div style={{ display: "flex", justifyContent: "center", fontSize: "11px", fontWeight: "600", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             No. of Inspections
           </div>
+        </div>
 
+        {/* Footer with Insight - Full Width */}
+        <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px", zIndex: 15 }}>
           {/* Insight Callout - Clean Text Style with Date Range */}
           {insights && (
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
