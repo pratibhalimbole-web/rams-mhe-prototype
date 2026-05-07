@@ -48,7 +48,7 @@ interface ChartDataPoint {
 // ─── Color System ─────────────────────────────────────────────────────────────
 const colorSystem = {
   default: {
-    background: "#9CA3AF",
+    background: "#D1D5DB",
     border: "#6B7280",
     text: "#FFFFFF",
   },
@@ -73,8 +73,7 @@ const EnhancedMarker = (props: any) => {
         cy={cy}
         r={8}
         fill={markerColor}
-        stroke={borderColor}
-        strokeWidth={1.5}
+        stroke="none"
       />
       {/* Inner text - event count */}
       <text
@@ -107,7 +106,7 @@ const generateMockImpactEvents = (): ImpactEvent[] => {
   // Generate 30 days of impact events
   for (let day = 0; day < 30; day++) {
     const daysAgo = 29 - day;
-    const eventCount = Math.floor(Math.random() * 8) + 2;
+    const eventCount = Math.floor(Math.random() * 7) + 2;
 
     for (let i = 0; i < eventCount; i++) {
       const timestamp = new Date(now);
@@ -518,9 +517,9 @@ export function ImpactTrendByZoneAndMHE() {
       className="col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden"
       style={{ height: "540px" }}
     >
-      <CardHeader className="pb-2 border-b border-[var(--border)]" style={{ padding: "16px 20px" }}>
-        <div className="flex items-center justify-between w-full gap-4">
-          <div className="flex flex-col gap-0.5">
+      <CardHeader className="pb-4 border-b border-[var(--border)]">
+        <div className="flex items-start justify-between w-full gap-4">
+          <div className="flex flex-col gap-1">
             <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">
               Impact Trend by Zone & MHE
             </CardTitle>
@@ -528,13 +527,13 @@ export function ImpactTrendByZoneAndMHE() {
               Total impact events over time
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2.5 flex-shrink-0 whitespace-nowrap">
-            <div className="flex items-center gap-1">
-              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">
+          <div className="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">
                 Zone:
               </label>
               <Select value={selectedZone} onValueChange={setSelectedZone}>
-                <SelectTrigger className="h-6 text-xs w-20" style={{ padding: "4px 8px" }}>
+                <SelectTrigger className="h-8 text-xs w-28">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -546,12 +545,12 @@ export function ImpactTrendByZoneAndMHE() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-1">
-              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">
-                Type:
+            <div className="flex items-center gap-2">
+              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">
+                MHE Type:
               </label>
               <Select value={selectedMheType} onValueChange={setSelectedMheType}>
-                <SelectTrigger className="h-6 text-xs w-20" style={{ padding: "4px 8px" }}>
+                <SelectTrigger className="h-8 text-xs w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -567,46 +566,45 @@ export function ImpactTrendByZoneAndMHE() {
         </div>
       </CardHeader>
 
-      <CardContent className="overflow-hidden flex flex-col flex-1" style={{ padding: "12px 20px 0 20px" }}>
+      <CardContent className="px-6 py-4 pb-0 overflow-hidden flex flex-col flex-1">
         {hasData ? (
-          <div style={{ flex: 1, minHeight: 0 }}>
-            <ChartContainer config={chartConfig} style={{ height: "100%" }}>
+          <div style={{ height: "480px", marginTop: "16px", position: "relative" }}>
+            {/* Custom Y-axis label — vertically centered, clear of plot area */}
+            <div style={{ position: "absolute", left: 0, top: 16, bottom: 60, width: "18px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1 }}>
+              <span style={{ fontSize: "12px", fontWeight: 500, color: "#64748B", letterSpacing: "0.01em", transform: "rotate(-90deg)", whiteSpace: "nowrap" }}>
+                IMPACT EVENTS
+              </span>
+            </div>
+            <ChartContainer config={chartConfig} style={{ height: "100%", paddingLeft: "18px" }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart
                   data={displayData}
-                  margin={{ top: 16, right: 24, left: 8, bottom: 32 }}
+                  margin={{ top: 16, right: 24, left: 4, bottom: 20 }}
                 >
                   <CartesianGrid
-                    strokeDasharray="3 3"
+                    strokeDasharray="5 8"
                     stroke="#E5E7EB"
                     vertical={true}
                     horizontalPoints={[]}
                   />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 10, fill: "#6B7280" }}
+                    tick={{ fontSize: 11, fill: "#6B7280" }}
                     tickLine={false}
                     axisLine={{ stroke: "#E5E7EB" }}
-                    height={35}
+                    height={40}
                     interval="preserveStartEnd"
                     padding={{ left: 10, right: 10 }}
+                    label={{ value: "DATE", position: "bottom", offset: 0, fontSize: 12, fontWeight: 500, fill: "#64748B", letterSpacing: "0.01em" }}
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: "#6B7280" }}
+                    tick={{ fontSize: 11, fill: "#6B7280" }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => Math.round(value).toString()}
                     type="number"
-                    domain={[0, "dataMax + 1"]}
-                    width={50}
-                    label={{
-                      value: "Impact Events",
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: 5,
-                      fontSize: 10,
-                      fill: "#6B7280",
-                    }}
+                    domain={[0, 8]}
+                    width={28}
                   />
                   <ChartTooltip content={<CustomTooltip />} cursor={false} />
                   <Scatter
@@ -632,71 +630,53 @@ export function ImpactTrendByZoneAndMHE() {
         )}
       </CardContent>
 
-      {/* Legend & Insight Footer - Full Width */}
+      {/* Legend Section - No Divider */}
       {hasData && (
-        <>
-          {/* Legend Section - No Divider */}
-          <div style={{ padding: "10px 20px", zIndex: 10, backgroundColor: "var(--background)", marginTop: "12px" }}>
-            <div
-              style={{
-                textAlign: "center",
-                marginBottom: "6px",
-                fontSize: "11px",
-                color: "#64748B",
-                fontWeight: "600",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
-            >
-              Impact Zones
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "24px",
-                flexWrap: "wrap",
-              }}
-            >
-              {topKeys.map((key, idx) => (
-                <div key={key} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <div
-                    style={{
-                      width: "8px",
-                      height: "8px",
-                      backgroundColor: colorSystem.filtered[idx % colorSystem.filtered.length],
-                      borderRadius: "1px",
-                      flexShrink: 0,
-                    }}
-                  ></div>
-                  <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "500" }}>{key}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Insight Callout - Divider Above */}
-          {insights && (
-            <div
-              style={{
-                borderTop: "1px solid #E5E7EB",
-                padding: "10px 20px",
-                zIndex: 10,
-                backgroundColor: "var(--background)",
-                minHeight: "auto",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
-                <p style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.3" }}>
-                  <span style={{ fontWeight: "600" }}>{insights.topZone}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.secondaryZone}</span>
-                </p>
-                <p style={{ fontSize: "11px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.3" }}>
-                  {insights.dateRange}
-                </p>
+        <div style={{ padding: "10px 24px", zIndex: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
+            {topKeys.map((key, idx) => (
+              <div key={key} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    backgroundColor: colorSystem.filtered[idx % colorSystem.filtered.length],
+                    borderRadius: "2px",
+                    flexShrink: 0,
+                  }}
+                ></div>
+                <span style={{ fontSize: "12px", color: "#64748B" }}>{key}</span>
               </div>
-            </div>
-          )}
-        </>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Insight Callout - Divider Above */}
+      {hasData && insights && (
+        <div
+          style={{
+            borderTop: "1px solid var(--border)",
+            padding: "16px 24px",
+            zIndex: 10,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
+              <span style={{ fontWeight: "600" }}>{insights.topZone}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.secondaryZone}</span>
+            </p>
+            <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
+              {insights.dateRange}
+            </p>
+          </div>
+        </div>
       )}
     </Card>
   );

@@ -1087,15 +1087,21 @@ export function FMSDashboard() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-[40px] pb-0 flex flex-col flex-1">
+          <CardContent className="p-6 pb-0 flex flex-col flex-1">
             <div className="overflow-x-auto scrollbar-hide flex-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <div className={currentFailureData.length > 5 ? "min-w-[600px]" : ""} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <div className="mt-6">
-                  <ChartContainer config={failureChartConfig} className="h-[260px]">
+                <div style={{ position: "relative" }}>
+                  {/* Custom Y-axis label — vertically centered, clear of tick values */}
+                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "20px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1 }}>
+                    <span style={{ fontSize: "12px", fontWeight: 500, color: "#64748B", letterSpacing: "0.02em", transform: "rotate(-90deg)", whiteSpace: "nowrap" }}>
+                      Count
+                    </span>
+                  </div>
+                  <ChartContainer config={failureChartConfig} className="h-[260px]" style={{ paddingLeft: "8px" }}>
                     <BarChart
                       accessibilityLayer
                       data={currentFailureData}
-                      margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
+                      margin={{ top: 10, right: 20, left: 36, bottom: 10 }}
                       barGap="20%"
                     >
                       <CartesianGrid vertical={false} stroke="var(--border)" />
@@ -1104,7 +1110,7 @@ export function FMSDashboard() {
                         tickLine={false} tickMargin={10} axisLine={false}
                         tick={{ fontSize: 11 }}
                       />
-                      <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} label={{ value: "Count", angle: -90, position: "insideLeft", offset: 10, fontSize: 11 }} />
+                      <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={30} />
                       <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                       <ChartLegend content={<ChartLegendContent />} />
                       <Bar dataKey="No Issues" stackId="a" fill="hsl(217, 98%, 54%)" radius={[0, 0, 0, 0]} />
@@ -1650,7 +1656,7 @@ export function FMSDashboard() {
                   <BarChart data={currentFailureData} margin={{ top: 16, right: 12, left: 12, bottom: 48 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                     <XAxis dataKey="part" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} label={{ value: "Count", angle: -90, position: "center", dx: -10, fontSize: 11, fontWeight: 600, fill: "#64748B", textAnchor: "middle" }} />
                     <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "rgba(0, 0, 0, 0.1)" }} />
                     <Bar dataKey="No Issues" stackId="a" fill={COLORS.noIssues} />
                     <Bar dataKey="Green" stackId="a" fill={COLORS.healthy} />

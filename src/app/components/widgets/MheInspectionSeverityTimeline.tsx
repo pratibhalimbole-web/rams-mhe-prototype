@@ -29,22 +29,21 @@ interface DateColumn {
   isYesterday?: boolean;
 }
 
-// Color scale based on inspection count (Tailwind blue gradient)
+// 5-step blue ramp matching reference design
 const getColorByInspectionCount = (count: number): string => {
-  if (count === 0) return "#E5E7EB"; // No inspection (gray)
-  if (count <= 2) return "#DBEAFE"; // blue-100
-  if (count <= 4) return "#BFDBFE"; // blue-200
-  if (count <= 6) return "#93C5FD"; // blue-300
-  if (count <= 9) return "#60A5FA"; // blue-400
-  if (count <= 12) return "#3B82F6"; // blue-500
-  if (count <= 15) return "#2563EB"; // blue-600 (BASE)
-  if (count <= 18) return "#1D4ED8"; // blue-700
-  return "#1E40AF"; // blue-800
+  if (count === 0) return "#E9EAEC";
+  if (count <= 2)  return "#EFF6FF";
+  if (count <= 5)  return "#BFDBFE";
+  if (count <= 9)  return "#93C5FD";
+  if (count <= 15) return "#3B82F6";
+  if (count <= 20) return "#1D4ED8";
+  return "#1E3A8A";
 };
 
 const getTextColorForCell = (inspectionCount: number): string => {
-  // White text for dark colors (count >= 12, which is blue-600 and darker)
-  return inspectionCount >= 12 ? "#FFFFFF" : "#1E293B";
+  if (inspectionCount === 0) return "#9CA3AF";
+  if (inspectionCount <= 9)  return "#1E3A8A";
+  return "#FFFFFF";
 };
 
 const generateDateColumns = (dateRangeFilter: string): DateColumn[] => {
@@ -220,8 +219,7 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
 
     let highestMheCount = 0;
     let highestMheId = "";
-    let topRedMheId = "";
-    let topRedCount = 0;
+    let topMheRedCount = 0;
 
     mheIds.forEach((mheId) => {
       let mheTotal = 0;
@@ -234,10 +232,7 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
       if (mheTotal > highestMheCount) {
         highestMheCount = mheTotal;
         highestMheId = mheId;
-      }
-      if (mheRedTotal > topRedCount) {
-        topRedCount = mheRedTotal;
-        topRedMheId = mheId;
+        topMheRedCount = mheRedTotal;
       }
     });
 
@@ -253,64 +248,69 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
 
     return {
       topMhe: highestMheId,
-      topRedMhe: topRedMheId,
+      topRedCount: String(topMheRedCount).padStart(2, "0"),
       dateRange,
     };
   }, [mheIds, dateColumns, getCellData]);
 
   return (
     <TooltipProvider>
-      <Card className="border border-slate-200 bg-white h-full w-full flex flex-col shadow-sm overflow-hidden relative">
+      <Card className="shadow-none border-[var(--border)] h-full w-full flex flex-col overflow-hidden gap-0">
         {/* Fixed Header */}
-        <CardHeader className="pb-2 border-b border-slate-200 flex-shrink-0 px-6 pt-4">
+        <CardHeader className="pb-2 border-b border-[var(--border)]">
           <div className="flex items-start justify-between w-full gap-4">
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1 flex-1">
               <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">
                 MHE Inspection Severity Timeline
               </CardTitle>
-              <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
+              <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] truncate">
                 Inspection severity patterns across recent MHE inspections.
               </CardDescription>
             </div>
 
-            <div className="flex gap-3 flex-shrink-0">
-              <Select value={mheTypeFilter} onValueChange={setMheTypeFilter}>
-                <SelectTrigger className="w-[200px] h-9 text-xs border border-slate-300">
-                  <SelectValue placeholder="All MHE" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All MHE</SelectItem>
-                  <SelectItem value="electric">Electric Forklift</SelectItem>
-                  <SelectItem value="diesel">Diesel Forklift</SelectItem>
-                  <SelectItem value="pallet">Pallet Jack</SelectItem>
-                  <SelectItem value="order">Order Picker</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
-                <SelectTrigger className="w-[200px] h-9 text-xs border border-slate-300">
-                  <SelectValue placeholder="Last 7 Days" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="last_24">Last 24 Hours</SelectItem>
-                  <SelectItem value="last_7_days">Last 7 Days</SelectItem>
-                  <SelectItem value="last_30_days">Last 30 Days</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-4 flex-shrink-0 whitespace-nowrap">
+              <div className="flex items-center gap-2">
+                <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">MHE Type:</label>
+                <Select value={mheTypeFilter} onValueChange={setMheTypeFilter}>
+                  <SelectTrigger className="h-8 text-xs w-28">
+                    <SelectValue placeholder="All MHE" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All MHE</SelectItem>
+                    <SelectItem value="electric">Electric Forklift</SelectItem>
+                    <SelectItem value="diesel">Diesel Forklift</SelectItem>
+                    <SelectItem value="pallet">Pallet Jack</SelectItem>
+                    <SelectItem value="order">Order Picker</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">Date:</label>
+                <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
+                  <SelectTrigger className="h-8 text-xs w-28">
+                    <SelectValue placeholder="Last 7 Days" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="last_24">Last 24 Hours</SelectItem>
+                    <SelectItem value="last_7_days">Last 7 Days</SelectItem>
+                    <SelectItem value="last_30_days">Last 30 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardHeader>
 
         {/* Scrollable Content */}
-        <CardContent className="flex-1 overflow-hidden p-4 pb-0">
+        <CardContent className="flex-1 overflow-hidden px-4 pt-2 pb-0">
           <div style={{ height: "100%", overflowX: dateColumns.length > 7 ? "auto" : "hidden", overflowY: "auto" }}>
             {/* Heatmap Container */}
             <div className={dateColumns.length <= 7 ? "w-full" : "inline-block"}>
               {/* Header Row (Date Labels) */}
-              <div style={{ display: "flex", gap: "16px", marginBottom: "16px", alignItems: "flex-end", position: "sticky", top: 0, backgroundColor: "#FFFFFF", zIndex: 20, borderBottom: "1px solid var(--border)" }}>
-                {/* Placeholder for row labels */}
-                <div style={{ width: "80px", flexShrink: 0 }}></div>
+              <div style={{ display: "flex", gap: "16px", marginBottom: "8px", alignItems: "flex-end", position: "sticky", top: 0, backgroundColor: "#FFFFFF", zIndex: 20 }}>
+                {/* Combined placeholder for rotated Y-axis label + row label column */}
+                <div style={{ minWidth: "112px", width: "112px", flexShrink: 0 }}></div>
 
                 {/* Date Headers */}
                 <div style={{ display: "flex", gap: "8px", flex: dateColumns.length <= 7 ? 1 : "none" }}>
@@ -319,13 +319,13 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
                       key={col.key}
                       style={{
                         width: dateColumns.length <= 7 ? "100%" : "36px",
-                        height: "36px",
+                        height: "28px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "10px",
-                        fontWeight: 600,
-                        color: "#64748B",
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        color: "#6B7280",
                         textAlign: "center",
                         flexShrink: 0,
                         lineHeight: "1.2",
@@ -338,25 +338,34 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
                 </div>
               </div>
 
-              {/* Grid Rows */}
+              {/* Body: Rotated Y-axis label + Grid Rows */}
+              <div style={{ display: "flex", alignItems: "stretch" }}>
+                {/* Rotated MHE ID Y-axis label — centered vertically with all rows */}
+                <div style={{ width: "24px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "1.5px", whiteSpace: "nowrap" }}>
+                    MHE ID
+                  </span>
+                </div>
+
+                {/* Rows */}
+                <div style={{ flex: 1 }}>
               {mheIds.map((mheId) => (
                 <div key={mheId} style={{ display: "flex", gap: "16px", marginBottom: "16px", alignItems: "center" }}>
-                  {/* MHE Label (sticky left) */}
+                  {/* MHE Label */}
                   <div
                     style={{
-                      width: "80px",
-                      height: "36px",
+                      width: "88px",
+                      minWidth: "88px",
+                      height: "40px",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
+                      justifyContent: "flex-start",
+                      paddingLeft: "8px",
                       fontSize: "12px",
-                      fontWeight: 600,
-                      color: "#374151",
+                      fontWeight: 500,
+                      color: "#6B7280",
                       flexShrink: 0,
-                      position: "sticky",
-                      left: 0,
                       backgroundColor: "#FFFFFF",
-                      zIndex: 10,
                     }}
                   >
                     {mheId}
@@ -375,14 +384,14 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
                           <TooltipTrigger asChild>
                             <div
                               style={{
-                                width: dateColumns.length <= 7 ? "100%" : "36px",
-                                height: "36px",
-                                borderRadius: "8px",
+                                width: dateColumns.length <= 7 ? "100%" : "40px",
+                                height: "40px",
+                                borderRadius: "10px",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                fontSize: "12px",
-                                fontWeight: 600,
+                                fontSize: "11px",
+                                fontWeight: cellData.totalCount === 0 ? 400 : 700,
                                 backgroundColor: isDisabled ? "#F3F4F6" : cellColor,
                                 color: isDisabled ? "#9CA3AF" : textColor,
                                 cursor: isDisabled ? "default" : "pointer",
@@ -393,8 +402,8 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
                               }}
                               onMouseEnter={(e) => {
                                 if (!isDisabled) {
-                                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
-                                  e.currentTarget.style.transform = "scale(1.1)";
+                                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(30,58,138,0.18)";
+                                  e.currentTarget.style.transform = "scale(1.08)";
 
                                   // Smart positioning: detect if cell is in top or bottom half
                                   const cellRect = e.currentTarget.getBoundingClientRect();
@@ -521,24 +530,25 @@ export const MheInspectionSeverityTimeline: React.FC = () => {
                   </div>
                 </div>
               ))}
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
 
-        {/* Axis Label - Above Divider */}
-        <div style={{ padding: "12px 16px", backgroundColor: "var(--background)" }}>
-          <div style={{ display: "flex", justifyContent: "center", fontSize: "11px", fontWeight: "600", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+        {/* Axis Label */}
+        <div style={{ padding: "5px 16px 4px" }}>
+          <div style={{ display: "flex", justifyContent: "center", fontSize: "11px", fontWeight: 500, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>
             No. of Inspections
           </div>
         </div>
 
-        {/* Footer with Insight - Full Width */}
-        <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px", zIndex: 15 }}>
-          {/* Insight Callout - Clean Text Style with Date Range */}
+        {/* Footer with Insight */}
+        <div style={{ borderTop: "1px solid var(--border)", padding: "16px 24px", zIndex: 15 }}>
           {insights && (
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
-                <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.topRedMhe}</span>
+                <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> reported most, mainly has red severity = {insights.topRedCount}
               </p>
               <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
                 {insights.dateRange}

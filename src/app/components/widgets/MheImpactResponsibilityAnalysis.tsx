@@ -13,19 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { Label } from "../ui/label";
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
 } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
   type ChartConfig,
 } from "../ui/chart";
 
@@ -155,21 +153,21 @@ export function MheImpactResponsibilityAnalysis() {
 
   return (
     <Card className="col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ height: "540px" }}>
-      <CardHeader className="pb-2 border-b border-[var(--border)]" style={{ padding: "16px 20px" }}>
-        <div className="flex items-center justify-between w-full gap-4">
-          <div className="flex flex-col gap-0.5 flex-1">
-            <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] leading-tight">
+      <CardHeader className="pb-4 border-b border-[var(--border)]">
+        <div className="flex items-start justify-between w-full gap-4">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">
               MHE Impact Responsibility Analysis
             </CardTitle>
             <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
               Stacked impact events by severity level
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2.5 flex-shrink-0 whitespace-nowrap">
-            <div className="flex items-center gap-1">
-              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">Type:</label>
+          <div className="flex items-center gap-4 flex-shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="impact-mhe-type" className="text-xs whitespace-nowrap">MHE Type:</Label>
               <Select value={selectedMheType} onValueChange={setSelectedMheType}>
-                <SelectTrigger className="h-6 text-xs w-20" style={{ padding: "4px 8px" }}>
+                <SelectTrigger id="impact-mhe-type" className="h-9 text-xs w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,10 +177,10 @@ export function MheImpactResponsibilityAnalysis() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-1">
-              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)]">Zone:</label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="impact-zone" className="text-xs whitespace-nowrap">Zone:</Label>
               <Select value={selectedZone} onValueChange={setSelectedZone}>
-                <SelectTrigger className="h-6 text-xs w-20" style={{ padding: "4px 8px" }}>
+                <SelectTrigger id="impact-zone" className="h-9 text-xs w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -195,102 +193,99 @@ export function MheImpactResponsibilityAnalysis() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="overflow-hidden flex flex-col flex-1" style={{ padding: "12px 20px 0 20px" }}>
+      <CardContent className="px-6 py-4 pb-0 overflow-hidden flex flex-col flex-1">
         {hasData ? (
-          <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
-            <ChartContainer config={impactChartConfig} style={{ width: "100%", height: "100%" }}>
+          <div style={{ height: "650px", marginTop: "16px", position: "relative" }}>
+            {/* Custom Y-axis label — vertically centered, clear of plot area */}
+            <div style={{ position: "absolute", left: 0, top: 16, bottom: 40, width: "18px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1 }}>
+              <span style={{ fontSize: "12px", fontWeight: 500, color: "#64748B", letterSpacing: "0.01em", transform: "rotate(-90deg)", whiteSpace: "nowrap" }}>
+                MHE ID
+              </span>
+            </div>
+            <ChartContainer config={impactChartConfig} style={{ height: "100%", paddingLeft: "18px" }}>
               <BarChart
                 accessibilityLayer
                 data={filteredData}
                 layout="vertical"
-                margin={{ top: 12, right: 24, left: 8, bottom: 32 }}
-                barCategoryGap="10%"
-                barSize={26}
+                margin={{ top: 16, right: 24, left: 4, bottom: 20 }}
+                barCategoryGap="20%"
+                maxBarSize={64}
               >
                 <XAxis
                   type="number"
                   tickLine={false}
                   axisLine={{ stroke: "var(--border)" }}
-                  tick={{ fontSize: 10 }}
-                  label={{
-                    value: "No. of Impact Events",
-                    position: "bottom",
-                    offset: 5,
-                    fontSize: 11,
-                    fill: "#6B7280",
-                  }}
+                  tick={{ fontSize: 11 }}
+                  label={{ value: "NO. OF EVENTS", position: "bottom", offset: 10, fontSize: 12, fontWeight: 500, fill: "#64748B", letterSpacing: "0.01em" }}
                 />
                 <YAxis
                   dataKey="mheId"
                   type="category"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fontSize: 10 }}
-                  width={50}
+                  tick={{ fontSize: 11 }}
+                  width={60}
                 />
                 <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                 <Bar dataKey="High" stackId="a" fill="#1B59F8" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="Medium" stackId="a" fill="#4C7DFF" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="Low" stackId="a" fill="#8FB2FF" radius={[0, 3, 3, 0]} />
+                <Bar dataKey="Low" stackId="a" fill="#8FB2FF" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ChartContainer>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-center">
+          <div className="flex items-center justify-center h-[260px] text-center">
             <div className="text-[var(--muted-foreground)]">
               <p className="text-[length:var(--text-sm)] font-[var(--font-weight-medium)]">No impact data available</p>
             </div>
           </div>
         )}
       </CardContent>
+      {/* Legend Section - No Divider */}
       {hasData && (
-        <>
-          {/* Legend Row - Compact */}
+        <div style={{ padding: "10px 24px", zIndex: 10 }}>
           <div
             style={{
-              padding: "10px 20px",
               display: "flex",
               justifyContent: "center",
-              gap: "24px",
+              gap: "16px",
               flexWrap: "wrap",
-              zIndex: 10,
-              backgroundColor: "var(--background)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <div style={{ width: "8px", height: "8px", backgroundColor: "#1B59F8", borderRadius: "1px" }}></div>
-              <span style={{ fontSize: "11px", color: "#64748B", fontWeight: "500" }}>High</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "8px", height: "8px", backgroundColor: "#1B59F8", borderRadius: "2px", flexShrink: 0 }}></div>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>High</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <div style={{ width: "8px", height: "8px", backgroundColor: "#4C7DFF", borderRadius: "1px" }}></div>
-              <span style={{ fontSize: "11px", color: "#64748B", fontWeight: "500" }}>Medium</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "8px", height: "8px", backgroundColor: "#4C7DFF", borderRadius: "2px", flexShrink: 0 }}></div>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>Medium</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <div style={{ width: "8px", height: "8px", backgroundColor: "#8FB2FF", borderRadius: "1px" }}></div>
-              <span style={{ fontSize: "11px", color: "#64748B", fontWeight: "500" }}>Low</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "8px", height: "8px", backgroundColor: "#8FB2FF", borderRadius: "2px", flexShrink: 0 }}></div>
+              <span style={{ fontSize: "12px", color: "#64748B" }}>Low</span>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Insight Callout - Compact */}
-          {insights && (
-            <div
-              style={{
-                borderTop: "1px solid #E5E7EB",
-                padding: "10px 20px",
-                zIndex: 10,
-                backgroundColor: "var(--background)",
-                minHeight: "auto",
-              }}
-            >
-              <p style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.3" }}>
-                <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> • <span style={{ fontWeight: "600" }}>{insights.severityLabel}</span>
-              </p>
-              <p style={{ fontSize: "11px", fontWeight: "400", color: "#6B7280", margin: "1px 0 0 0", lineHeight: "1.3" }}>
-                {insights.filterContext}
-              </p>
-            </div>
-          )}
-        </>
+      {/* Insight Callout - Divider Above */}
+      {hasData && insights && (
+        <div
+          style={{
+            borderTop: "1px solid var(--border)",
+            padding: "16px 24px",
+            zIndex: 10,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
+              <span style={{ fontWeight: "600" }}>{insights.topMhe}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.severityLabel}</span>
+            </p>
+            <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
+              {insights.filterContext}
+            </p>
+          </div>
+        </div>
       )}
     </Card>
   );
