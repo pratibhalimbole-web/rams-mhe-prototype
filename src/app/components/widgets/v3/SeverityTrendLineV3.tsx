@@ -7,6 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 
 const MHE_LIST = Array.from({ length: 12 }, (_, i) => `MHE_${String(i + 1).padStart(2, "0")}`);
 
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS_FULL  = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+function shortDate(d: Date) { return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`; }
+function fullDate(d: Date)  { return `${MONTHS_FULL[d.getMonth()]} ${d.getDate()}`; }
+
 function seededRandom(seed: number) {
   let s = seed;
   return () => {
@@ -18,10 +24,12 @@ function seededRandom(seed: number) {
 function generateData(mhe: string, dateRange: string) {
   const seed = mhe.charCodeAt(4) * 1000 + mhe.charCodeAt(5) + dateRange.length;
   const rand = seededRandom(seed);
+  const now = new Date();
 
   if (dateRange === "last_24_hours") {
-    return Array.from({ length: 12 }, (_, i) => ({
-      date: `${String(i * 2).padStart(2, "0")}:00`,
+    return Array.from({ length: 24 }, (_, i) => ({
+      date: `${String(i).padStart(2, "0")}:00`,
+      tooltipDate: `${String(i).padStart(2, "0")}:00`,
       value: Math.round(2 + rand() * 18),
       totalInspection: Math.round(1 + rand() * 7),
       operatorInvolved: Math.round(1 + rand() * 5),
@@ -33,6 +41,7 @@ function generateData(mhe: string, dateRange: string) {
   } else if (dateRange === "last_7_days") {
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({
       date: day,
+      tooltipDate: day,
       value: Math.round(2 + rand() * 18),
       totalInspection: Math.round(2 + rand() * 8),
       operatorInvolved: Math.round(1 + rand() * 6),
@@ -42,20 +51,39 @@ function generateData(mhe: string, dateRange: string) {
       red: Math.round(rand() * 2),
     }));
   } else {
-    return Array.from({ length: 30 }, (_, i) => ({
-      date: `${i + 1}`,
-      value: Math.round(2 + rand() * 18),
-      totalInspection: Math.round(2 + rand() * 8),
-      operatorInvolved: Math.round(1 + rand() * 6),
-      noIssues: Math.round(1 + rand() * 6),
-      green: Math.round(rand() * 3),
-      amber: Math.round(rand() * 3),
-      red: Math.round(rand() * 2),
-    }));
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 29 + i);
+      return {
+        date: shortDate(d),
+        tooltipDate: fullDate(d),
+        value: Math.round(2 + rand() * 18),
+        totalInspection: Math.round(2 + rand() * 8),
+        operatorInvolved: Math.round(1 + rand() * 6),
+        noIssues: Math.round(1 + rand() * 6),
+        green: Math.round(rand() * 3),
+        amber: Math.round(rand() * 3),
+        red: Math.round(rand() * 2),
+      };
+    });
   }
 }
 
-function CustomTooltip({ active, payload }: any) {
+function getFooterRange(dateRange: string): string {
+  const now = new Date();
+  if (dateRange === "last_30_days") {
+    const start = new Date(now); start.setDate(now.getDate() - 29);
+    const end   = new Date(now);
+    return `${shortDate(start)} – ${shortDate(end)}`;
+  } else if (dateRange === "last_7_days") {
+    const start = new Date(now); start.setDate(now.getDate() - 6);
+    return `${shortDate(start)} – ${shortDate(now)}`;
+  } else {
+    return `Today, 00:00 – 23:00`;
+  }
+}
+
+function CustomTooltip({ active, payload, selectedMhe }: any) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
   return (
@@ -67,12 +95,16 @@ function CustomTooltip({ active, payload }: any) {
       boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
       minWidth: "203px",
     }}>
+      {/* Header row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "6px", borderBottom: "0.64px solid #e2e8f0", marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div style={{ width: "9px", height: "20px", background: "#2563eb", borderRadius: "4px", flexShrink: 0 }} />
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", color: "#0a0a0a" }}>{d.date}</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", color: "#0a0a0a" }}>{d.tooltipDate}</span>
         </div>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "10px", color: "#0a0a0a" }}>{selectedMhe}</span>
       </div>
+
+      {/* Stats */}
       <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
         {([["Total Inspection:", String(d.totalInspection).padStart(2, "0")], ["Operator Involved:", String(d.operatorInvolved).padStart(2, "0")]] as [string, string][]).map(([label, val]) => (
           <div key={label} style={{ display: "flex", justifyContent: "space-between" }}>
@@ -81,7 +113,10 @@ function CustomTooltip({ active, payload }: any) {
           </div>
         ))}
       </div>
+
       <div style={{ height: "0.64px", background: "#e2e8f0", marginBottom: "6px" }} />
+
+      {/* Severity breakdown */}
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: "10px", color: "#0a0a0a", marginBottom: "2px" }}>Severity Breakdown</span>
         {([["No Issues:", String(d.noIssues).padStart(2, "0")], ["Green:", String(d.green).padStart(2, "0")], ["Amber:", String(d.amber).padStart(2, "0")], ["Red:", String(d.red).padStart(2, "0")]] as [string, string][]).map(([label, val]) => (
@@ -110,15 +145,16 @@ const filterStyle: React.CSSProperties = {
 
 export function SeverityTrendLineV3() {
   const [selectedMhe, setSelectedMhe] = useState("MHE_02");
-  const [dateRange, setDateRange] = useState("last_24_hours");
+  const [dateRange, setDateRange] = useState("last_30_days");
 
   const chartData = useMemo(() => generateData(selectedMhe, dateRange), [selectedMhe, dateRange]);
+  const footerRange = useMemo(() => getFooterRange(dateRange), [dateRange]);
 
-  const xAxisInterval = dateRange === "last_24_hours" ? 2 : dateRange === "last_7_days" ? 0 : 4;
-
-  const footerDateLabel = dateRange === "last_24_hours" ? "Past 24 hours"
-    : dateRange === "last_7_days" ? "Past 7 days"
-    : "Past 30 days";
+  // minWidth ensures labels never overlap; scroll triggers when container < minWidth
+  const chartMinWidth = dateRange === "last_30_days" ? "1600px"
+    : dateRange === "last_24_hours" ? "1400px"
+    : undefined;
+  const needsScroll = !!chartMinWidth;
 
   return (
     <div style={{
@@ -152,9 +188,7 @@ export function SeverityTrendLineV3() {
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <Select value={selectedMhe} onValueChange={setSelectedMhe}>
-            <SelectTrigger style={filterStyle}>
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
             <SelectContent>
               {MHE_LIST.map((mhe) => (
                 <SelectItem key={mhe} value={mhe} style={{ whiteSpace: "nowrap" }}>{mhe}</SelectItem>
@@ -162,9 +196,7 @@ export function SeverityTrendLineV3() {
             </SelectContent>
           </Select>
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger style={filterStyle}>
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="last_24_hours" style={{ whiteSpace: "nowrap" }}>Last 24 Hours</SelectItem>
               <SelectItem value="last_7_days" style={{ whiteSpace: "nowrap" }}>Last 7 Days</SelectItem>
@@ -174,40 +206,52 @@ export function SeverityTrendLineV3() {
         </div>
       </div>
 
-      {/* Chart */}
-      <div style={{ flex: 1, padding: "12px 14px 0 14px", minHeight: 0 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
-              axisLine={false}
-              tickLine={false}
-              dy={6}
-              interval={xAxisInterval}
-            />
-            <YAxis
-              domain={[0, 20]}
-              ticks={[0, 5, 10, 15, 20]}
-              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
-              axisLine={false}
-              tickLine={false}
-              dx={-4}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }} />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#2563eb"
-              strokeWidth={1.5}
-              strokeDasharray="5 5"
-              strokeLinecap="round"
-              dot={{ fill: "#2563eb", r: 3, strokeWidth: 0 }}
-              activeDot={{ fill: "#2563eb", r: 5, strokeWidth: 0 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      {/* Chart — position:relative/absolute gives the scrollbar its own space */}
+      <div style={{ flex: 1, padding: "12px 14px 0 14px", minHeight: 0, position: "relative" }}>
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          overflowX: needsScroll ? "auto" : "hidden",
+          overflowY: "hidden",
+        }}>
+          <div style={{ width: "100%", minWidth: chartMinWidth, height: "100%" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  axisLine={false}
+                  tickLine={false}
+                  dy={6}
+                  interval={0}
+                />
+                <YAxis
+                  domain={[0, 20]}
+                  ticks={[0, 5, 10, 15, 20]}
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  axisLine={false}
+                  tickLine={false}
+                  dx={-4}
+                />
+                <Tooltip
+                  content={<CustomTooltip selectedMhe={selectedMhe} />}
+                  cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#2563eb"
+                  strokeWidth={1.5}
+                  strokeDasharray="5 5"
+                  strokeLinecap="round"
+                  dot={{ fill: "#2563eb", r: 3, strokeWidth: 0 }}
+                  activeDot={{ fill: "#2563eb", r: 5, strokeWidth: 0 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Insight footer */}
@@ -219,11 +263,11 @@ export function SeverityTrendLineV3() {
         boxSizing: "border-box",
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
             {selectedMhe} reported most, mainly has red severity = 06
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#64748b" }}>
-            {footerDateLabel}
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8" }}>
+            {footerRange}
           </span>
         </div>
       </div>
