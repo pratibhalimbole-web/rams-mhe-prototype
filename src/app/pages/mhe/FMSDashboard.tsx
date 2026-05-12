@@ -79,6 +79,7 @@ import { SeverityTrendLineV3 } from "../../components/widgets/v3/SeverityTrendLi
 import { MachinesAttentionV3 } from "../../components/widgets/v3/MachinesAttentionV3";
 import { ImpactDonutV3 } from "../../components/widgets/v3/ImpactDonutV3";
 import { ImpactTrendRankedV3 } from "../../components/widgets/v3/ImpactTrendRankedV3";
+import { WarrantyExpiryTableV3 } from "../../components/widgets/v3/WarrantyExpiryTableV3";
 import { MonitoringCardV3 } from "../../components/widgets/v3/MonitoringCardV3";
 import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSplitCardV3";
 
@@ -2281,6 +2282,18 @@ export function FMSDashboard() {
           </div>
           <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
             <ImpactTrendRankedV3 />
+          </div>
+
+          {/* Section label */}
+          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+              COMMAND CENTER · IMDS
+            </span>
+          </div>
+
+          {/* Warranty / License Expiry Table */}
+          <div className="col-span-12">
+            <WarrantyExpiryTableV3 />
           </div>
         </div>
       )}
