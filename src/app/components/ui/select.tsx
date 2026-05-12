@@ -111,7 +111,7 @@ function SelectContent({
         <SelectPrimitive.Viewport
           style={{
             padding: "var(--spacing-1)",
-            width: position === "popper" ? "var(--radix-select-trigger-width)" : undefined,
+            minWidth: position === "popper" ? "var(--radix-select-trigger-width)" : undefined,
           }}
         >
           {children}

@@ -1,7 +1,7 @@
-import React from "react";
-import chevronIcon from "../../../../assets/icon-chevron-down.png";
+import React, { useState } from "react";
 import truckIcon from "../../../../assets/mhe-icon-truck.png";
 import batteryIcon from "../../../../assets/mhe-icon-battery.png";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 const mheItems = [
   { id: "MHE-001", lastInspection: "Apr 20, 2026", mostIssues: "Battery", done: 12, skipped: 9, red: 2, amber: 4, green: 3 },
@@ -27,7 +27,21 @@ function SeverityDots({ red, amber, green }: { red: number; amber: number; green
   );
 }
 
+const filterStyle: React.CSSProperties = {
+  height: "32px",
+  width: "auto",
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: "6px",
+  padding: "0 13px",
+  fontSize: "10px",
+  color: "#0f172a",
+  fontFamily: "Inter, sans-serif",
+  fontWeight: 400,
+};
+
 export function MachinesAttentionV3() {
+  const [mheType, setMheType] = useState("forklift");
   return (
     <div style={{
       background: "#ffffff",
@@ -58,14 +72,14 @@ export function MachinesAttentionV3() {
             Inspection workload by operator
           </span>
         </div>
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          height: 32, padding: "0 13px", background: "#ffffff",
-          border: "1px solid #e2e8f0", borderRadius: 6, flexShrink: 0, gap: 8, cursor: "pointer",
-        }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, color: "#0f172a", whiteSpace: "nowrap" }}>Forklift</span>
-          <img src={chevronIcon} alt="" style={{ width: 16, height: 16 }} />
-        </div>
+        <Select value={mheType} onValueChange={setMheType}>
+          <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="forklift" style={{ whiteSpace: "nowrap" }}>Forklift</SelectItem>
+            <SelectItem value="pallet_jack" style={{ whiteSpace: "nowrap" }}>Pallet Jack</SelectItem>
+            <SelectItem value="reach_truck" style={{ whiteSpace: "nowrap" }}>Reach Truck</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Body — max 2 items visible, scroll for more */}

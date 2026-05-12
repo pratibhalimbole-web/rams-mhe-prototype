@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { PieChart, Pie, Cell, Sector } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../ui/chart";
 import type { ChartConfig } from "../../ui/chart";
-import chevronIcon from "../../../../assets/icon-chevron-down.png";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 const donutData = [
   { name: "No Issues", value: 18, fill: "#dbeafe" },
@@ -42,33 +42,24 @@ function renderActiveShape(props: any) {
   );
 }
 
-function DropdownButton({ label }: { label: string }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        height: "32px",
-        background: "#ffffff",
-        border: "1px solid #e2e8f0",
-        borderRadius: "6px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 13px",
-        boxSizing: "border-box",
-        cursor: "pointer",
-      }}
-    >
-      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", color: "#0f172a", whiteSpace: "nowrap" }}>
-        {label}
-      </span>
-      <img src={chevronIcon} alt="" style={{ width: "16px", height: "16px" }} />
-    </div>
-  );
-}
+
+const filterStyle: React.CSSProperties = {
+  height: "32px",
+  width: "auto",
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: "6px",
+  padding: "0 13px",
+  fontSize: "10px",
+  color: "#0f172a",
+  fontFamily: "Inter, sans-serif",
+  fontWeight: 400,
+};
 
 export function ImpactDonutV3() {
   const [activeIndex, setActiveIndex] = useState(maxIndex);
+  const [zone, setZone] = useState("all_zones");
+  const [type, setType] = useState("all_types");
 
   return (
     <div style={{
@@ -100,9 +91,24 @@ export function ImpactDonutV3() {
             Stacked impact events by severity level
           </span>
         </div>
-        <div style={{ display: "flex", gap: "12px", alignItems: "center", flexShrink: 0, width: "201px" }}>
-          <DropdownButton label="All Zones" />
-          <DropdownButton label="All Types" />
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexShrink: 0 }}>
+          <Select value={zone} onValueChange={setZone}>
+            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all_zones" style={{ whiteSpace: "nowrap" }}>All Zones</SelectItem>
+              <SelectItem value="zone_a" style={{ whiteSpace: "nowrap" }}>Zone A</SelectItem>
+              <SelectItem value="zone_b" style={{ whiteSpace: "nowrap" }}>Zone B</SelectItem>
+              <SelectItem value="zone_c" style={{ whiteSpace: "nowrap" }}>Zone C</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all_types" style={{ whiteSpace: "nowrap" }}>All Types</SelectItem>
+              <SelectItem value="forklift" style={{ whiteSpace: "nowrap" }}>Forklift</SelectItem>
+              <SelectItem value="pallet_jack" style={{ whiteSpace: "nowrap" }}>Pallet Jack</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

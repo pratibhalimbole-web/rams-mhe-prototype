@@ -1,47 +1,58 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
-import chevronIcon from "../../../../assets/icon-chevron-down.png";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
-const chartData = [
-  { date: "Mar 14", value: 2,  totalInspection: 2, operatorInvolved: 2, noIssues: 1, green: 1, amber: 0, red: 0 },
-  { date: "Mar 15", value: 4,  totalInspection: 3, operatorInvolved: 2, noIssues: 2, green: 1, amber: 0, red: 0 },
-  { date: "Mar 16", value: 5,  totalInspection: 3, operatorInvolved: 3, noIssues: 6, green: 2, amber: 1, red: 2 },
-  { date: "Mar 17", value: 8,  totalInspection: 4, operatorInvolved: 3, noIssues: 3, green: 1, amber: 2, red: 1 },
-  { date: "Mar 18", value: 10, totalInspection: 5, operatorInvolved: 4, noIssues: 4, green: 2, amber: 1, red: 2 },
-  { date: "Mar 19", value: 12, totalInspection: 6, operatorInvolved: 4, noIssues: 5, green: 2, amber: 2, red: 1 },
-  { date: "Mar 20", value: 14, totalInspection: 5, operatorInvolved: 4, noIssues: 4, green: 2, amber: 1, red: 1 },
-  { date: "Mar 21", value: 16, totalInspection: 6, operatorInvolved: 5, noIssues: 5, green: 2, amber: 1, red: 2 },
-  { date: "Mar 22", value: 17, totalInspection: 7, operatorInvolved: 5, noIssues: 6, green: 2, amber: 2, red: 1 },
-  { date: "Mar 23", value: 19, totalInspection: 8, operatorInvolved: 6, noIssues: 6, green: 3, amber: 2, red: 2 },
-];
+const MHE_LIST = Array.from({ length: 12 }, (_, i) => `MHE_${String(i + 1).padStart(2, "0")}`);
 
-function DropdownButton({ label, width }: { label: string; width: number }) {
-  return (
-    <div
-      style={{
-        width,
-        height: "32px",
-        background: "#ffffff",
-        border: "1px solid #e2e8f0",
-        borderRadius: "6px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 13px",
-        boxSizing: "border-box",
-        cursor: "pointer",
-        flexShrink: 0,
-      }}
-    >
-      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", color: "#0f172a", whiteSpace: "nowrap" }}>
-        {label}
-      </span>
-      <img src={chevronIcon} alt="" style={{ width: "16px", height: "16px" }} />
-    </div>
-  );
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+
+function generateData(mhe: string, dateRange: string) {
+  const seed = mhe.charCodeAt(4) * 1000 + mhe.charCodeAt(5) + dateRange.length;
+  const rand = seededRandom(seed);
+
+  if (dateRange === "last_24_hours") {
+    return Array.from({ length: 12 }, (_, i) => ({
+      date: `${String(i * 2).padStart(2, "0")}:00`,
+      value: Math.round(2 + rand() * 18),
+      totalInspection: Math.round(1 + rand() * 7),
+      operatorInvolved: Math.round(1 + rand() * 5),
+      noIssues: Math.round(1 + rand() * 6),
+      green: Math.round(rand() * 3),
+      amber: Math.round(rand() * 2),
+      red: Math.round(rand() * 2),
+    }));
+  } else if (dateRange === "last_7_days") {
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => ({
+      date: day,
+      value: Math.round(2 + rand() * 18),
+      totalInspection: Math.round(2 + rand() * 8),
+      operatorInvolved: Math.round(1 + rand() * 6),
+      noIssues: Math.round(1 + rand() * 6),
+      green: Math.round(rand() * 3),
+      amber: Math.round(rand() * 3),
+      red: Math.round(rand() * 2),
+    }));
+  } else {
+    return Array.from({ length: 30 }, (_, i) => ({
+      date: `${i + 1}`,
+      value: Math.round(2 + rand() * 18),
+      totalInspection: Math.round(2 + rand() * 8),
+      operatorInvolved: Math.round(1 + rand() * 6),
+      noIssues: Math.round(1 + rand() * 6),
+      green: Math.round(rand() * 3),
+      amber: Math.round(rand() * 3),
+      red: Math.round(rand() * 2),
+    }));
+  }
 }
 
 function CustomTooltip({ active, payload }: any) {
@@ -56,40 +67,24 @@ function CustomTooltip({ active, payload }: any) {
       boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
       minWidth: "203px",
     }}>
-      {/* Header row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "6px", borderBottom: "0.64px solid #e2e8f0", marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div style={{ width: "9px", height: "20px", background: "#2563eb", borderRadius: "4px", flexShrink: 0 }} />
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", color: "#0a0a0a" }}>{d.date.replace("Mar", "March")}</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", color: "#0a0a0a" }}>{d.date}</span>
         </div>
-        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "10px", color: "#0a0a0a" }}>MHE_02</span>
       </div>
-
-      {/* Stats */}
       <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
-        {[
-          ["Total Inspection:", String(d.totalInspection).padStart(2, "0")],
-          ["Operator Involved:", String(d.operatorInvolved).padStart(2, "0")],
-        ].map(([label, val]) => (
+        {([["Total Inspection:", String(d.totalInspection).padStart(2, "0")], ["Operator Involved:", String(d.operatorInvolved).padStart(2, "0")]] as [string, string][]).map(([label, val]) => (
           <div key={label} style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", color: "#0a0a0a" }}>{label}</span>
             <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "10px", color: "#0a0a0a" }}>{val}</span>
           </div>
         ))}
       </div>
-
-      {/* Divider */}
       <div style={{ height: "0.64px", background: "#e2e8f0", marginBottom: "6px" }} />
-
-      {/* Severity breakdown */}
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: "10px", color: "#0a0a0a", marginBottom: "2px" }}>Severity Breakdown</span>
-        {[
-          ["No Issues:", String(d.noIssues).padStart(2, "0")],
-          ["Green:", String(d.green).padStart(2, "0")],
-          ["Amber:", String(d.amber).padStart(2, "0")],
-          ["Red:", String(d.red).padStart(2, "0")],
-        ].map(([label, val]) => (
+        {([["No Issues:", String(d.noIssues).padStart(2, "0")], ["Green:", String(d.green).padStart(2, "0")], ["Amber:", String(d.amber).padStart(2, "0")], ["Red:", String(d.red).padStart(2, "0")]] as [string, string][]).map(([label, val]) => (
           <div key={label} style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", color: "#0a0a0a" }}>{label}</span>
             <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "10px", color: "#0a0a0a" }}>{val}</span>
@@ -100,7 +95,31 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
+const filterStyle: React.CSSProperties = {
+  height: "32px",
+  width: "auto",
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: "6px",
+  padding: "0 13px",
+  fontSize: "10px",
+  color: "#0f172a",
+  fontFamily: "Inter, sans-serif",
+  fontWeight: 400,
+};
+
 export function SeverityTrendLineV3() {
+  const [selectedMhe, setSelectedMhe] = useState("MHE_02");
+  const [dateRange, setDateRange] = useState("last_24_hours");
+
+  const chartData = useMemo(() => generateData(selectedMhe, dateRange), [selectedMhe, dateRange]);
+
+  const xAxisInterval = dateRange === "last_24_hours" ? 2 : dateRange === "last_7_days" ? 0 : 4;
+
+  const footerDateLabel = dateRange === "last_24_hours" ? "Past 24 hours"
+    : dateRange === "last_7_days" ? "Past 7 days"
+    : "Past 30 days";
+
   return (
     <div style={{
       background: "#ffffff",
@@ -131,9 +150,27 @@ export function SeverityTrendLineV3() {
             Inspection severity patterns across recent MHE inspections.
           </span>
         </div>
-        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <DropdownButton label="MHE_02" width={135} />
-          <DropdownButton label="Last 30 Days" width={115} />
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <Select value={selectedMhe} onValueChange={setSelectedMhe}>
+            <SelectTrigger style={filterStyle}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MHE_LIST.map((mhe) => (
+                <SelectItem key={mhe} value={mhe} style={{ whiteSpace: "nowrap" }}>{mhe}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger style={filterStyle}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="last_24_hours" style={{ whiteSpace: "nowrap" }}>Last 24 Hours</SelectItem>
+              <SelectItem value="last_7_days" style={{ whiteSpace: "nowrap" }}>Last 7 Days</SelectItem>
+              <SelectItem value="last_30_days" style={{ whiteSpace: "nowrap" }}>Last 30 Days</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -148,6 +185,7 @@ export function SeverityTrendLineV3() {
               axisLine={false}
               tickLine={false}
               dy={6}
+              interval={xAxisInterval}
             />
             <YAxis
               domain={[0, 20]}
@@ -159,11 +197,12 @@ export function SeverityTrendLineV3() {
             />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }} />
             <Line
-              type="linear"
+              type="monotone"
               dataKey="value"
               stroke="#2563eb"
               strokeWidth={1.5}
               strokeDasharray="5 5"
+              strokeLinecap="round"
               dot={{ fill: "#2563eb", r: 3, strokeWidth: 0 }}
               activeDot={{ fill: "#2563eb", r: 5, strokeWidth: 0 }}
             />
@@ -181,10 +220,10 @@ export function SeverityTrendLineV3() {
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
-            MHE_012 reported most, mainly has red severity = 06
+            {selectedMhe} reported most, mainly has red severity = 06
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#64748b" }}>
-            May 2 – May 8
+            {footerDateLabel}
           </span>
         </div>
       </div>

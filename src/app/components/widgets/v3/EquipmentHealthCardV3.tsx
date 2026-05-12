@@ -1,6 +1,6 @@
-import React from "react";
-import chevronIcon from "../../../../assets/icon-chevron-down.png";
+import React, { useState } from "react";
 import redIcon from "../../../../assets/severity-icon-red.png";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import greenIcon from "../../../../assets/severity-icon-green.png";
 import amberIcon from "../../../../assets/severity-icon-amber.png";
 import noIssuesIcon from "../../../../assets/severity-icon-noissues.png";
@@ -12,7 +12,21 @@ const severityStats = [
   { icon: noIssuesIcon, label: "No Issues", value: "90", border: true },
 ];
 
+const filterStyle: React.CSSProperties = {
+  height: "32px",
+  width: "auto",
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: "6px",
+  padding: "0 13px",
+  fontSize: "10px",
+  color: "#0f172a",
+  fontFamily: "Inter, sans-serif",
+  fontWeight: 400,
+};
+
 export function EquipmentHealthCardV3() {
+  const [mheType, setMheType] = useState("forklift");
   return (
     <div style={{
       background: "#ffffff",
@@ -43,14 +57,14 @@ export function EquipmentHealthCardV3() {
             Fleet Equipment Health Distribution
           </span>
         </div>
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          height: 32, padding: "0 13px", background: "#ffffff",
-          border: "1px solid #e2e8f0", borderRadius: 6, flexShrink: 0, gap: 8, cursor: "pointer",
-        }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, color: "#0f172a", whiteSpace: "nowrap" }}>Forklift</span>
-          <img src={chevronIcon} alt="" style={{ width: 16, height: 16 }} />
-        </div>
+        <Select value={mheType} onValueChange={setMheType}>
+          <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="forklift" style={{ whiteSpace: "nowrap" }}>Forklift</SelectItem>
+            <SelectItem value="pallet_jack" style={{ whiteSpace: "nowrap" }}>Pallet Jack</SelectItem>
+            <SelectItem value="reach_truck" style={{ whiteSpace: "nowrap" }}>Reach Truck</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Content */}
@@ -65,14 +79,22 @@ export function EquipmentHealthCardV3() {
         {/* Parts Healthy Comparison */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 12, lineHeight: "19.5px", color: "#0f172a" }}>Parts Heathy Comparison:</span>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 0" }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b" }}>Most Red Severity</span>
               <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, lineHeight: "20px", color: "#0f172a" }}>Battery</span>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b" }}>Most Green Severity</span>
               <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, lineHeight: "20px", color: "#0f172a" }}>Light</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b" }}>Most Amber Issues</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, lineHeight: "20px", color: "#0f172a" }}>Tyres</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b" }}>No Issue at Parts</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, lineHeight: "20px", color: "#0f172a" }}>Engine</span>
             </div>
           </div>
         </div>
