@@ -179,16 +179,16 @@ export function ImpactDonutV3() {
       {/* Insight footer */}
       <div style={{
         borderTop: "1px solid #f1f5f9",
-        padding: "11px 14px 0 14px",
+        padding: "11px 16px 0 16px",
         flexShrink: 0,
         height: "59.5px",
         boxSizing: "border-box",
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", lineHeight: "16.5px", color: "#0f172a", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
             MHE_012 reported most, mainly has red severity = 06
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8" }}>
             May 1 – May 7 2024
           </span>
         </div>
