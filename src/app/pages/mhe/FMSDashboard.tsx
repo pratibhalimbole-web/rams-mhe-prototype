@@ -58,6 +58,12 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  IdCard,
+  FileWarning,
+  Trophy,
+  Award,
+  ShieldAlert,
+  ClipboardCheck,
 } from "lucide-react";
 import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
@@ -66,6 +72,15 @@ import { KpiCard } from "../../components/widgets/KpiCard";
 import { KpiExpandPanel } from "../../components/widgets/KpiExpandPanel";
 import { MheInsightPanel } from "../../components/widgets/MheInsightPanel";
 import { MachinesRequiringInspectionAttention } from "../../components/widgets/MachinesRequiringInspectionAttention";
+import { CriticalIssuesBanner } from "../../components/widgets/CriticalIssuesBanner";
+import { KpiCardV3 } from "../../components/widgets/v3/KpiCardV3";
+import { EquipmentHealthCardV3 } from "../../components/widgets/v3/EquipmentHealthCardV3";
+import { SeverityTrendLineV3 } from "../../components/widgets/v3/SeverityTrendLineV3";
+import { MachinesAttentionV3 } from "../../components/widgets/v3/MachinesAttentionV3";
+import { ImpactDonutV3 } from "../../components/widgets/v3/ImpactDonutV3";
+import { ImpactTrendRankedV3 } from "../../components/widgets/v3/ImpactTrendRankedV3";
+import { MonitoringCardV3 } from "../../components/widgets/v3/MonitoringCardV3";
+import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSplitCardV3";
 
 // ─── Design System Colors ────────────────────────────────────────────────────
 const COLORS = {
@@ -920,6 +935,22 @@ export function FMSDashboard() {
             }}
           >
             Variation 2
+          </button>
+          <button
+            onClick={() => setActiveTab("variation3")}
+            style={{
+              padding: "12px 0",
+              fontSize: "14px",
+              fontWeight: "500",
+              border: "none",
+              background: "none",
+              cursor: "pointer",
+              color: activeTab === "variation3" ? "#2563EB" : "#6B7280",
+              borderBottom: activeTab === "variation3" ? "2px solid #2563EB" : "2px solid transparent",
+              transition: "all 0.2s ease",
+            }}
+          >
+            Variation 3
           </button>
         </div>
       </div>
@@ -2136,6 +2167,121 @@ export function FMSDashboard() {
               },
             ]}
           />
+        </div>
+      )}
+
+      {/* ── Variation 3: Command Center Overview ── */}
+      {activeTab === "variation3" && (
+        <div className="grid grid-cols-12 gap-6">
+          {/* Critical Alert Banner */}
+          <div className="col-span-12">
+            <CriticalIssuesBanner count={11} trendNote="↑ 3 new today" />
+          </div>
+
+          {/* Section label */}
+          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+              FMS · COMMAND CENTER
+            </span>
+          </div>
+
+          {/* Row 2 — 4 KPI cards */}
+          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+            <KpiCardV3 label="Fleet Size"         value="42"  description="Total machines in operation" icon={Truck} />
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+            <KpiCardV3 label="Fleet Utilization"  value="78%" description="Percentage active equipment" icon={Activity} />
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+            <KpiCardV3 label="Fleet Safety Score" value="92%" description="Safety performance rating"   icon={ShieldCheck} />
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+            <KpiCardV3 label="Sensor Health"      value="95%" description="Active sensors percentage"   icon={Wifi} />
+          </div>
+
+          {/* Section label */}
+          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+              FMS · MEPS
+            </span>
+          </div>
+
+          {/* Row 3 — Monitoring strip */}
+          <div className="col-span-12">
+            <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden", height: "154px" }}>
+              <div className="grid grid-cols-1 xl:grid-cols-4 divide-y xl:divide-y-0 xl:divide-x" style={{ height: "100%", borderColor: "#e2e8f0" }}>
+                <MonitoringSplitCardV3
+                  icon={ShieldAlert}
+                  title="Expiry Monitoring"
+                  metrics={[
+                    { label: "Operator License", value: "04", suffix: "/ 12" },
+                    { label: "MHE Warranty",     value: "04", suffix: "/ 40" },
+                  ]}
+                  actionLabel="Renew All"
+                />
+                <MonitoringSplitCardV3
+                  icon={ClipboardCheck}
+                  title="Inspection Performance"
+                  metrics={[
+                    { label: "Performed", value: "124" },
+                    { label: "Skipped",   value: "38"  },
+                  ]}
+                  footerCaption="76% completion rate this week"
+                />
+                <MonitoringCardV3
+                  icon={Trophy}
+                  title="Top Operator Productivity :"
+                  highlight="Abhishek Sharma"
+                  value="94.55"
+                  suffix="Score"
+                  progress={91}
+                  caption="Ranked by productivity score"
+                />
+                <MonitoringCardV3
+                  icon={Award}
+                  title="Top MHE Productivity :"
+                  highlight="MHE 05"
+                  value="90"
+                  suffix="Score"
+                  progress={84}
+                  caption="Ranked by productivity score"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section label */}
+          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+              FMS · RTSS
+            </span>
+          </div>
+
+          {/* Row 4 — Severity trend + Fleet status */}
+          <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
+            <SeverityTrendLineV3 />
+          </div>
+          <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
+            <ImpactDonutV3 />
+          </div>
+
+          {/* Section label */}
+          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+              COMMAND CENTER · RTSS · IMDS
+            </span>
+          </div>
+
+          {/* Row 5 — 3 Operational widgets */}
+          <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
+            <MachinesAttentionV3 />
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
+            <EquipmentHealthCardV3 />
+          </div>
+          <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
+            <ImpactTrendRankedV3 />
+          </div>
         </div>
       )}
     </div>
