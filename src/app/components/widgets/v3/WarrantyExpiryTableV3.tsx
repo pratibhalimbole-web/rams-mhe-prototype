@@ -61,7 +61,11 @@ const filterStyle: React.CSSProperties = {
   fontWeight: 400,
 };
 
-export function WarrantyExpiryTableV3() {
+interface WarrantyExpiryTableV3Props {
+  onRenew?: (id: string, type: "mhe" | "operator") => void;
+}
+
+export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
   const [category, setCategory] = useState<"mhe" | "operator">("operator");
   const [page, setPage] = useState(1);
 
@@ -188,13 +192,16 @@ export function WarrantyExpiryTableV3() {
                 <td style={{ ...tdStyle, color: "#64748b" }}>{row.days} Days</td>
                 <td style={tdStyle}><StatusBadge status={row.status} /></td>
                 <td style={tdStyle}>
-                  <span style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 500,
-                    fontSize: 13,
-                    color: "#2563eb",
-                    cursor: "pointer",
-                  }}>
+                  <span
+                    onClick={() => onRenew?.(row.id, category)}
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontWeight: 500,
+                      fontSize: 13,
+                      color: "#2563eb",
+                      cursor: "pointer",
+                    }}
+                  >
                     Renew
                   </span>
                 </td>

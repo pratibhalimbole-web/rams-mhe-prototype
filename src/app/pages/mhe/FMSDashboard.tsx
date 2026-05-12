@@ -502,6 +502,11 @@ const mockOperators: Record<string, OperatorInfo> = {
   "OP-003": { operatorId: "OP-003", name: "Rajesh Kumar", email: "rajesh.kumar@company.com", designation: "Warehouse Manager" },
   "OP-004": { operatorId: "OP-004", name: "Anjali Patel", email: "anjali.patel@company.com", designation: "Senior Operator" },
   "OP-005": { operatorId: "OP-005", name: "Suresh Reddy", email: "suresh.reddy@company.com", designation: "Equipment Handler" },
+  "OP-008": { operatorId: "OP-008", name: "Rahul Sharma", email: "rahul.sharma@company.com", designation: "Forklift Operator" },
+  "OP-012": { operatorId: "OP-012", name: "Priya Kumar", email: "priya.kumar@company.com", designation: "Material Handler" },
+  "OP-019": { operatorId: "OP-019", name: "Vikram Singh", email: "vikram.singh@company.com", designation: "Warehouse Operator" },
+  "OP-021": { operatorId: "OP-021", name: "Meera Nair", email: "meera.nair@company.com", designation: "Equipment Handler" },
+  "OP-027": { operatorId: "OP-027", name: "Arjun Das", email: "arjun.das@company.com", designation: "Senior Forklift Operator" },
 };
 
 function OperatorLicenseExpiryDrawer({
@@ -1484,24 +1489,6 @@ export function FMSDashboard() {
         </Card>
       </div>
 
-      {/* License Renew Drawer */}
-      <LicenseRenewDrawer
-        isOpen={isRenewDrawerOpen}
-        onClose={() => {
-          setIsRenewDrawerOpen(false);
-          setSelectedMheForRenewal(null);
-        }}
-        mheId={selectedMheForRenewal}
-      />
-
-      <OperatorLicenseExpiryDrawer
-        isOpen={isLicenseDrawerOpen}
-        onClose={() => {
-          setIsLicenseDrawerOpen(false);
-          setSelectedOperatorForLicense(null);
-        }}
-        operatorId={selectedOperatorForLicense}
-      />
         </div>
       )}
 
@@ -2293,10 +2280,38 @@ export function FMSDashboard() {
 
           {/* Warranty / License Expiry Table */}
           <div className="col-span-12">
-            <WarrantyExpiryTableV3 />
+            <WarrantyExpiryTableV3
+              onRenew={(id, type) => {
+                if (type === "operator") {
+                  setSelectedOperatorForLicense(id);
+                  setIsLicenseDrawerOpen(true);
+                } else {
+                  setSelectedMheForRenewal(id);
+                  setIsRenewDrawerOpen(true);
+                }
+              }}
+            />
           </div>
         </div>
       )}
+
+      {/* Shared drawers — rendered once at root, work across all variations */}
+      <LicenseRenewDrawer
+        isOpen={isRenewDrawerOpen}
+        onClose={() => {
+          setIsRenewDrawerOpen(false);
+          setSelectedMheForRenewal(null);
+        }}
+        mheId={selectedMheForRenewal}
+      />
+      <OperatorLicenseExpiryDrawer
+        isOpen={isLicenseDrawerOpen}
+        onClose={() => {
+          setIsLicenseDrawerOpen(false);
+          setSelectedOperatorForLicense(null);
+        }}
+        operatorId={selectedOperatorForLicense}
+      />
     </div>
   );
 }
