@@ -12,6 +12,7 @@ import { MonitoringCardV3 } from "../../components/widgets/v3/MonitoringCardV3";
 import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSplitCardV3";
 import { LicenseRenewDrawer, OperatorLicenseExpiryDrawer } from "./FMSDashboard";
 import { Variation1Tab } from "./Variation1Tab";
+import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
 
 const TABS = [
   { id: "variation1", label: "Variation 1" },
@@ -20,6 +21,7 @@ const TABS = [
 
 export function CommandDashboard() {
   const [activeTab, setActiveTab] = useState("variation1");
+  const [isIssuesModalOpen, setIsIssuesModalOpen] = useState(false);
   const [isRenewDrawerOpen, setIsRenewDrawerOpen] = useState(false);
   const [selectedMheForRenewal, setSelectedMheForRenewal] = useState<string | null>(null);
   const [isLicenseDrawerOpen, setIsLicenseDrawerOpen] = useState(false);
@@ -67,7 +69,11 @@ export function CommandDashboard() {
 
         {/* Critical Alert Banner */}
         <div className="col-span-12">
-          <CriticalIssuesBanner count={11} trendNote="↑ 3 new today" />
+          <CriticalIssuesBanner
+            count={11}
+            trendNote="↑ 3 new today"
+            onViewAll={() => setIsIssuesModalOpen(true)}
+          />
         </div>
 
         {/* Section — Command Center KPIs */}
@@ -206,6 +212,11 @@ export function CommandDashboard() {
       />
     </div>
       )}
+
+      <CriticalIssuesModal
+        isOpen={isIssuesModalOpen}
+        onClose={() => setIsIssuesModalOpen(false)}
+      />
     </div>
   );
 }

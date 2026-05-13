@@ -1,5 +1,5 @@
 import React from "react";
-import arrowIcon from "../../../assets/icon-arrow-right.png";
+import { ArrowRight } from "lucide-react";
 
 interface CriticalIssuesBannerProps {
   count: number;
@@ -138,7 +138,7 @@ export function CriticalIssuesBanner({
         }}
       >
         View All Issues
-        <img src={arrowIcon} alt="" style={{ width: "12px", height: "12px", display: "block" }} />
+        <ArrowRight style={{ width: "12px", height: "12px" }} />
       </button>
     </div>
   );
