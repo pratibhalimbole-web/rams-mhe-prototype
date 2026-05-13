@@ -2,10 +2,19 @@ import React, { useState } from "react";
 import { Truck } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
+const mheByType: Record<string, { id: string; label: string }[]> = {
+  forklift:    [{ id: "MHE-001", label: "MHE-001" }, { id: "MHE-002", label: "MHE-002" }],
+  reach_truck: [{ id: "MHE-003", label: "MHE-003" }, { id: "MHE-004", label: "MHE-004" }],
+  pallet_jack: [{ id: "MHE-005", label: "MHE-005" }, { id: "MHE-006", label: "MHE-006" }],
+};
+
 const rankedItems = [
-  { id: "MHE-001", lastInspection: "Apr 20, 2026", impactCount: 12, red: 20, amber: 20, green: 2, highlyImpacted: "Storage A" },
-  { id: "MHE-002", lastInspection: "Apr 18, 2026", impactCount: 9,  red: 14, amber: 12, green: 5, highlyImpacted: "Zone B" },
-  { id: "MHE-003", lastInspection: "Apr 15, 2026", impactCount: 7,  red: 10, amber: 8,  green: 3, highlyImpacted: "Dock C" },
+  { id: "MHE-001", type: "forklift",    lastInspection: "Apr 20, 2026", impactCount: 12, red: 20, amber: 20, green: 2, highlyImpacted: "Storage A", eventType: "Violation" },
+  { id: "MHE-002", type: "forklift",    lastInspection: "Apr 18, 2026", impactCount: 9,  red: 14, amber: 12, green: 5, highlyImpacted: "Zone B",     eventType: "Violation" },
+  { id: "MHE-003", type: "reach_truck", lastInspection: "Apr 15, 2026", impactCount: 7,  red: 10, amber: 8,  green: 3, highlyImpacted: "Dock C",     eventType: "Violation" },
+  { id: "MHE-004", type: "reach_truck", lastInspection: "Apr 12, 2026", impactCount: 5,  red: 8,  amber: 6,  green: 2, highlyImpacted: "Zone A",     eventType: "Violation" },
+  { id: "MHE-005", type: "pallet_jack", lastInspection: "Apr 10, 2026", impactCount: 4,  red: 6,  amber: 4,  green: 1, highlyImpacted: "Dock A",     eventType: "Violation" },
+  { id: "MHE-006", type: "pallet_jack", lastInspection: "Apr 8, 2026",  impactCount: 3,  red: 4,  amber: 3,  green: 1, highlyImpacted: "Storage B",  eventType: "Violation" },
 ];
 
 const filterStyle: React.CSSProperties = {
@@ -22,8 +31,17 @@ const filterStyle: React.CSSProperties = {
 };
 
 export function ImpactTrendRankedV3() {
-  const [zone, setZone] = useState("all_zones");
-  const [type, setType] = useState("all_types");
+  const [mheType, setMheType] = useState("");
+  const [mheId, setMheId] = useState("");
+
+  const mheOptions = mheType ? (mheByType[mheType] ?? []) : [];
+
+  const visibleItems = rankedItems.filter((item) => {
+    if (mheType && item.type !== mheType) return false;
+    if (mheId && item.id !== mheId) return false;
+    return true;
+  });
+
   return (
     <div style={{
       background: "#ffffff",
@@ -56,21 +74,20 @@ export function ImpactTrendRankedV3() {
           </span>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center", flexShrink: 0 }}>
-          <Select value={zone} onValueChange={setZone}>
-            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+          <Select value={mheType} onValueChange={(v) => { setMheType(v); setMheId(""); }}>
+            <SelectTrigger style={filterStyle}><SelectValue placeholder="MHE Type" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all_zones" style={{ whiteSpace: "nowrap" }}>All Zones</SelectItem>
-              <SelectItem value="zone_a" style={{ whiteSpace: "nowrap" }}>Zone A</SelectItem>
-              <SelectItem value="zone_b" style={{ whiteSpace: "nowrap" }}>Zone B</SelectItem>
-              <SelectItem value="zone_c" style={{ whiteSpace: "nowrap" }}>Zone C</SelectItem>
+              <SelectItem value="forklift"    style={{ whiteSpace: "nowrap" }}>Forklift</SelectItem>
+              <SelectItem value="reach_truck" style={{ whiteSpace: "nowrap" }}>Reach Truck</SelectItem>
+              <SelectItem value="pallet_jack" style={{ whiteSpace: "nowrap" }}>Pallet Jack</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+          <Select value={mheId} onValueChange={setMheId} disabled={!mheType}>
+            <SelectTrigger style={filterStyle}><SelectValue placeholder="Select MHE" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all_types" style={{ whiteSpace: "nowrap" }}>All Types</SelectItem>
-              <SelectItem value="forklift" style={{ whiteSpace: "nowrap" }}>Forklift</SelectItem>
-              <SelectItem value="pallet_jack" style={{ whiteSpace: "nowrap" }}>Pallet Jack</SelectItem>
+              {mheOptions.map((m) => (
+                <SelectItem key={m.id} value={m.id} style={{ whiteSpace: "nowrap" }}>{m.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -78,7 +95,7 @@ export function ImpactTrendRankedV3() {
 
       {/* Body — max 2 items visible, scroll for more */}
       <div style={{ maxHeight: "352px", overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "12px" }}>
-        {rankedItems.map((item, i) => (
+        {visibleItems.map((item, i) => (
           <div key={i} style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 13px", display: "flex", flexDirection: "column", gap: "8px", background: "#ffffff" }}>
 
             {/* Row 1: avatar + name + count badge */}
@@ -97,7 +114,7 @@ export function ImpactTrendRankedV3() {
 
             {/* Row 2: severity columns */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 0, padding: "6px 0" }}>
-              {([["#e11d48", "Red", item.red], ["#f59e0b", "Amber", item.amber], ["#16a34a", "Green", item.green]] as [string, string, number][]).map(([color, label, val], idx) => (
+              {([["#e11d48", "Critical", item.red], ["#f59e0b", "Medium", item.amber], ["#16a34a", "Low", item.green]] as [string, string, number][]).map(([color, label, val], idx) => (
                 <div key={label} style={{ display: "flex", flexDirection: "column", gap: 1, flex: 1 }}>
                   <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, lineHeight: "14.3px", color: "#0f172a" }}>
                     {String(val).padStart(2, "0")}
@@ -110,10 +127,14 @@ export function ImpactTrendRankedV3() {
               ))}
             </div>
 
-            {/* Row 3: highly impacted */}
-            <div style={{ borderTop: "1px solid #e2e8f0", padding: "8px 0", display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Highly Impacted:</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>{item.highlyImpacted}</span>
+            {/* Row 3: highly impacted + event type */}
+            <div style={{ borderTop: "1px solid #e2e8f0", padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
+                Highly Impacted: <b style={{ color: "#0f172a" }}>{item.highlyImpacted}</b>
+              </span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
+                Event Type: <b style={{ color: "#0f172a" }}>{item.eventType}</b>
+              </span>
             </div>
           </div>
         ))}

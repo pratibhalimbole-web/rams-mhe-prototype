@@ -5,17 +5,15 @@ import type { ChartConfig } from "../../ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 const donutData = [
-  { name: "No Issues", value: 18, fill: "#dbeafe" },
-  { name: "Green",     value: 12, fill: "#93c5fd" },
-  { name: "Amber",     value: 8,  fill: "#2563eb" },
-  { name: "Red",       value: 4,  fill: "#1e40af" },
+  { name: "Low",      value: 12, fill: "#93c5fd" },
+  { name: "Medium",   value: 8,  fill: "#2563eb" },
+  { name: "Critical", value: 4,  fill: "#1e40af" },
 ];
 
 const chartConfig = {
-  "No Issues": { label: "No Issues", color: "#dbeafe" },
-  "Green":     { label: "Green",     color: "#93c5fd" },
-  "Amber":     { label: "Amber",     color: "#2563eb" },
-  "Red":       { label: "Red",       color: "#1e40af" },
+  "Low":      { label: "Low",      color: "#93c5fd" },
+  "Medium":   { label: "Medium",   color: "#2563eb" },
+  "Critical": { label: "Critical", color: "#1e40af" },
 } satisfies ChartConfig;
 
 const maxIndex = donutData.reduce((maxI, item, i, arr) =>
@@ -187,7 +185,7 @@ export function ImpactDonutV3() {
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            18 of 42 units have no issues; only 4 flagged red — lowest severity group
+            4 units at Critical severity; 8 at Medium — 12 units remain at Low risk
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             May 7 – May 13, 2026

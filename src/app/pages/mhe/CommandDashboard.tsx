@@ -93,7 +93,7 @@ export function CommandDashboard() {
           <KpiCardV3 label="Fleet Safety Score" value="92%" description="Safety performance rating"   icon={ShieldCheck} />
         </div>
         <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-          <KpiCardV3 label="Sensor Health"      value="95%" description="Active sensors percentage"   icon={Wifi} />
+          <KpiCardV3 label="Active Sensors"      value="95" description="Active sensors percentage"   icon={Wifi} />
         </div>
 
         {/* Section — MEPS Monitoring Strip */}
@@ -117,16 +117,16 @@ export function CommandDashboard() {
               />
               <MonitoringSplitCardV3
                 icon={ClipboardCheck}
-                title="Inspection Performance"
+                title="Inspection Findings"
                 metrics={[
-                  { label: "Performed", value: "124" },
-                  { label: "Skipped",   value: "38"  },
+                  { label: "Reported", value: "124" },
+                  { label: "Closed",   value: "38"  },
                 ]}
                 footerCaption="76% completion rate this week"
               />
               <MonitoringCardV3
                 icon={Trophy}
-                title="Top Operator Productivity :"
+                title="Top Operator Performance :"
                 highlight="Abhishek Sharma"
                 value="94.55"
                 suffix="Score"
@@ -135,7 +135,7 @@ export function CommandDashboard() {
               />
               <MonitoringCardV3
                 icon={Award}
-                title="Top MHE Productivity :"
+                title="Top MHE Performance :"
                 highlight="MHE 05"
                 value="90"
                 suffix="Score"
