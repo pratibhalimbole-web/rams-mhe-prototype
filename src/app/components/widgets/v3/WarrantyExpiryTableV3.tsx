@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Truck, User } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 const mheData = [
@@ -186,7 +187,23 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
               </tr>
             ) : pageRows.map((row: any, i) => (
               <tr key={i}>
-                <td style={tdStyle}>{category === "mhe" ? row.type : row.name}</td>
+                <td style={tdStyle}>
+                  {category === "mhe" ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: 4, background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Truck style={{ width: 12, height: 12, color: "#1b59f8" }} />
+                      </div>
+                      {row.type}
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: 4, background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <User style={{ width: 12, height: 12, color: "#16a34a" }} />
+                      </div>
+                      {row.name}
+                    </div>
+                  )}
+                </td>
                 <td style={{ ...tdStyle, fontWeight: 600, color: "#2563eb" }}>{row.id}</td>
                 <td style={tdStyle}>{row.expiry}</td>
                 <td style={{ ...tdStyle, color: "#64748b" }}>{row.days} Days</td>

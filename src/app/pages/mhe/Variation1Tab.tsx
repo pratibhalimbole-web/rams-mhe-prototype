@@ -13,19 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "../../components/ui/table";
 import { PieChart, Pie, Cell, Sector, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Truck, Activity, ShieldCheck, Wifi, ChevronLeft, ChevronRight, AlertTriangle, Zap, Package, PackageSearch, User } from "lucide-react";
-
-// Map MHE type string → Lucide icon (same style as KPI cards)
-const MHE_ICON_MAP: Record<string, React.ElementType> = {
-  "Electric Forklift": Zap,
-  "Reach Truck":       Truck,
-  "Pallet Jack":       Package,
-  "Order Picker":      PackageSearch,
-  "Tow Tractor":       Truck,
-};
-function getMheIcon(type: string): React.ElementType {
-  return MHE_ICON_MAP[type] ?? Truck;
-}
+import { Truck, Activity, ShieldCheck, Wifi, ChevronLeft, ChevronRight, AlertTriangle, User } from "lucide-react";
 import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
 import { ImpactTrendByZoneAndMHE } from "../../components/widgets/ImpactTrendByZoneAndMHE";
@@ -278,11 +266,9 @@ export function Variation1Tab() {
                   <Card key={row.mheId} className="shadow-none border rounded-xl p-4 flex flex-col gap-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1">
-                        {(() => { const TypeIcon = getMheIcon(row.equipmentType); return (
-                          <div className="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#eff6ff" }}>
-                            <TypeIcon className="h-4 w-4" style={{ color: "#1b59f8" }} />
-                          </div>
-                        ); })()}
+                        <div className="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#eff6ff" }}>
+                          <Truck className="h-4 w-4" style={{ color: "#1b59f8" }} />
+                        </div>
                         <div className="flex flex-col">
                           <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] font-mono text-[color:var(--primary)]">{row.mheId}</p>
                           <span className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">Last Inspection: {formattedDate}</span>
@@ -370,14 +356,12 @@ export function Variation1Tab() {
                     .map((row) => (
                       <TableRow key={row.mheId} className="h-12 border-b border-border hover:bg-muted/50">
                         <TableCell className="px-6 text-[length:var(--text-sm)]">
-                          {(() => { const TypeIcon = getMheIcon(row.mheType); return (
-                            <div className="flex items-center gap-2">
-                              <div className="h-6 w-6 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#eff6ff" }}>
-                                <TypeIcon className="h-3 w-3" style={{ color: "#1b59f8" }} />
-                              </div>
-                              {row.mheType}
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#eff6ff" }}>
+                              <Truck className="h-3 w-3" style={{ color: "#1b59f8" }} />
                             </div>
-                          ); })()}
+                            {row.mheType}
+                          </div>
                         </TableCell>
                         <TableCell className="px-6 text-[length:var(--text-sm)] font-mono font-semibold text-[color:var(--primary)]">{row.mheId}</TableCell>
                         <TableCell className="px-6 text-[length:var(--text-sm)]">{new Date(row.licenseExpiry).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}</TableCell>
