@@ -1,5 +1,5 @@
 import React from "react";
-import blueIcon from "../../../../assets/meps-icon-blue.png";
+import { Activity } from "lucide-react";
 
 interface MonitoringSplitCardV3Props {
   icon?: React.ComponentType<{ className?: string }>;
@@ -35,7 +35,7 @@ export function MonitoringSplitCardV3({ title, metrics, actionLabel, footerCapti
             flexShrink: 0,
           }}
         >
-          <img src={blueIcon} alt="" style={{ width: "10px", height: "10px" }} />
+          <Activity style={{ width: "10px", height: "10px", color: "#2563eb" }} />
         </div>
         <span
           style={{

@@ -99,9 +99,9 @@ export function SecondarySidebar({
             </div>
           ) : (
             <>
-              {activeDomain.type === "mixed" && activeDomain.sharedFeatures && activeDomain.sharedFeatures.length > 0 && (
+              {activeDomain.type === "mixed" && activeDomain.topSharedFeatures && activeDomain.topSharedFeatures.length > 0 && (
                 <div className="flex flex-col" style={{ gap: "2px", marginBottom: "var(--spacing-2)" }}>
-                  {renderFeature(activeDomain.sharedFeatures[0])}
+                  {activeDomain.topSharedFeatures.map(renderFeature)}
                 </div>
               )}
               <Accordion
@@ -150,14 +150,14 @@ export function SecondarySidebar({
                   </AccordionItem>
                 ))}
               </Accordion>
-              {activeDomain.type === "mixed" && activeDomain.sharedFeatures && activeDomain.sharedFeatures.length > 1 && (
+              {activeDomain.type === "mixed" && activeDomain.sharedFeatures && activeDomain.sharedFeatures.length > 0 && (
                 <>
                   <div
                     className="border-t border-sidebar-border/50"
                     style={{ margin: "var(--spacing-2) 0" }}
                   />
                   <div className="flex flex-col" style={{ gap: "2px" }}>
-                    {activeDomain.sharedFeatures.slice(1).map(renderFeature)}
+                    {activeDomain.sharedFeatures.map(renderFeature)}
                   </div>
                 </>
               )}

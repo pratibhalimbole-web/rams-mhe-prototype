@@ -27,8 +27,9 @@ export type Domain = {
   label: string;
   icon: LucideIcon;
   type: "suite" | "flat" | "mixed";
-  content: Suite[] | Feature[]; // For 'suite' it's Suite[], for 'flat' it's Feature[]
-  sharedFeatures?: Feature[];
+  content: Suite[] | Feature[];
+  topSharedFeatures?: Feature[];  // rendered before suites
+  sharedFeatures?: Feature[];     // rendered after suites
 };
 
 export const domains: Domain[] = [
@@ -114,9 +115,25 @@ export const domains: Domain[] = [
           { id: "driver-analytics-rtss", label: "Driver Analytics" },
         ],
       },
+      {
+        id: "imds",
+        label: "IMDS",
+        items: [
+          { id: "checklist-config-imds", label: "Checklist Configuration" },
+          { id: "inspection-findings-imds", label: "Inspection Findings" },
+          { id: "mhe-analytics-imds", label: "MHE Analytics" },
+          { id: "cta-imds", label: "Call To Action" },
+          { id: "insights-imds", label: "Insights" },
+          { id: "inventory-imds", label: "Inventory" },
+          { id: "report-imds", label: "Report" },
+        ],
+      },
+    ],
+    topSharedFeatures: [
+      { id: "command-dashboard", label: "Dashboard" },
+      { id: "command-center", label: "Command Center" },
     ],
     sharedFeatures: [
-      { id: "command-center", label: "Command Center" },
       { id: "action-board", label: "Action Board" },
       { id: "escalation-logs", label: "Escalation Logs" },
       { id: "report", label: "Report" },

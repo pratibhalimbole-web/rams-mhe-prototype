@@ -183,13 +183,14 @@ export function ImpactDonutV3() {
         flexShrink: 0,
         height: "59.5px",
         boxSizing: "border-box",
+        overflow: "hidden",
       }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
-            MHE_012 reported most, mainly has red severity = 06
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            18 of 42 units have no issues; only 4 flagged red — lowest severity group
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8" }}>
-            May 1 – May 7 2024
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            May 7 – May 13, 2026
           </span>
         </div>
       </div>

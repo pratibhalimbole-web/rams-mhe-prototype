@@ -1,5 +1,5 @@
 import React from "react";
-import greenIcon from "../../../../assets/meps-icon-green.png";
+import { TrendingUp } from "lucide-react";
 
 interface MonitoringCardV3Props {
   icon?: React.ComponentType<{ className?: string }>;
@@ -37,7 +37,7 @@ export function MonitoringCardV3({ title, highlight, value, suffix, progress, ca
             flexShrink: 0,
           }}
         >
-          <img src={greenIcon} alt="" style={{ width: "10px", height: "10px" }} />
+          <TrendingUp style={{ width: "10px", height: "10px", color: "#16a34a" }} />
         </div>
         <span
           style={{

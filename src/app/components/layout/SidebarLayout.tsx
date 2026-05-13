@@ -66,9 +66,11 @@ function parsePathToSelection(pathname: string): SidebarSelection {
     const suiteId = parts[1] || null;
     const featureId = parts[2] || null;
 
-    // For mixed domains, check if this is a shared feature (no suite segment)
+    // For mixed domains, check if this is a top or bottom shared feature (no suite segment)
     if (domain.type === "mixed" && suiteId && !featureId) {
-      const isSharedFeature = domain.sharedFeatures?.some(f => f.id === suiteId);
+      const isSharedFeature =
+        domain.topSharedFeatures?.some(f => f.id === suiteId) ||
+        domain.sharedFeatures?.some(f => f.id === suiteId);
       if (isSharedFeature) {
         return { domainId, suiteId: null, featureId: suiteId };
       }
@@ -111,9 +113,11 @@ export function SidebarLayout() {
      if (activeSuite && activeFeatureId) {
         activeFeature = activeSuite.items.find(f => f.id === activeFeatureId) || null;
      }
-     // For mixed domains, check sharedFeatures if not found in suite
+     // For mixed domains, check topSharedFeatures and sharedFeatures if not found in suite
      if (!activeFeature && activeFeatureId && activeDomain.type === "mixed") {
-        activeFeature = activeDomain.sharedFeatures?.find(f => f.id === activeFeatureId) || null;
+        activeFeature =
+          activeDomain.topSharedFeatures?.find(f => f.id === activeFeatureId) ||
+          activeDomain.sharedFeatures?.find(f => f.id === activeFeatureId) || null;
      }
   } else {
      // Flat domain
@@ -171,8 +175,10 @@ export function SidebarLayout() {
 
   const handleFeatureSelect = (featureId: string) => {
     // Check if this is a shared feature in a mixed domain
-    const isSharedFeature = activeDomain.type === "mixed" &&
-                           activeDomain.sharedFeatures?.some(f => f.id === featureId);
+    const isSharedFeature = activeDomain.type === "mixed" && (
+      activeDomain.topSharedFeatures?.some(f => f.id === featureId) ||
+      activeDomain.sharedFeatures?.some(f => f.id === featureId)
+    );
 
     if (isSharedFeature) {
       // Shared features don't have suite prefix

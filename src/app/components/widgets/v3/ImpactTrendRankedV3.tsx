@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import truckIcon from "../../../../assets/mhe-icon-truck.png";
+import { Truck } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 const rankedItems = [
@@ -84,7 +84,7 @@ export function ImpactTrendRankedV3() {
             {/* Row 1: avatar + name + count badge */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <img src={truckIcon} alt="" style={{ width: 16, height: 16 }} />
+                <Truck style={{ width: 14, height: 14, color: "#2563eb" }} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                 <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "16px", color: "#0f172a", whiteSpace: "nowrap" }}>{item.id}</span>
@@ -126,13 +126,14 @@ export function ImpactTrendRankedV3() {
         flexShrink: 0,
         height: "59.5px",
         boxSizing: "border-box",
+        overflow: "hidden",
       }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
-            MHE_012 reported most, mainly has red severity = 06
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            MHE-001 leads with 12 impacts; Storage A most affected — 20 red severities
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11, lineHeight: "16.5px", color: "#1b59f8" }}>
-            May 1 – May 7 2024
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11, lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            Apr 15 – Apr 20, 2026
           </span>
         </div>
       </div>

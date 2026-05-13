@@ -1,15 +1,12 @@
 import React, { useState } from "react";
-import redIcon from "../../../../assets/severity-icon-red.png";
+import { AlertCircle, CheckCircle2, AlertTriangle, MinusCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import greenIcon from "../../../../assets/severity-icon-green.png";
-import amberIcon from "../../../../assets/severity-icon-amber.png";
-import noIssuesIcon from "../../../../assets/severity-icon-noissues.png";
 
 const severityStats = [
-  { icon: redIcon, label: "RED", value: "120", border: false },
-  { icon: greenIcon, label: "GREEN", value: "90", border: true },
-  { icon: amberIcon, label: "AMBER", value: "90", border: true },
-  { icon: noIssuesIcon, label: "No Issues", value: "90", border: true },
+  { icon: AlertCircle,  label: "RED",      value: "120", border: false, color: "#ef4444" },
+  { icon: CheckCircle2, label: "GREEN",    value: "90",  border: true,  color: "#22c55e" },
+  { icon: AlertTriangle,label: "AMBER",    value: "90",  border: true,  color: "#f59e0b" },
+  { icon: MinusCircle,  label: "No Issues",value: "90",  border: true,  color: "#94a3b8" },
 ];
 
 const filterStyle: React.CSSProperties = {
@@ -113,7 +110,7 @@ export function EquipmentHealthCardV3() {
                 {/* Icon + label */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 28, height: 28, background: "#f1f5f9", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <img src={stat.icon} alt="" style={{ width: 13, height: 13 }} />
+                    <stat.icon style={{ width: 13, height: 13, color: stat.color }} />
                   </div>
                   <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 9, lineHeight: "13.5px", color: "#64748b", letterSpacing: "0.36px", textTransform: "uppercase", whiteSpace: "nowrap" }}>{stat.label}</span>
                 </div>
@@ -132,13 +129,14 @@ export function EquipmentHealthCardV3() {
         flexShrink: 0,
         height: "59.5px",
         boxSizing: "border-box",
+        overflow: "hidden",
       }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
-            MHE_012 reported most, mainly has red severity = 06
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            Battery leads red severity at 120; Engine has no issues across 42 forklifts
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11, lineHeight: "16.5px", color: "#1b59f8" }}>
-            May 2 – May 8
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11, lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            May 7 – May 13, 2026
           </span>
         </div>
       </div>

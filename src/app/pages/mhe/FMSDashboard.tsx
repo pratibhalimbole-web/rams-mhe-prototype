@@ -64,7 +64,22 @@ import {
   Award,
   ShieldAlert,
   ClipboardCheck,
+  Zap,
+  Package,
+  PackageSearch,
+  User,
 } from "lucide-react";
+
+const MHE_ICON_MAP: Record<string, React.ElementType> = {
+  "Electric Forklift": Zap,
+  "Reach Truck":       Truck,
+  "Pallet Jack":       Package,
+  "Order Picker":      PackageSearch,
+  "Tow Tractor":       Truck,
+};
+function getMheIcon(type: string): React.ElementType {
+  return MHE_ICON_MAP[type] ?? Truck;
+}
 import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
 import { ImpactTrendByZoneAndMHE } from "../../components/widgets/ImpactTrendByZoneAndMHE";
@@ -84,7 +99,7 @@ import { MonitoringCardV3 } from "../../components/widgets/v3/MonitoringCardV3";
 import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSplitCardV3";
 
 // ─── Design System Colors ────────────────────────────────────────────────────
-const COLORS = {
+export const COLORS = {
   noIssues: "#1B59F8",
   healthy:  "#4C7DFF",
   warning:  "#8FB2FF",
@@ -92,14 +107,14 @@ const COLORS = {
 };
 
 // ─── Chart Configs ───────────────────────────────────────────────────────────
-const donutChartConfig = {
+export const donutChartConfig = {
   noIssues: { label: "No Issues",       color: COLORS.noIssues },
   healthy:  { label: "Healthy (Green)", color: COLORS.healthy  },
   warning:  { label: "Warning (Amber)", color: COLORS.warning  },
   critical: { label: "Critical (Red)",  color: COLORS.critical },
 } satisfies ChartConfig;
 
-const failureChartConfig = {
+export const failureChartConfig = {
   "No Issues": { label: "No Issues", color: "hsl(217, 98%, 54%)" },
   "Green":     { label: "Healthy",   color: "hsl(222, 84%, 62%)" },
   "Amber":     { label: "Warning",   color: "hsl(226, 75%, 68%)" },
@@ -107,7 +122,7 @@ const failureChartConfig = {
 } satisfies ChartConfig;
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
-const equipmentHealthDataByType: Record<string, any[]> = {
+export const equipmentHealthDataByType: Record<string, any[]> = {
   "Overall": [
     { name: "No Issues",      value: 20, inspections: 46, parts: 16, mhe: 10 },
     { name: "Healthy (Green)", value: 12, inspections: 28, parts: 12, mhe: 8  },
@@ -134,9 +149,9 @@ const equipmentHealthDataByType: Record<string, any[]> = {
   ],
 };
 
-const equipmentHealthData = equipmentHealthDataByType["Overall"];
+export const equipmentHealthData = equipmentHealthDataByType["Overall"];
 
-const componentFailureDataByType: Record<string, any[]> = {
+export const componentFailureDataByType: Record<string, any[]> = {
   "Electric Forklift": [
     { part: "Hydraulics", "No Issues": 12, Green: 5, Amber: 3, Red: 2, mhe: 10 },
     { part: "Battery",    "No Issues": 14, Green: 4, Amber: 4, Red: 3, mhe: 10 },
@@ -157,7 +172,7 @@ const componentFailureDataByType: Record<string, any[]> = {
   ],
 };
 
-const machinesInspectionData = [
+export const machinesInspectionData = [
   { mheId: "MHE-001", equipmentType: "Electric Forklift", redFindings: 2, amberFindings: 3, greenFindings: 5, parts: 10, lastInspection: "2026-04-20", part_issues: [{ part_name: "Battery", amber_count: 2, red_count: 1 }, { part_name: "Hydraulics", amber_count: 1, red_count: 1 }] },
   { mheId: "MHE-004", equipmentType: "Reach Truck", redFindings: 1, amberFindings: 2, greenFindings: 4, parts: 7,  lastInspection: "2026-04-18", part_issues: [{ part_name: "Fork", amber_count: 1, red_count: 1 }, { part_name: "Motor", amber_count: 1, red_count: 0 }] },
   { mheId: "MHE-012", equipmentType: "Electric Forklift", redFindings: 0, amberFindings: 4, greenFindings: 6, parts: 10, lastInspection: "2026-04-19", part_issues: [{ part_name: "Hydraulics", amber_count: 2, red_count: 0 }, { part_name: "Brakes", amber_count: 2, red_count: 0 }] },
@@ -165,7 +180,7 @@ const machinesInspectionData = [
   { mheId: "MHE-031", equipmentType: "Reach Truck", redFindings: 0, amberFindings: 1, greenFindings: 8, parts: 9,  lastInspection: "2026-04-21", part_issues: [{ part_name: "Motor", amber_count: 1, red_count: 0 }] },
 ];
 
-const warrantyExpiryData = [
+export const warrantyExpiryData = [
   { mheType: "Electric Forklift", mheId: "MHE-001", licenseExpiry: "2026-05-15", daysRemaining: 18,  status: "active"   },
   { mheType: "Reach Truck",       mheId: "MHE-002", licenseExpiry: "2026-05-05", daysRemaining: 8,   status: "expiring" },
   { mheType: "Pallet Jack",       mheId: "MHE-003", licenseExpiry: "2026-04-28", daysRemaining: 1,   status: "expiring" },
@@ -177,7 +192,7 @@ const warrantyExpiryData = [
   { mheType: "Order Picker",      mheId: "MHE-013", licenseExpiry: "2026-04-30", daysRemaining: 3,   status: "expiring" },
 ];
 
-const operatorLicenseData = [
+export const operatorLicenseData = [
   { operator: "Vikram Deshmukh", operatorId: "OP-001", licenseExpiry: "2026-05-10", daysRemaining: 13,  assignedMhe: "Electric Forklift", status: "active"   },
   { operator: "Priya Sharma",    operatorId: "OP-002", licenseExpiry: "2026-05-01", daysRemaining: 4,   assignedMhe: "Reach Truck",       status: "expiring" },
   { operator: "Rajesh Kumar",    operatorId: "OP-003", licenseExpiry: "2026-06-15", daysRemaining: 49,  assignedMhe: "Pallet Jack",       status: "active"   },
@@ -186,7 +201,7 @@ const operatorLicenseData = [
 ];
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
-function KPICard({
+export function KPICard({
   title,
   description,
   value,
@@ -218,7 +233,7 @@ function KPICard({
 }
 
 // ─── Status Badge (guideline pill pattern) ───────────────────────────────────
-function StatusBadge({ status }: { status: "active" | "expiring" | "expired" }) {
+export function StatusBadge({ status }: { status: "active" | "expiring" | "expired" }) {
   const cfg: Record<string, { color: string; bg: string; label: string }> = {
     active:   { color: "#16a34a", bg: "rgba(22,163,74,0.10)",  label: "Active"        },
     expiring: { color: "#d97706", bg: "rgba(217,119,6,0.10)",  label: "Expiring Soon" },
@@ -236,7 +251,7 @@ function StatusBadge({ status }: { status: "active" | "expiring" | "expired" }) 
 }
 
 // ─── License Renew Drawer Component ──────────────────────────────────────────
-function LicenseRenewDrawer({
+export function LicenseRenewDrawer({
   isOpen,
   onClose,
   mheId,
@@ -509,7 +524,7 @@ const mockOperators: Record<string, OperatorInfo> = {
   "OP-027": { operatorId: "OP-027", name: "Arjun Das", email: "arjun.das@company.com", designation: "Senior Forklift Operator" },
 };
 
-function OperatorLicenseExpiryDrawer({
+export function OperatorLicenseExpiryDrawer({
   isOpen,
   onClose,
   operatorId,
@@ -799,7 +814,7 @@ function OperatorLicenseExpiryDrawer({
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 export function FMSDashboard() {
-  const [activeTab, setActiveTab] = useState("variation1");
+  const [activeTab, setActiveTab] = useState("variation3");
   const [selectedEquipment, setSelectedEquipment] = useState("Electric Forklift");
   const [selectedHealthEquipment, setSelectedHealthEquipment] = useState("Overall");
   const [isRenewDrawerOpen, setIsRenewDrawerOpen] = useState(false);
@@ -1225,9 +1240,11 @@ export function FMSDashboard() {
                   <Card key={row.mheId} className="shadow-none border rounded-xl p-4 flex flex-col gap-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="h-9 w-9 rounded-lg bg-[var(--muted)] flex items-center justify-center flex-shrink-0">
-                          <Truck className="h-5 w-5 text-[color:var(--primary)]" />
-                        </div>
+                        {(() => { const TypeIcon = getMheIcon(row.equipmentType); return (
+                          <div className="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#eff6ff" }}>
+                            <TypeIcon className="h-4 w-4" style={{ color: "#1b59f8" }} />
+                          </div>
+                        ); })()}
                         <div className="flex flex-col">
                           <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] font-mono text-[color:var(--primary)]">
                             {row.mheId}
@@ -1342,7 +1359,16 @@ export function FMSDashboard() {
                       });
                       return (
                         <TableRow key={row.mheId} className="h-12 border-b border-border hover:bg-muted/50">
-                          <TableCell className="px-6 text-[length:var(--text-sm)]">{row.mheType}</TableCell>
+                          <TableCell className="px-6 text-[length:var(--text-sm)]">
+                            {(() => { const TypeIcon = getMheIcon(row.mheType); return (
+                              <div className="flex items-center gap-2">
+                                <div className="h-6 w-6 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#eff6ff" }}>
+                                  <TypeIcon className="h-3 w-3" style={{ color: "#1b59f8" }} />
+                                </div>
+                                {row.mheType}
+                              </div>
+                            ); })()}
+                          </TableCell>
                           <TableCell className="px-6 text-[length:var(--text-sm)] font-mono font-semibold text-[color:var(--primary)]">
                             {row.mheId}
                           </TableCell>
@@ -1451,7 +1477,12 @@ export function FMSDashboard() {
                     return (
                       <TableRow key={row.operatorId} className="h-12 border-b border-border hover:bg-muted/50">
                         <TableCell className="px-6 text-[length:var(--text-sm)] font-[var(--font-weight-medium)]">
-                          {row.operator}
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded flex items-center justify-center flex-shrink-0" style={{ background: "#f0fdf4" }}>
+                              <User className="h-3 w-3" style={{ color: "#16a34a" }} />
+                            </div>
+                            {row.operator}
+                          </div>
                         </TableCell>
                         <TableCell className="px-6 text-[length:var(--text-sm)] font-mono font-semibold text-[color:var(--primary)]">
                           {row.operatorId}

@@ -22,6 +22,7 @@ import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
 import { FMSDashboard } from "./pages/mhe/FMSDashboard";
+import { CommandDashboard } from "./pages/mhe/CommandDashboard";
 
 // Create a placeholder component for pages not yet implemented
 function PlaceholderPage({ title }: { title: string }) {
@@ -181,6 +182,10 @@ export const router = createBrowserRouter([
         element: <MHECommandCenter />,
       },
       {
+        path: "mhe/command-dashboard",
+        element: <CommandDashboard />,
+      },
+      {
         path: "mhe/fms",
         element: <FMS />,
       },
@@ -249,6 +254,36 @@ export const router = createBrowserRouter([
       {
         path: "mhe/rtss/driver-analytics-rtss",
         element: <PlaceholderPage title="Driver Analytics" />,
+      },
+
+      // MHE → IMDS routes
+      {
+        path: "mhe/imds/checklist-config-imds",
+        element: <PlaceholderPage title="Checklist Configuration" />,
+      },
+      {
+        path: "mhe/imds/inspection-findings-imds",
+        element: <PlaceholderPage title="Inspection Findings" />,
+      },
+      {
+        path: "mhe/imds/mhe-analytics-imds",
+        element: <PlaceholderPage title="MHE Analytics" />,
+      },
+      {
+        path: "mhe/imds/cta-imds",
+        element: <PlaceholderPage title="Call To Action" />,
+      },
+      {
+        path: "mhe/imds/insights-imds",
+        element: <PlaceholderPage title="Insights" />,
+      },
+      {
+        path: "mhe/imds/inventory-imds",
+        element: <PlaceholderPage title="Inventory" />,
+      },
+      {
+        path: "mhe/imds/report-imds",
+        element: <PlaceholderPage title="Report" />,
       },
 
       // MHE → Shared Features (not under any suite)
