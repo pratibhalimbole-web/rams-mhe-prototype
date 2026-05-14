@@ -28,6 +28,8 @@ import {
 } from "../ui/chart";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+type EventType = "Impact" | "Speed Violation" | "Near Miss" | "Unauthorized Access";
+
 interface ImpactEvent {
   timestamp: Date;
   zone: string;
@@ -36,7 +38,10 @@ interface ImpactEvent {
   severity: "High" | "Medium" | "Low";
   operatorName: string;
   rackId: string;
+  eventType: EventType;
 }
+
+const EVENT_TYPES: EventType[] = ["Impact", "Speed Violation", "Near Miss", "Unauthorized Access"];
 
 interface ChartDataPoint {
   date: string;
@@ -123,6 +128,7 @@ const generateMockImpactEvents = (): ImpactEvent[] => {
         severity: severities[Math.floor(Math.random() * severities.length)],
         operatorName: operators[Math.floor(Math.random() * operators.length)],
         rackId: racks[Math.floor(Math.random() * racks.length)],
+        eventType: EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)],
       });
     }
   }
@@ -134,13 +140,15 @@ const generateMockImpactEvents = (): ImpactEvent[] => {
 const transformDataByTotalEvents = (
   events: ImpactEvent[],
   selectedZone: string,
-  selectedMheType: string
+  selectedMheType: string,
+  selectedEventType: string
 ): ChartDataPoint[] => {
   // Filter events
   const filtered = events.filter(event => {
     const zoneMatch = selectedZone === "All Zones" || event.zone === selectedZone;
     const mheMatch = selectedMheType === "All Types" || event.mheType === selectedMheType;
-    return zoneMatch && mheMatch;
+    const eventMatch = selectedEventType === "All Events" || event.eventType === selectedEventType;
+    return zoneMatch && mheMatch && eventMatch;
   });
 
   // Group by date and aggregate total events
@@ -188,6 +196,7 @@ export function ImpactTrendByZoneAndMHE() {
   const allEvents = useMemo(() => generateMockImpactEvents(), []);
   const [selectedZone, setSelectedZone] = useState("All Zones");
   const [selectedMheType, setSelectedMheType] = useState("All Types");
+  const [selectedEventType, setSelectedEventType] = useState("All Events");
 
   // Get unique values for dropdowns
   const zones = useMemo(() => {
@@ -202,15 +211,16 @@ export function ImpactTrendByZoneAndMHE() {
 
   // Transform data - single dot per date showing total events
   const chartData = useMemo(() => {
-    return transformDataByTotalEvents(allEvents, selectedZone, selectedMheType);
-  }, [allEvents, selectedZone, selectedMheType]);
+    return transformDataByTotalEvents(allEvents, selectedZone, selectedMheType, selectedEventType);
+  }, [allEvents, selectedZone, selectedMheType, selectedEventType]);
 
   // Get top keys for legend
   const topKeys = useMemo(() => {
     const filtered = allEvents.filter(event => {
       const zoneMatch = selectedZone === "All Zones" || event.zone === selectedZone;
       const mheMatch = selectedMheType === "All Types" || event.mheType === selectedMheType;
-      return zoneMatch && mheMatch;
+      const eventMatch = selectedEventType === "All Events" || event.eventType === selectedEventType;
+      return zoneMatch && mheMatch && eventMatch;
     });
 
     const totals: { [key: string]: number } = {};
@@ -226,7 +236,7 @@ export function ImpactTrendByZoneAndMHE() {
   }, [allEvents, selectedZone, selectedMheType]);
 
   // Determine if in default state
-  const isDefaultState = selectedZone === "All Zones" && selectedMheType === "All Types";
+  const isDefaultState = selectedZone === "All Zones" && selectedMheType === "All Types" && selectedEventType === "All Events";
 
   // Chart configuration
   const chartConfig: ChartConfig = {
@@ -284,7 +294,7 @@ export function ImpactTrendByZoneAndMHE() {
         return null;
       }
 
-      const isDefaultView = selectedZone === "All Zones" && selectedMheType === "All Types";
+      const isDefaultView = selectedZone === "All Zones" && selectedMheType === "All Types" && selectedEventType === "All Events";
 
       // Group events by zone
       const zoneCount: { [zone: string]: number } = {};
@@ -524,10 +534,26 @@ export function ImpactTrendByZoneAndMHE() {
               Impact Trend by Zone & MHE
             </CardTitle>
             <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
-              Total impact events over time
+              {selectedEventType === "All Events" ? "Total events over time" : `${selectedEventType} events over time`}
             </CardDescription>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 whitespace-nowrap">
+            <div className="flex items-center gap-2">
+              <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">
+                Event Type:
+              </label>
+              <Select value={selectedEventType} onValueChange={setSelectedEventType}>
+                <SelectTrigger className="h-8 text-xs w-36">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All Events">All Events</SelectItem>
+                  {EVENT_TYPES.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center gap-2">
               <label className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-[var(--foreground)] whitespace-nowrap">
                 Zone:
@@ -572,7 +598,7 @@ export function ImpactTrendByZoneAndMHE() {
             {/* Custom Y-axis label — vertically centered, clear of plot area */}
             <div style={{ position: "absolute", left: 0, top: 16, bottom: 60, width: "18px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1 }}>
               <span style={{ fontSize: "12px", fontWeight: 500, color: "#64748B", letterSpacing: "0.01em", transform: "rotate(-90deg)", whiteSpace: "nowrap" }}>
-                IMPACT EVENTS
+                {selectedEventType === "All Events" ? "EVENTS" : selectedEventType.toUpperCase()}
               </span>
             </div>
             <ChartContainer config={chartConfig} style={{ height: "100%", paddingLeft: "18px" }}>
@@ -670,7 +696,7 @@ export function ImpactTrendByZoneAndMHE() {
         >
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0, lineHeight: "1.4" }}>
-              <span style={{ fontWeight: "600" }}>{insights.topZone}</span> reported most, mainly by <span style={{ fontWeight: "600" }}>{insights.secondaryZone}</span>
+              <span style={{ fontWeight: "600" }}>{insights.topZone}</span> reported the most{selectedEventType !== "All Events" ? ` ${selectedEventType}` : ""} events, mainly by <span style={{ fontWeight: "600" }}>{insights.secondaryZone}</span>
             </p>
             <p style={{ fontSize: "12px", fontWeight: "400", color: "#6B7280", margin: 0, lineHeight: "1.4" }}>
               {insights.dateRange}
