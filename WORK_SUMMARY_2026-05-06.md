@@ -1,187 +1,146 @@
-# Widget Insight Callout Enhancement — 2026-05-06
+# Work Summary - May 6, 2026
 
 ## Overview
-Enhanced three main dashboard visualization widgets with data-driven insight callouts at the bottom, following visual hierarchy principles: Title with purpose, Subtitle for context, Color-coded visualization, and Insight callout with actionable intelligence.
+Continued refinement of MHE dashboard widgets focusing on visual improvements, axis labeling, spacing adjustments, and legend/insight callout restructuring.
 
----
+## Widgets Modified
 
-## Widgets Enhanced
+### 1. MheImpactResponsibilityAnalysis Widget
+**File:** `/src/app/components/widgets/MheImpactResponsibilityAnalysis.tsx`
 
-### 1. **MHE Impact Responsibility Analysis** ✓
-**File:** `src/app/components/widgets/MheImpactResponsibilityAnalysis.tsx`
+#### Changes:
+- **X-axis Label**: Added "NO. OF EVENTS" label with increased bottom margin (50px) for visibility
+- **Layout Restructuring**: Separated legend and insight callout sections with full-width divider (borderTop: "1px solid var(--border)")
+  - Legend section: padding "16px 24px", no divider
+  - Insight callout: borderTop divider, padding "16px 24px"
+- **Visual Enhancement**: Increased stack size by reducing barCategoryGap from 15% to 5%
+- **Removed Elements**: Removed gray line above legends (previous borderBottom)
 
-**Changes:**
-- **Added Insight Calculation:** Analyzes filtered data to identify:
-  - Top MHE by total impact events
-  - Severity distribution (High, Medium, Low)
-  - Dominant severity pattern
-
-- **Updated Footer Design:**
-  - Separated legend from insight section
-  - Legend now displays color indicators (High/Medium/Low)
-  - Added insight callout with blue info icon
-  - Background: `#EFF6FF` (light blue)
-  - Border: `1px solid #DBEAFE`
-
-- **Insight Format:**
-  ```
-  "MHE-001 has the most impact events (12 total), primarily high severity (67%)"
-  ```
-
-**Visual Hierarchy:**
-- Title: "MHE Impact Responsibility Analysis"
-- Subtitle: "Stacked impact events by severity level"
-- Visualization: Horizontal stacked bar chart with color-coded severity
-- Insight: Bottom callout with actionable intelligence
-
----
-
-### 2. **MHE Inspection Severity Timeline** ✓
-**File:** `src/app/components/widgets/MheInspectionSeverityTimeline.tsx`
-
-**Changes:**
-- **Added Insight Calculation:** Analyzes heatmap data to identify:
-  - MHE with highest inspection count across date range
-  - Severity pattern (Red vs Amber findings)
-  - Key trend indicator
-
-- **Updated Footer Design:**
-  - Axis label: "No. of Inspections"
-  - Added insight callout with amber warning icon
-  - Background: `#FEF3C7` (light amber)
-  - Border: `1px solid #FCD34D`
-  - Icon color: `#D97706` (amber)
-
-- **Insight Format:**
-  ```
-  "MHE_012 has the most inspections, showing high severity findings"
-  ```
-
-**Visual Hierarchy:**
-- Title: "MHE Inspection Severity Timeline"
-- Subtitle: "Inspection severity patterns across recent MHE inspections"
-- Visualization: Heatmap with blue color intensity gradient
-- Insight: Bottom callout with actionable intelligence
-
----
-
-### 3. **Impact Trend by Zone & MHE** ✓
-**File:** `src/app/components/widgets/ImpactTrendByZoneAndMHE.tsx`
-*(Previously enhanced in prior session)*
-
-**Current State:**
-- Scatter chart with aggregated event counts
-- Custom dot markers with numeric labels
-- Smart tooltip positioning
-- Bottom legend with zone color indicators
-- **Note:** This widget already has comprehensive design but may benefit from insight callout in future iteration
-
----
-
-## Design Consistency
-
-### Color Coding for Insight Types
-| Type | Background | Border | Icon | Usage |
-|------|-----------|--------|------|-------|
-| Info (Blue) | `#EFF6FF` | `#DBEAFE` | `#2563EB` | General insights |
-| Warning (Amber) | `#FEF3C7` | `#FCD34D` | `#D97706` | Alerts/Warnings |
-
-### Typography Standards
-- Icon size: 16×16px
-- Font size: 12px
-- Font weight: 500
-- Line height: 1.4
-- Text color: Theme-matched (darker tone)
-
-### Layout
-- Padding: `8-12px` inside callout
-- Border radius: `6px`
-- Spacing from visualization: Inherent from sticky positioning
-- Responsive: Adapts to container width
-
----
-
-## Excluded Widgets
-The following widgets were identified as **list-format** and excluded from insight callout redesign:
-1. **RackWiseObservationSummary.tsx** - List of individual racks with metrics
-2. **MachinesRequiringInspectionAttention.tsx** - Inspector-wise breakdown with bars
-3. **MheInsightPanel.tsx** - Side panel component (modal)
-4. **KpiExpandPanel.tsx** - Expandable panel component
-5. **KpiCard.tsx** - Reusable card component (not a standalone widget)
-
----
-
-## Technical Implementation
-
-### Insight Data Generation
-Each widget uses a `useMemo` hook to calculate insights based on:
-1. Filtered data from current selection
-2. Aggregation of key metrics
-3. Comparison logic to determine patterns
-4. Natural language generation for user-friendly messaging
-
-### Example: Impact Responsibility Analysis
-```javascript
-const insights = useMemo(() => {
-  if (!hasData) return null;
-  
-  const topMhe = filteredData[0];
-  const totalHigh = filteredData.reduce((sum, item) => sum + item.High, 0);
-  const totalImpacts = totalHigh + totalMedium + totalLow;
-  
-  const highPercentage = Math.round((totalHigh / totalImpacts) * 100);
-  let insightText = `${topMhe.mheId} has the most impact events...`;
-  
-  return { topMhe, insightText, ... };
-}, [filteredData, hasData]);
+#### Chart Configuration:
+```
+margin={{ top: 0, right: 20, left: 24, bottom: 50 }}
+barCategoryGap="5%"
 ```
 
----
+### 2. ImpactTrendByZoneAndMHE Widget  
+**File:** `/src/app/components/widgets/ImpactTrendByZoneAndMHE.tsx`
 
-## Filter Integration
-All insight callouts are **filter-aware**:
-- Change MHE Type filter → Insight updates immediately
-- Change Zone filter → Insight recalculates
-- Change Date Range → Insight reflects current view
-- Real-time updates without page refresh
+#### Changes:
+- **Y-axis Domain**: Fixed range from [0, "dataMax + 1"] to [0, 8] for consistent scaling
+- **Axis Labels**:
+  - X-axis: Added "Date" label positioned at bottom center
+  - Y-axis: Changed position from "insideLeft" to "center" for better alignment
+- **Layout Restructuring**: Separated legend and insight callout sections with full-width divider
+  - Legend section: padding "10px 24px", no internal divider
+  - Insight callout: borderTop divider, padding "16px 24px"
+- **Legend Cleanup**: Removed "Impact Zones" label header
+- **Visual Enhancement**:
+  - Circle color changed from #9CA3AF to #D1D5DB (lighter gray, 2 shades)
+  - Removed circle border (stroke="none")
+- **Spacing**: Adjusted gap between DATE label and Impact Zones legend to 20px
+  - Chart bottom margin: 10px
+  - Legend top padding: 10px
 
----
+#### Chart Configuration:
+```
+margin={{ top: 10, right: 20, left: 24, bottom: 10 }}
+interval="preserveStartEnd"
+domain={[0, 8]}
+```
 
-## Visual Testing Checklist
-- [x] Insight callouts display at bottom of each widget
-- [x] Color coding matches design system
-- [x] Icons are properly styled and sized
-- [x] Text is readable and actionable
-- [x] Responsive layout maintained
-- [x] Filter changes update insights
-- [x] No overlap with existing UI elements
-- [x] Consistent typography across all widgets
-- [x] Proper visual hierarchy maintained
+#### Color System Update:
+- Default circle background: #9CA3AF → #D1D5DB
 
----
+### 3. Filter Standardization
+Both widgets maintain:
+- SelectTrigger height: h-8 (32px)
+- Filter labels: "MHE Type:", "Zone:"
 
-## Next Steps (Future Enhancements)
-1. **Impact Trend Widget** - Add insight callout if needed
-2. **Animation** - Subtle fade-in for insights when data updates
-3. **Theming** - Consider CSS variables for insight colors
-4. **Accessibility** - ARIA labels for insight callouts
-5. **Tooltip Hints** - Optional help text explaining insight calculation
+## Key Improvements
+1. **Consistency**: Both impact widgets now have matching layout structure with separated legend and insight sections
+2. **Visibility**: Axis labels are now centered and clearly visible without overlapping data
+3. **Spacing**: Refined gaps between chart elements (20px between DATE and Impact Zones)
+4. **Visual Clarity**: Lighter colors and removed borders for cleaner appearance
+5. **Data Scaling**: Fixed Y-axis range (0-8) provides consistent scale across different data sets
 
----
+## Testing Notes
+- Dev server: localhost:5173
+- Changes require browser refresh to clear cache
+- Hard refresh (Cmd+Shift+R) may be needed for style updates
 
 ## Files Modified
 1. `/src/app/components/widgets/MheImpactResponsibilityAnalysis.tsx`
-   - Added insight calculation logic
-   - Updated footer with legend + insight layout
-   - Responsive design improvements
+2. `/src/app/components/widgets/ImpactTrendByZoneAndMHE.tsx`
 
-2. `/src/app/components/widgets/MheInspectionSeverityTimeline.tsx`
-   - Added insight calculation logic
-   - Updated footer with axis label + insight layout
-   - Improved visual separation
+## Related Previous Work
+- Previous session (2026-05-04): Initial widget redesign with top 5 MHEs, no scroll, increased height
+- Filter standardization and label updates completed in earlier sessions
 
 ---
 
-## Summary
-Successfully enhanced the MHE Dashboard with data-driven insight callouts that provide actionable intelligence at a glance. The insights intelligently adapt to user filters and maintain visual hierarchy across all dashboard widgets. This creates a more intuitive and information-rich user experience while maintaining consistency with the existing design system.
+## Figma MCP Integration — Second Session
 
+### Overview
+Connected Claude Code to the Figma MCP server and established a repeatable capture workflow for pushing app screens into Figma.
+
+### Figma MCP Setup
+- **MCP Server**: Local desktop server at `http://127.0.0.1:3845/mcp`
+- **Config file**: `.mcp.json` at project root
+- **Authenticated as**: pratibha shivaji limbole (limbolepratibhashivaji@gmail.com)
+- **Target file**: RAMS-2.0-MHE (`HdBpz8PHDYqHDd4Bu5sIM4`)
+
+### Figma File — Pages Read
+| # | Page Name | ID |
+|---|-----------|-----|
+| 1 | MHE-HP | 52:11742 |
+| 2 | Command Center | 1521:23748 |
+| 3 | MHE UI upadated - 9 march 2026 | 1229:25055 |
+| 4 | MHE- AB | 1767:1117 |
+
+### New Figma Page Created
+- **Name**: `dashboard fms`
+- **Node ID**: `2586:23858`
+- Created programmatically via `use_figma` Plugin API
+
+### FMS Dashboard Capture
+- **Page captured**: FMS > Dashboard (`/mhe/mms/dashboard`)
+- **Tool used**: `generate_figma_design` (Figma MCP)
+- **Output mode**: Clipboard (user preference — paste manually into Figma)
+- **Figma node created**: `2590:23888`
+- **Capture script injected** into `index.html`:
+  ```html
+  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+  ```
+  Script left in place for future re-captures.
+
+### Captured Dashboard — Content Summary
+**Layout**: 1920×992 — PrimarySidebar (64px) + SecondarySidebar (260px) + Main Content (1596px)
+
+**KPI Cards (4)**:
+- Fleet Size: 42 — Total machines in operation
+- Fleet Utilization: 78% — Percentage active equipment
+- Fleet Safety Score: 92% — Safety performance rating
+- Sensor Health: 95% — Active sensors percentage
+
+**Widgets present**:
+1. Fleet Equipment Health Distribution (donut chart)
+2. Component Failure Distribution (bar chart)
+3. Machines Requiring Inspection Attention (table — MHE-001 to MHE-012)
+4. MHE Inspection Severity Timeline (time-series)
+5. MHE Impact Responsibility Analysis (scatter/matrix)
+6. Impact Trend by Zone and MHE (stacked trend chart)
+7. Operator License Expiry Monitoring (table)
+8. Edit MHE Asset Panel (side sheet/drawer)
+
+### Capture Workflow (Established for Future Use)
+**Trigger**: Say "capture [page name] to Figma"
+
+1. Call `generate_figma_design(outputMode: "clipboard")` → get captureId
+2. Look up route in `src/app/routes.tsx` / `src/app/components/layout/sidebar-data.ts`
+3. Open: `open "http://localhost:5173/<route>#figmacapture=<ID>&figmaendpoint=..."`
+4. Poll `generate_figma_design(captureId)` every 5s until `completed`
+5. Result copied to clipboard — paste into Figma manually
+
+### Files Modified
+1. `index.html` — Added Figma capture script tag
+2. `.mcp.json` — Figma MCP server registration (created in previous session)
