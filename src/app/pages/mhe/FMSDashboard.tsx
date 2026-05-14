@@ -65,6 +65,13 @@ import {
   ShieldAlert,
   ClipboardCheck,
   User,
+  Route,
+  Package,
+  Clock,
+  CheckCircle2,
+  Wrench,
+  MinusCircle,
+  RefreshCw,
 } from "lucide-react";
 import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
@@ -906,227 +913,272 @@ export function FMSDashboard() {
 
   return (
     <div className="flex-1 p-6 bg-[var(--background)]">
-        <div className="space-y-6">
-          {/* ── Header ── */}
-          <div>
-            <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-1">Fleet Management Dashboard</h1>
-            <p className="text-sm text-[var(--muted-foreground)]">Real-time equipment health, compliance, and maintenance tracking</p>
-          </div>
+      <div className="space-y-5">
 
-        <div className="grid grid-cols-12 gap-6">
-          {/* Critical Alert Banner */}
-          <div className="col-span-12">
-            <CriticalIssuesBanner count={11} trendNote="↑ 3 new today" />
-          </div>
-
-          {/* Section label */}
-          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-              FMS · COMMAND CENTER
-            </span>
-          </div>
-
-          {/* Row 2 — 4 KPI cards */}
-          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-            <KpiCardV3 label="Fleet Size"      value="42"  description="MHEs registered"            icon={Truck} />
-          </div>
-          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-            <KpiCardV3 label="Total Operators" value="24"  description="Workforce"                   icon={User} />
-          </div>
-          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-            <KpiCardV3 label="Total Sensors"   value="126" description="93.7% online"                icon={Wifi} />
-          </div>
-          <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-            <KpiCardV3 label="Open Findings"   value="25"  description="2 critical · 3 MHEs blocked" icon={AlertTriangle} />
-          </div>
-
-          {/* ── Today's Activity ── */}
-          <Card className="col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
-            <CardHeader className="pb-3 border-b border-[var(--border)]">
-              <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">
-                Today's Activity
-              </CardTitle>
-              <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
-                Real-time fleet engagement
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 p-4 flex flex-col gap-3">
-              {/* Active Now */}
-              <div className="p-3 rounded-lg bg-[var(--muted)]/40 border border-[var(--border)]">
-                <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">Active Now</span>
-                  <span className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">67% utilized</span>
+        <div className="grid grid-cols-12 gap-5">
+          {/* ── KPI strip ── */}
+          {(
+            [
+              { icon: Truck,         label: "Fleet Size",         value: "42",  sub: "Total machines in operation"  },
+              { icon: Activity,      label: "Fleet Utilization",  value: "78%", sub: "Percentage active equipment"  },
+              { icon: ShieldCheck,   label: "Fleet Safety Score", value: "92%", sub: "Safety performance rating"    },
+              { icon: Wifi,          label: "Active Sensors",     value: "95",  sub: "Active sensors percentage"    },
+            ] as { icon: React.ElementType; label: string; value: string; sub: string }[]
+          ).map(({ icon: Icon, label, value, sub }) => (
+            <div key={label} className="col-span-12 md:col-span-6 xl:col-span-3">
+              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "16px 20px 18px", height: "100%", boxSizing: "border-box" }}>
+                {/* Top row: label + icon */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 400, color: "#0f172a" }}>{label}</span>
+                  <Icon size={14} style={{ color: "#94a3b8" }} />
                 </div>
-                <div className="flex items-baseline gap-1.5 mb-2">
-                  <span className="text-[length:var(--text-2xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">28</span>
-                  <span className="text-[length:var(--text-sm)] text-[var(--muted-foreground)]">/ 42 MHEs</span>
-                </div>
-                <div className="h-1.5 rounded-full overflow-hidden bg-[var(--muted)]">
-                  <div className="h-full rounded-full bg-[var(--primary)]" style={{ width: "67%" }} />
-                </div>
+                {/* Value */}
+                <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", margin: "0 0 6px", lineHeight: 1.1 }}>{value}</p>
+                {/* Description */}
+                <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>{sub}</p>
               </div>
-              {/* 3 metrics */}
-              <div className="grid grid-cols-3 gap-2 flex-1">
-                {[
-                  { label: "Trips Today",   value: "342",   note: "↑ +18 vs yesterday" },
-                  { label: "Pallets Today", value: "1,284", note: "Moved across zones"  },
-                  { label: "Hours Today",   value: "186h",  note: "Total fleet time"    },
-                ].map(({ label, value, note }) => (
-                  <div key={label} className="p-3 rounded-lg bg-[var(--muted)]/40 border border-[var(--border)] flex flex-col">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-foreground)] mb-1">{label}</span>
-                    <span className="text-[length:var(--text-lg)] font-[var(--font-weight-bold)] text-[var(--foreground)] leading-tight">{value}</span>
-                    <span className="text-[10px] text-[var(--muted-foreground)] mt-auto pt-1">{note}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-            <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px" }}>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "#1F2937", margin: 0 }}>
-                Fleet utilization up from 61% yesterday
-              </p>
-              <p style={{ fontSize: "12px", color: "#6B7280", margin: 0 }}>
-                Peak activity expected between 10:00–14:00
-              </p>
             </div>
-          </Card>
+          ))}
 
-          {/* ── Trip Load Breakdown ── */}
-          <Card className="col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
-            <CardHeader className="pb-3 border-b border-[var(--border)]">
-              <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">
-                Trip Load Breakdown
-              </CardTitle>
-              <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
-                Loaded vs empty trips · last 30 days
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 p-4 flex flex-col gap-4">
-              {/* Key stats */}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: "Load Efficiency", value: "73%" },
-                  { label: "Deadhead",        value: "18%" },
-                ].map(({ label, value }) => (
-                  <div key={label} className="p-3 rounded-lg bg-[var(--muted)]/40 border border-[var(--border)]">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-foreground)] block mb-1">{label}</span>
-                    <span className="text-[length:var(--text-2xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">{value}</span>
-                  </div>
-                ))}
-              </div>
-              {/* Segmented bar */}
-              <div className="h-2 rounded-full overflow-hidden flex gap-px">
-                <div className="rounded-l-full" style={{ flex: 64, background: "#16a34a" }} />
-                <div style={{ flex: 19, background: "#f59e0b" }} />
-                <div className="rounded-r-full" style={{ flex: 18, background: "#cbd5e1" }} />
-              </div>
-              {/* Breakdown rows */}
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { label: "Loaded",           count: 218, pct: "64%", color: "#16a34a" },
-                  { label: "Partial",           count: 64,  pct: "19%", color: "#f59e0b" },
-                  { label: "Empty (Deadhead)",  count: 60,  pct: "18%", color: "#cbd5e1" },
-                ].map(({ label, count, pct, color }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                    <span className="text-[length:var(--text-xs)] text-[var(--foreground)] flex-1">{label}</span>
-                    <span className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] w-8 text-right">{count}</span>
-                    <span className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)] w-9 text-right">{pct}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-            <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px" }}>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "#1F2937", margin: 0 }}>
-                Load efficiency exceeds 65% target
-              </p>
-              <p style={{ fontSize: "12px", color: "#6B7280", margin: 0 }}>
-                Deadhead trips down 2% vs last week
-              </p>
-            </div>
-          </Card>
+          {/* ── Section divider: Command Center ── */}
+          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>FMS · Command Center</span>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+          </div>
 
-          {/* ── Inspection Health ── */}
-          <Card className="col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
-            <CardHeader className="pb-3 border-b border-[var(--border)]">
-              <div className="flex items-start justify-between w-full gap-4">
-                <div className="flex flex-col gap-1 flex-1">
-                  <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">
-                    Inspection Health
-                  </CardTitle>
-                  <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
-                    Severity distribution by MHE type
-                  </CardDescription>
+          {/* ── TODAY'S ACTIVITY ── */}
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
+            <CardHeader className="pb-4 border-b border-[var(--border)]">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <CardTitle className="text-sm font-semibold">Today's Activity</CardTitle>
+                  <CardDescription className="text-xs mt-0.5">Real-time fleet engagement</CardDescription>
                 </div>
-                <div className="w-[130px] flex-shrink-0">
-                  <Select value={selectedInspectionMhe} onValueChange={setSelectedInspectionMhe}>
-                    <SelectTrigger className="h-8 text-xs w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Forklift">Forklift</SelectItem>
-                      <SelectItem value="Reach Truck">Reach Truck</SelectItem>
-                      <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>
-                      <SelectItem value="Stacker">Stacker</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <RefreshCw size={13} style={{ color: "#1b59f8" }} />
+                  <span style={{ fontSize: "10px", fontStyle: "italic", color: "#1b59f8", whiteSpace: "nowrap" }}>Last Refresh 02:02:00</span>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="flex-1 p-4 flex flex-col gap-3">
-              {/* Count */}
-              <div className="flex items-baseline gap-2">
-                <span className="text-[length:var(--text-2xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">42</span>
-                <span className="text-[length:var(--text-sm)] text-[var(--muted-foreground)]">{selectedInspectionMhe} MHEs</span>
-              </div>
-              {/* Parts Health Comparison */}
-              <div className="p-3 rounded-lg bg-[var(--muted)]/40 border border-[var(--border)]">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-foreground)] mb-2">Parts Health Comparison</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-[10px] text-[var(--muted-foreground)] mb-0.5">Most Red Severity</p>
-                    <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">Battery</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-[var(--muted-foreground)] mb-0.5">Most Green Severity</p>
-                    <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">Light</p>
-                  </div>
-                </div>
-              </div>
-              {/* Severity Distribution */}
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--muted-foreground)] mb-2">Severity Distribution</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: "RED",   count: 120, color: "#ef4444", bg: "rgba(239,68,68,0.08)"   },
-                    { label: "AMBER", count: 90,  color: "#f59e0b", bg: "rgba(245,158,11,0.08)"  },
-                    { label: "GREEN", count: 90,  color: "#16a34a", bg: "rgba(22,163,74,0.08)"   },
-                  ].map(({ label, count, color, bg }) => (
-                    <div key={label} className="p-2.5 rounded-lg border border-[var(--border)]" style={{ background: bg }}>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                        <span style={{ fontSize: "10px", fontWeight: 600, color, letterSpacing: "0.05em" }}>{label}</span>
+            <CardContent className="flex-1 p-5 flex flex-col">
+
+              {/* Fleet status — 3 columns */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", gap: "0", marginBottom: "20px" }}>
+                {([
+                  { icon: CheckCircle2, label: "ACTIVE",      value: 28, pct: "67%", iconColor: "#16a34a", iconBg: "#f0fdf4" },
+                  { icon: Wrench,       label: "MAINTENANCE", value: 4,  pct: "10%", iconColor: "#f59e0b", iconBg: "#fffbeb" },
+                  { icon: MinusCircle,  label: "IDLE",        value: 10, pct: "24%", iconColor: "#94a3b8", iconBg: "#f1f5f9" },
+                ] as { icon: React.ElementType; label: string; value: number; pct: string; iconColor: string; iconBg: string }[]).flatMap(({ icon: Icon, label, value, pct, iconColor, iconBg }, i, arr) => [
+                  <div key={label} style={{ padding: "4px 12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "10px" }}>
+                      <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Icon size={13} style={{ color: iconColor }} />
                       </div>
-                      <span className="text-[length:var(--text-xl)] font-[var(--font-weight-bold)] text-[var(--foreground)]">{count}</span>
+                      <span style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em" }}>{label}</span>
+                    </div>
+                    <p style={{ fontSize: "26px", fontWeight: 700, color: "#0f172a", margin: "0 0 2px", lineHeight: 1 }}>{value}</p>
+                    <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{pct}</p>
+                  </div>,
+                  ...(i < arr.length - 1 ? [<div key={`sep-${i}`} style={{ background: "#e2e8f0" }} />] : []),
+                ])}
+              </div>
+
+              {/* Productivity rows with icons */}
+              <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
+                {([
+                  { icon: Route,   label: "Trips Today",   value: "342",   sub: "↑ +18 vs yesterday" },
+                  { icon: Package, label: "Pallets Moved", value: "1,284", sub: "Across 4 zones"      },
+                  { icon: Clock,   label: "Fleet Hours",   value: "186h",  sub: "Total time logged"   },
+                ] as { icon: React.ElementType; label: string; value: string; sub: string }[]).map(({ icon: _Icon, label, value, sub }, i, arr) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                    <div>
+                      <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: 0 }}>{label}</p>
+                      <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{sub}</p>
+                    </div>
+                    <span style={{ fontSize: "18px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+
+            </CardContent>
+          </Card>
+
+          {/* ── TRIP LOAD BREAKDOWN ── */}
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
+            <CardHeader className="pb-4 border-b border-[var(--border)]">
+              <CardTitle className="text-sm font-semibold">Trip Load Breakdown</CardTitle>
+              <CardDescription className="text-xs mt-0.5">Loaded vs empty trips · last 30 days</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 p-5 flex flex-col justify-between">
+
+              {/* Twin hero stats */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", marginBottom: "24px" }}>
+                <div style={{ paddingRight: "20px" }}>
+                  <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 6px", fontWeight: 500 }}>Total Trips</p>
+                  <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 4px" }}>342</p>
+                  <p style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 500, margin: 0 }}>Across all zones</p>
+                </div>
+                <div style={{ background: "#e2e8f0" }} />
+                <div style={{ paddingLeft: "20px" }}>
+                  <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 6px", fontWeight: 500 }}>Load Efficiency</p>
+                  <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 4px" }}>73%</p>
+                  <p style={{ fontSize: "10px", color: "#16a34a", fontWeight: 500, margin: 0 }}>↑ Exceeds 65% target</p>
+                </div>
+              </div>
+
+              {/* Single donut + legend */}
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
+
+                {/* Donut chart */}
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  <PieChart width={140} height={140}>
+                    <Pie
+                      data={[
+                        { value: 64 },
+                        { value: 19 },
+                        { value: 18 },
+                      ]}
+                      cx={66} cy={66}
+                      innerRadius={50} outerRadius={62}
+                      startAngle={90} endAngle={-270}
+                      paddingAngle={4}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      <Cell fill={COLORS.noIssues} />
+                      <Cell fill={COLORS.healthy} />
+                      <Cell fill={COLORS.warning} />
+                    </Pie>
+                  </PieChart>
+                  {/* Center label */}
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", pointerEvents: "none" }}>
+                    <p style={{ fontSize: "18px", fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>342</p>
+                    <p style={{ fontSize: "9px", color: "#94a3b8", margin: "3px 0 0" }}>trips</p>
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1 }}>
+                  {[
+                    { label: "Loaded",           sub: "Full load trips",      count: 218, pct: "64%", color: COLORS.noIssues },
+                    { label: "Partial",          sub: "Partially filled",     count: 64,  pct: "19%", color: COLORS.healthy  },
+                    { label: "Empty (Deadhead)", sub: "No load — return run", count: 60,  pct: "18%", color: COLORS.warning  },
+                  ].map(({ label, sub, count, pct, color }) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                          <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151" }}>{label}</span>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>{pct}</span>
+                        </div>
+                        <p style={{ fontSize: "10px", color: "#94a3b8", margin: "2px 0 0" }}>{sub} · {count} trips</p>
+                      </div>
                     </div>
                   ))}
                 </div>
+
               </div>
+
+
             </CardContent>
-            <div style={{ borderTop: "1px solid var(--border)", padding: "12px 16px" }}>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "#1F2937", margin: 0 }}>
-                Battery flagged with highest red severity
-              </p>
-              <p style={{ fontSize: "12px", color: "#6B7280", margin: 0 }}>
-                Immediate inspection recommended · {selectedInspectionMhe}
-              </p>
-            </div>
           </Card>
 
-          {/* Section label */}
-          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-              FMS · RTSS
-            </span>
+          {/* ── INSPECTION HEALTH ── */}
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
+            {/* Header — common dashboard widget style */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
+                  Inspection Health
+                </span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
+                  Severity distribution by MHE type
+                </span>
+              </div>
+              <Select value={selectedInspectionMhe} onValueChange={setSelectedInspectionMhe}>
+                <SelectTrigger className="h-8 text-xs w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Forklift">Forklift</SelectItem>
+                  <SelectItem value="Reach Truck">Reach Truck</SelectItem>
+                  <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>
+                  <SelectItem value="Stacker">Stacker</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <CardContent className="flex-1 p-5 flex flex-col">
+
+              {/* 3-column severity stats — white, accent top-border */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", marginBottom: "20px" }}>
+                {[
+                  { label: "Critical",  count: 120, pct: "40%", accent: "#ef4444", textColor: "#b91c1c" },
+                  { label: "Warning",   count: 90,  pct: "30%", accent: "#f59e0b", textColor: "#b45309" },
+                  { label: "Healthy",   count: 90,  pct: "30%", accent: "#16a34a", textColor: "#15803d" },
+                ].flatMap(({ label, count, pct, accent, textColor }, i, arr) => [
+                  <div key={label} style={{ padding: i === 0 ? "0 16px 0 0" : i === arr.length - 1 ? "0 0 0 16px" : "0 16px", textAlign: "center" }}>
+                    <div style={{ width: "28px", height: "3px", borderRadius: "99px", background: accent, margin: "0 auto 12px" }} />
+                    <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 4px" }}>{count}</p>
+                    <p style={{ fontSize: "11px", color: "#64748b", margin: "0 0 2px" }}>{label}</p>
+                    <p style={{ fontSize: "11px", fontWeight: 600, color: textColor, margin: 0 }}>{pct}</p>
+                  </div>,
+                  ...(i < arr.length - 1 ? [<div key={`sep-${i}`} style={{ background: "#e2e8f0" }} />] : []),
+                ])}
+              </div>
+
+              {/* Stacked bar */}
+              <div style={{ marginBottom: "8px" }}>
+                <div style={{ display: "flex", height: "6px", borderRadius: "99px", overflow: "hidden" }}>
+                  <div style={{ flex: 40, background: "#ef4444" }} />
+                  <div style={{ flex: 30, background: "#f59e0b" }} />
+                  <div style={{ flex: 30, background: "#16a34a" }} />
+                </div>
+              </div>
+              <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 20px", textAlign: "center" }}>
+                300 findings · 42 {selectedInspectionMhe} MHEs
+              </p>
+
+              {/* Divider */}
+              <div style={{ height: "1px", background: "#f1f5f9", marginBottom: "16px" }} />
+
+              {/* Part hotspots */}
+              <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center", gap: "0" }}>
+                {[
+                  { label: "Most critical part", value: "Battery", dot: "#ef4444" },
+                  { label: "Healthiest part",     value: "Light",   dot: "#16a34a" },
+                ].map(({ label, value, dot }, i, arr) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: dot, flexShrink: 0 }} />
+                      <span style={{ fontSize: "13px", color: "#64748b" }}>{label}</span>
+                    </div>
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+
+            </CardContent>
+
+            {/* Footer — common dashboard style */}
+            <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  Battery flagged with highest red severity
+                </span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  Immediate inspection recommended · {selectedInspectionMhe}
+                </span>
+              </div>
+            </div>
+
+          </Card>
+
+          {/* ── Section divider: RTSS ── */}
+          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>FMS · RTSS</span>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
           </div>
 
           {/* Row 4 — Severity trend + Fleet status */}
@@ -1137,11 +1189,11 @@ export function FMSDashboard() {
             <ImpactDonutV3 />
           </div>
 
-          {/* Section label */}
-          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-              COMMAND CENTER · RTSS · IMDS
-            </span>
+          {/* ── Section divider: Operational ── */}
+          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>Command Center · RTSS · IMDS</span>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
           </div>
 
           {/* Row 5 — 3 Operational widgets */}
@@ -1155,11 +1207,11 @@ export function FMSDashboard() {
             <ImpactTrendRankedV3 />
           </div>
 
-          {/* Section label */}
-          <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-            <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-              COMMAND CENTER · IMDS
-            </span>
+          {/* ── Section divider: IMDS ── */}
+          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>Command Center · IMDS</span>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
           </div>
 
           {/* Warranty / License Expiry Table */}
