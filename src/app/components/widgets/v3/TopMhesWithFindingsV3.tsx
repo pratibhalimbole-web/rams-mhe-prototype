@@ -5,9 +5,6 @@ import {
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
-// Common dashboard blue palette
-const BLUE_SHADES = ["#1B59F8", "#4C7DFF", "#7BA3FF", "#8FB2FF", "#C9DBFF"];
-
 const MHE_SETS: Record<string, string[]> = {
   all:           ["FL-007", "PJ-016", "RT-013", "FL-015", "PJ-003"],
   forklift:      ["FL-007", "FL-015", "FL-022", "FL-011", "FL-008"],
@@ -33,14 +30,26 @@ function generateData(mhes: string[], dateRange: string) {
         return `${d.getDate()}/${d.getMonth() + 1}`;
       });
 
-  return labels.map((date, i) => {
-    const point: Record<string, any> = { date };
+  const redGen: Record<string, () => number>   = {};
+  const amberGen: Record<string, () => number> = {};
+  mhes.forEach((mhe) => {
+    const base = mhe.split("").reduce((acc, c) => acc + c.charCodeAt(0) * 31, 0);
+    redGen[mhe]   = seededRandom(base);
+    amberGen[mhe] = seededRandom(base + 9999);
+  });
+
+  const perMheMax = Math.max(1, Math.floor(20 / mhes.length));
+
+  return labels.map((date) => {
+    const redBreakdown:   Record<string, number> = {};
+    const amberBreakdown: Record<string, number> = {};
     mhes.forEach((mhe) => {
-      const seed = mhe.charCodeAt(0) * 100 + mhe.charCodeAt(mhe.length - 1) * 10 + i;
-      const rand = seededRandom(seed);
-      point[mhe] = Math.round(1 + rand() * 7);
+      redBreakdown[mhe]   = Math.round(1 + redGen[mhe]()   * perMheMax);
+      amberBreakdown[mhe] = Math.round(1 + amberGen[mhe]() * perMheMax);
     });
-    return point;
+    const red   = Object.values(redBreakdown).reduce((a, b) => a + b, 0);
+    const amber = Object.values(amberBreakdown).reduce((a, b) => a + b, 0);
+    return { date, red, amber, redBreakdown, amberBreakdown };
   });
 }
 
@@ -57,22 +66,55 @@ const filterStyle: React.CSSProperties = {
   fontWeight: 400,
 };
 
+const MAX_TOOLTIP_ROWS = 5;
+
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
+  const d = payload[0]?.payload;
+  if (!d) return null;
+
+  const redSorted   = Object.entries(d.redBreakdown   as Record<string, number>).sort((a, b) => b[1] - a[1]);
+  const amberSorted = Object.entries(d.amberBreakdown as Record<string, number>).sort((a, b) => b[1] - a[1]);
+  const redVisible   = redSorted.slice(0, MAX_TOOLTIP_ROWS);
+  const amberVisible = amberSorted.slice(0, MAX_TOOLTIP_ROWS);
+  const remaining    = Math.max(redSorted.length - MAX_TOOLTIP_ROWS, 0);
+
   return (
-    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "150px" }}>
-      <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a", margin: "0 0 8px", borderBottom: "0.64px solid #e2e8f0", paddingBottom: "6px" }}>{label}</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        {payload.map((p: any) => (
-          <div key={p.dataKey} style={{ display: "flex", justifyContent: "space-between", gap: "16px" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
-              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: p.color, flexShrink: 0, display: "inline-block" }} />
-              {p.dataKey}
-            </span>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{p.value}</span>
-          </div>
-        ))}
+    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "200px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", paddingBottom: "6px", borderBottom: "0.64px solid #e2e8f0" }}>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a" }}>{label}</span>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "#ef4444" }}>R: {d.red}</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "#f59e0b" }}>A: {d.amber}</span>
+        </div>
       </div>
+      {/* Columns */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
+        {/* Red column */}
+        <div>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 600, color: "#ef4444", margin: "0 0 4px", letterSpacing: "0.04em" }}>RED</p>
+          {redVisible.map(([mhe, val]) => (
+            <div key={mhe} style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "3px" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{mhe}</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{val}</span>
+            </div>
+          ))}
+        </div>
+        {/* Amber column */}
+        <div>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 600, color: "#f59e0b", margin: "0 0 4px", letterSpacing: "0.04em" }}>AMBER</p>
+          {amberVisible.map(([mhe, val]) => (
+            <div key={mhe} style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "3px" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{mhe}</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{val}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {remaining > 0 && (
+        <p style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8", margin: "6px 0 0" }}>+{remaining} more MHEs</p>
+      )}
     </div>
   );
 }
@@ -90,7 +132,7 @@ export function TopMhesWithFindingsV3() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Top MHEs with Findings</span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Findings trend per MHE over time</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Red vs Amber severity trend over time</span>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
           <Select value={type} onValueChange={setType}>
@@ -114,48 +156,61 @@ export function TopMhesWithFindingsV3() {
       </div>
 
       {/* Chart */}
-      <div style={{ flex: 1, padding: "12px 14px 0 4px", minHeight: 0 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#94a3b8" }}
-              axisLine={false}
-              tickLine={false}
-              dy={6}
-              interval={dateRange === "last_30_days" ? 4 : 0}
-            />
-            <YAxis
-              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#94a3b8" }}
-              axisLine={false}
-              tickLine={false}
-              dx={-4}
-              domain={[0, 10]}
-              ticks={[0, 2, 4, 6, 8, 10]}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }} />
-            {mhes.map((mhe, i) => (
-              <Line
-                key={mhe}
-                type="monotone"
-                dataKey={mhe}
-                stroke={BLUE_SHADES[i]}
-                strokeWidth={1.5}
-                dot={{ fill: BLUE_SHADES[i], r: 3, strokeWidth: 0 }}
-                activeDot={{ fill: BLUE_SHADES[i], r: 5, strokeWidth: 0 }}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+      <div style={{ flex: 1, padding: "12px 14px 0 14px", minHeight: 0, position: "relative" }}>
+        <div style={{ position: "absolute", inset: 0, overflowX: "hidden", overflowY: "hidden" }}>
+          <div style={{ width: "100%", height: "100%" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  axisLine={false}
+                  tickLine={false}
+                  dy={6}
+                  interval={dateRange === "last_30_days" ? 4 : 0}
+                />
+                <YAxis
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  axisLine={false}
+                  tickLine={false}
+                  dx={-4}
+                  domain={[0, 25]}
+                  ticks={[0, 5, 10, 15, 20, 25]}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }} />
+                <Line
+                  type="monotone"
+                  dataKey="red"
+                  stroke="#ef4444"
+                  strokeWidth={1.5}
+                  strokeDasharray="5 5"
+                  strokeLinecap="round"
+                  dot={{ fill: "#ef4444", r: 3, strokeWidth: 0 }}
+                  activeDot={{ fill: "#ef4444", r: 5, strokeWidth: 0 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="amber"
+                  stroke="#f59e0b"
+                  strokeWidth={1.5}
+                  strokeDasharray="5 5"
+                  strokeLinecap="round"
+                  dot={{ fill: "#f59e0b", r: 3, strokeWidth: 0 }}
+                  activeDot={{ fill: "#f59e0b", r: 5, strokeWidth: 0 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
-      {/* Legend — below x-axis, circles */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", padding: "8px 16px 12px", justifyContent: "center" }}>
-        {mhes.map((mhe, i) => (
-          <span key={mhe} style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
-            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: BLUE_SHADES[i], display: "inline-block", flexShrink: 0 }} />
-            {mhe}
+      {/* Legend — circles below x-axis */}
+      <div style={{ display: "flex", gap: "16px", padding: "8px 16px 12px", justifyContent: "center" }}>
+        {([["Red Severity", "#ef4444"], ["Amber Severity", "#f59e0b"]] as [string, string][]).map(([label, color]) => (
+          <span key={label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />
+            {label}
           </span>
         ))}
       </div>
@@ -164,7 +219,7 @@ export function TopMhesWithFindingsV3() {
       <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            FL-007 leads with highest findings this period
+            Red severity consistently higher than Amber this period
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             May 7 – May 13, 2026

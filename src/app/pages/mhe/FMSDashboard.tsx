@@ -93,6 +93,7 @@ import { MonitoringCardV3 } from "../../components/widgets/v3/MonitoringCardV3";
 import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSplitCardV3";
 import { TopFailingPartsV3 } from "../../components/widgets/v3/TopFailingPartsV3";
 import { TopMhesWithFindingsV3 } from "../../components/widgets/v3/TopMhesWithFindingsV3";
+import { SensorAssignmentV3 } from "../../components/widgets/v3/SensorAssignmentV3";
 
 // ─── Design System Colors ────────────────────────────────────────────────────
 export const COLORS = {
@@ -922,22 +923,16 @@ export function FMSDashboard() {
           {/* ── KPI strip ── */}
           {(
             [
-              { icon: Truck,         label: "Fleet Size",         value: "42",  sub: "Total machines in operation"  },
-              { icon: Activity,      label: "Fleet Utilization",  value: "78%", sub: "Percentage active equipment"  },
-              { icon: ShieldCheck,   label: "Fleet Safety Score", value: "92%", sub: "Safety performance rating"    },
-              { icon: Wifi,          label: "Active Sensors",     value: "95",  sub: "Active sensors percentage"    },
-            ] as { icon: React.ElementType; label: string; value: string; sub: string }[]
-          ).map(({ icon: Icon, label, value, sub }) => (
+              { label: "FLEET SIZE",       value: "42",  sub: "MHEs registered"             },
+              { label: "TOTAL OPERATORS",  value: "24",  sub: "Workforce"                   },
+              { label: "TOTAL SENSORS",    value: "126", sub: "93.7% online"                },
+              { label: "OPEN FINDINGS",    value: "25",  sub: "2 critical · 3 MHEs blocked" },
+            ] as { label: string; value: string; sub: string }[]
+          ).map(({ label, value, sub }) => (
             <div key={label} className="col-span-12 md:col-span-6 xl:col-span-3">
               <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "16px 20px 18px", height: "100%", boxSizing: "border-box" }}>
-                {/* Top row: label + icon */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 400, color: "#0f172a" }}>{label}</span>
-                  <Icon size={14} style={{ color: "#94a3b8" }} />
-                </div>
-                {/* Value */}
-                <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", margin: "0 0 6px", lineHeight: 1.1 }}>{value}</p>
-                {/* Description */}
+                <p style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 10px" }}>{label}</p>
+                <p style={{ fontSize: "32px", fontWeight: 700, color: "#0f172a", margin: "0 0 6px", lineHeight: 1 }}>{value}</p>
                 <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>{sub}</p>
               </div>
             </div>
@@ -1164,11 +1159,16 @@ export function FMSDashboard() {
           </Card>
 
           {/* Row — Top Failing Parts + Top MHEs with Findings */}
-          <div className="col-span-12 md:col-span-6 flex min-h-[360px]">
+          <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
             <TopFailingPartsV3 />
           </div>
-          <div className="col-span-12 md:col-span-6 flex min-h-[360px]">
+          <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
             <TopMhesWithFindingsV3 />
+          </div>
+
+          {/* Sensor Assignment */}
+          <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
+            <SensorAssignmentV3 />
           </div>
 
           {/* Row 4 — Severity trend + Fleet status */}
