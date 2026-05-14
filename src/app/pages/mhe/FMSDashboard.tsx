@@ -72,6 +72,7 @@ import {
   Wrench,
   MinusCircle,
   RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
@@ -90,6 +91,8 @@ import { ImpactTrendRankedV3 } from "../../components/widgets/v3/ImpactTrendRank
 import { WarrantyExpiryTableV3 } from "../../components/widgets/v3/WarrantyExpiryTableV3";
 import { MonitoringCardV3 } from "../../components/widgets/v3/MonitoringCardV3";
 import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSplitCardV3";
+import { TopFailingPartsV3 } from "../../components/widgets/v3/TopFailingPartsV3";
+import { TopMhesWithFindingsV3 } from "../../components/widgets/v3/TopMhesWithFindingsV3";
 
 // ─── Design System Colors ────────────────────────────────────────────────────
 export const COLORS = {
@@ -940,28 +943,19 @@ export function FMSDashboard() {
             </div>
           ))}
 
-          {/* ── Section divider: Command Center ── */}
-          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
-            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>FMS · Command Center</span>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
-          </div>
-
           {/* ── TODAY'S ACTIVITY ── */}
           <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
-            <CardHeader className="pb-4 border-b border-[var(--border)]">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <CardTitle className="text-sm font-semibold">Today's Activity</CardTitle>
-                  <CardDescription className="text-xs mt-0.5">Real-time fleet engagement</CardDescription>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <RefreshCw size={13} style={{ color: "#1b59f8" }} />
-                  <span style={{ fontSize: "10px", fontStyle: "italic", color: "#1b59f8", whiteSpace: "nowrap" }}>Last Refresh 02:02:00</span>
-                </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Today's Activity</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Real-time fleet engagement</span>
               </div>
-            </CardHeader>
-            <CardContent className="flex-1 p-5 flex flex-col">
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <RefreshCw size={13} style={{ color: "#1b59f8" }} />
+                <span style={{ fontSize: "10px", fontStyle: "italic", color: "#1b59f8", whiteSpace: "nowrap" }}>Last Refresh 02:02:00</span>
+              </div>
+            </div>
+            <CardContent className="flex-1 px-5 pt-2 pb-5 flex flex-col">
 
               {/* Fleet status — 3 columns */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", gap: "0", marginBottom: "20px" }}>
@@ -1006,11 +1000,13 @@ export function FMSDashboard() {
 
           {/* ── TRIP LOAD BREAKDOWN ── */}
           <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
-            <CardHeader className="pb-4 border-b border-[var(--border)]">
-              <CardTitle className="text-sm font-semibold">Trip Load Breakdown</CardTitle>
-              <CardDescription className="text-xs mt-0.5">Loaded vs empty trips · last 30 days</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 p-5 flex flex-col justify-between">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Trip Load Breakdown</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Loaded vs empty trips · last 30 days</span>
+              </div>
+            </div>
+            <CardContent className="flex-1 px-5 pt-2 pb-5 flex flex-col justify-between">
 
               {/* Twin hero stats */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", marginBottom: "24px" }}>
@@ -1026,6 +1022,9 @@ export function FMSDashboard() {
                   <p style={{ fontSize: "10px", color: "#16a34a", fontWeight: 500, margin: 0 }}>↑ Exceeds 65% target</p>
                 </div>
               </div>
+
+              {/* Donut section title */}
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", fontWeight: 600, color: "#0f172a", margin: "0 0 12px" }}>Trip Distribution by Load Status</p>
 
               {/* Single donut + legend */}
               <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
@@ -1097,7 +1096,7 @@ export function FMSDashboard() {
                 </span>
               </div>
               <Select value={selectedInspectionMhe} onValueChange={setSelectedInspectionMhe}>
-                <SelectTrigger className="h-8 text-xs w-[120px]">
+                <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif" }}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1108,77 +1107,68 @@ export function FMSDashboard() {
                 </SelectContent>
               </Select>
             </div>
-            <CardContent className="flex-1 p-5 flex flex-col">
+            <CardContent className="flex-1 px-5 pt-2 pb-5 flex flex-col">
 
-              {/* 3-column severity stats — white, accent top-border */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", marginBottom: "20px" }}>
-                {[
-                  { label: "Critical",  count: 120, pct: "40%", accent: "#ef4444", textColor: "#b91c1c" },
-                  { label: "Warning",   count: 90,  pct: "30%", accent: "#f59e0b", textColor: "#b45309" },
-                  { label: "Healthy",   count: 90,  pct: "30%", accent: "#16a34a", textColor: "#15803d" },
-                ].flatMap(({ label, count, pct, accent, textColor }, i, arr) => [
-                  <div key={label} style={{ padding: i === 0 ? "0 16px 0 0" : i === arr.length - 1 ? "0 0 0 16px" : "0 16px", textAlign: "center" }}>
-                    <div style={{ width: "28px", height: "3px", borderRadius: "99px", background: accent, margin: "0 auto 12px" }} />
-                    <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 4px" }}>{count}</p>
-                    <p style={{ fontSize: "11px", color: "#64748b", margin: "0 0 2px" }}>{label}</p>
-                    <p style={{ fontSize: "11px", fontWeight: 600, color: textColor, margin: 0 }}>{pct}</p>
-                  </div>,
-                  ...(i < arr.length - 1 ? [<div key={`sep-${i}`} style={{ background: "#e2e8f0" }} />] : []),
-                ])}
+              {/* MHE count */}
+              <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "20px" }}>
+                <span style={{ fontSize: "34px", fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>42</span>
+                <span style={{ fontSize: "13px", color: "#64748b" }}>{selectedInspectionMhe} MHEs</span>
               </div>
 
-              {/* Stacked bar */}
-              <div style={{ marginBottom: "8px" }}>
-                <div style={{ display: "flex", height: "6px", borderRadius: "99px", overflow: "hidden" }}>
-                  <div style={{ flex: 40, background: "#ef4444" }} />
-                  <div style={{ flex: 30, background: "#f59e0b" }} />
-                  <div style={{ flex: 30, background: "#16a34a" }} />
-                </div>
+              {/* Parts Healthy Comparison */}
+              <p style={{ fontSize: "12px", fontWeight: 600, color: "#0f172a", margin: "0 0 10px" }}>Parts Healthy Comparison:</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "12px", columnGap: "8px", marginBottom: "20px" }}>
+                {([
+                  { sub: "Most Red Severity",   value: "Battery" },
+                  { sub: "Most Green Severity", value: "Light"   },
+                  { sub: "Most Amber Issues",   value: "Tyres"   },
+                  { sub: "No Issue at Parts",   value: "Engine"  },
+                ] as { sub: string; value: string }[]).map(({ sub, value }) => (
+                  <div key={sub}>
+                    <p style={{ fontSize: "10px", color: "#94a3b8", margin: "0 0 2px" }}>{sub}</p>
+                    <p style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a", margin: 0 }}>{value}</p>
+                  </div>
+                ))}
               </div>
-              <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 20px", textAlign: "center" }}>
-                300 findings · 42 {selectedInspectionMhe} MHEs
-              </p>
 
               {/* Divider */}
               <div style={{ height: "1px", background: "#f1f5f9", marginBottom: "16px" }} />
 
-              {/* Part hotspots */}
-              <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "center", gap: "0" }}>
-                {[
-                  { label: "Most critical part", value: "Battery", dot: "#ef4444" },
-                  { label: "Healthiest part",     value: "Light",   dot: "#16a34a" },
-                ].map(({ label, value, dot }, i, arr) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: dot, flexShrink: 0 }} />
-                      <span style={{ fontSize: "13px", color: "#64748b" }}>{label}</span>
+              {/* Severity Distribution — V3 bar rows */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {([
+                  { label: "Red",       count: 120, color: "#ef4444", iconBg: "#fef2f2", Icon: AlertCircle   },
+                  { label: "Amber",     count: 90,  color: "#f59e0b", iconBg: "#fffbeb", Icon: AlertTriangle },
+                  { label: "Green",     count: 90,  color: "#16a34a", iconBg: "#f0fdf4", Icon: CheckCircle2  },
+                  { label: "No Issues", count: 90,  color: "#94a3b8", iconBg: "#f8fafc", Icon: MinusCircle   },
+                ] as { label: string; count: number; color: string; iconBg: string; Icon: React.ElementType }[]).map(({ label, count, color, iconBg, Icon }) => (
+                  <div key={label}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "5px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: iconBg, border: `1px solid ${color}25`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={10} style={{ color }} />
+                        </div>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: "10px", color: "#64748b" }}>{label}</span>
+                      </div>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", color: "#0f172a" }}>{count}</span>
                     </div>
-                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a" }}>{value}</span>
+                    <div style={{ width: "100%", height: "3px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
+                      <div style={{ width: `${(count / 120) * 100}%`, height: "100%", background: color, borderRadius: "3px" }} />
+                    </div>
                   </div>
                 ))}
               </div>
 
             </CardContent>
 
-            {/* Footer — common dashboard style */}
-            <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  Battery flagged with highest red severity
-                </span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  Immediate inspection recommended · {selectedInspectionMhe}
-                </span>
-              </div>
-            </div>
-
           </Card>
 
-          {/* ── Section divider: RTSS ── */}
-          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
-            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>FMS · RTSS</span>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+          {/* Row — Top Failing Parts + Top MHEs with Findings */}
+          <div className="col-span-12 md:col-span-6 flex min-h-[360px]">
+            <TopFailingPartsV3 />
+          </div>
+          <div className="col-span-12 md:col-span-6 flex min-h-[360px]">
+            <TopMhesWithFindingsV3 />
           </div>
 
           {/* Row 4 — Severity trend + Fleet status */}
@@ -1187,13 +1177,6 @@ export function FMSDashboard() {
           </div>
           <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
             <ImpactDonutV3 />
-          </div>
-
-          {/* ── Section divider: Operational ── */}
-          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
-            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>Command Center · RTSS · IMDS</span>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
           </div>
 
           {/* Row 5 — 3 Operational widgets */}
@@ -1205,13 +1188,6 @@ export function FMSDashboard() {
           </div>
           <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
             <ImpactTrendRankedV3 />
-          </div>
-
-          {/* ── Section divider: IMDS ── */}
-          <div className="col-span-12" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
-            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>Command Center · IMDS</span>
-            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
           </div>
 
           {/* Warranty / License Expiry Table */}
