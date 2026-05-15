@@ -811,8 +811,10 @@ export function FMSDashboard() {
   const [expandedKpi, setExpandedKpi] = useState<string | null>(null);
   const [selectedInspectionMhe, setSelectedInspectionMhe] = useState("Forklift");
   const [selectedInspectionOem, setSelectedInspectionOem] = useState("all");
-  const [fleetOem,  setFleetOem]  = useState("all");
-  const [fleetType, setFleetType] = useState("all");
+  const [fleetOem,    setFleetOem]    = useState("all");
+  const [fleetType,   setFleetType]   = useState("all");
+  const [impactOem,   setImpactOem]   = useState("all");
+  const [impactType,  setImpactType]  = useState("all");
   const [selectedEquipment, setSelectedEquipment] = useState("Electric Forklift");
   const [selectedHealthEquipment, setSelectedHealthEquipment] = useState("Overall");
   const [isRenewDrawerOpen, setIsRenewDrawerOpen] = useState(false);
@@ -937,6 +939,107 @@ export function FMSDashboard() {
               </div>
             </div>
           ))}
+
+          {/* ── FLEET COMPOSITION (full-width stacked bar) ── */}
+          {(() => {
+            type ImpactRow = { label: string; count: number; color: string };
+            const IMPACT_DATA: Record<string, { total: number; oemLabel: string; types: ImpactRow[] }> = {
+              "all|all":               { total: 42, oemLabel: "All OEMs",          types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }, { label: "Forklift",     count: 8,  color: "#4c7dff" }, { label: "Order Picker", count: 9,  color: "#7397f6" }, { label: "Pallet Jack",  count: 6,  color: "#8fb2ff" }, { label: "VNA Truck",    count: 5,  color: "#a8c4ff" }, { label: "Stacker",      count: 4,  color: "#c9dbff" }] },
+              "all|toyota":            { total: 18, oemLabel: "Toyota",            types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }, { label: "Forklift",     count: 5,  color: "#4c7dff" }, { label: "VNA Truck",    count: 3,  color: "#a8c4ff" }] },
+              "all|toyota-industries": { total: 9,  oemLabel: "Toyota Industries", types: [{ label: "Order Picker", count: 6,  color: "#7397f6" }, { label: "Pallet Jack",  count: 3,  color: "#8fb2ff" }] },
+              "all|tata":              { total: 7,  oemLabel: "TATA",              types: [{ label: "Forklift",     count: 3,  color: "#4c7dff" }, { label: "Order Picker", count: 2,  color: "#7397f6" }, { label: "Stacker",      count: 2,  color: "#c9dbff" }] },
+              "all|mahindra":          { total: 5,  oemLabel: "Mahindra",          types: [{ label: "Stacker",      count: 2,  color: "#c9dbff" }, { label: "Pallet Jack",  count: 2,  color: "#8fb2ff" }, { label: "VNA Truck",    count: 1,  color: "#a8c4ff" }] },
+              "all|raymond":           { total: 3,  oemLabel: "Raymond",           types: [{ label: "Forklift",     count: 2,  color: "#4c7dff" }, { label: "Order Picker", count: 1,  color: "#7397f6" }] },
+              "forklift|all":          { total: 8,  oemLabel: "All OEMs",          types: [{ label: "Forklift",     count: 8,  color: "#4c7dff" }] },
+              "reach-truck|all":       { total: 10, oemLabel: "All OEMs",          types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }] },
+              "pallet-jack|all":       { total: 6,  oemLabel: "All OEMs",          types: [{ label: "Pallet Jack",  count: 6,  color: "#8fb2ff" }] },
+              "stacker|all":           { total: 4,  oemLabel: "All OEMs",          types: [{ label: "Stacker",      count: 4,  color: "#c9dbff" }] },
+              "order-picker|all":      { total: 9,  oemLabel: "All OEMs",          types: [{ label: "Order Picker", count: 9,  color: "#7397f6" }] },
+              "vna-truck|all":         { total: 5,  oemLabel: "All OEMs",          types: [{ label: "VNA Truck",    count: 5,  color: "#a8c4ff" }] },
+              "reach-truck|toyota":    { total: 10, oemLabel: "Toyota",            types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }] },
+              "forklift|toyota":       { total: 5,  oemLabel: "Toyota",            types: [{ label: "Forklift",     count: 5,  color: "#4c7dff" }] },
+              "order-picker|toyota-industries": { total: 6, oemLabel: "Toyota Industries", types: [{ label: "Order Picker", count: 6, color: "#7397f6" }] },
+              "forklift|tata":         { total: 3,  oemLabel: "TATA",              types: [{ label: "Forklift",     count: 3,  color: "#4c7dff" }] },
+              "stacker|mahindra":      { total: 2,  oemLabel: "Mahindra",          types: [{ label: "Stacker",      count: 2,  color: "#c9dbff" }] },
+            };
+            const key = `${impactType}|${impactOem}`;
+            const d   = IMPACT_DATA[key] ?? IMPACT_DATA[`all|${impactOem}`] ?? IMPACT_DATA["all|all"];
+            const fsImpact: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
+            return (
+              <div className="col-span-12">
+                <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden" }}>
+                  {/* Header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", height: "80px", boxSizing: "border-box" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "13px", lineHeight: "19.5px", color: "#0f172a" }}>Fleet Composition</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", lineHeight: "18px", color: "#64748b" }}>MHEs by type</span>
+                    </div>
+                    <div style={{ display: "flex", gap: "12px" }}>
+                      <Select value={impactOem} onValueChange={setImpactOem}>
+                        <SelectTrigger style={fsImpact}><SelectValue placeholder="All OEMs" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All OEMs</SelectItem>
+                          <SelectItem value="toyota">Toyota</SelectItem>
+                          <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
+                          <SelectItem value="tata">TATA</SelectItem>
+                          <SelectItem value="mahindra">Mahindra</SelectItem>
+                          <SelectItem value="raymond">Raymond</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={impactType} onValueChange={setImpactType}>
+                        <SelectTrigger style={fsImpact}><SelectValue placeholder="All Types" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          <SelectItem value="reach-truck">Reach Truck</SelectItem>
+                          <SelectItem value="forklift">Forklift</SelectItem>
+                          <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
+                          <SelectItem value="stacker">Stacker</SelectItem>
+                          <SelectItem value="order-picker">Order Picker</SelectItem>
+                          <SelectItem value="vna-truck">VNA Truck</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {/* Body */}
+                  <div style={{ padding: "10px 20px 20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: "10px", color: "#64748b" }}>MHE OEM Type : <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{d.oemLabel}</span></span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontSize: "10px", color: "#64748b" }}>Total:</span>
+                          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563eb" }}>{d.total}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", height: "10px", borderRadius: "3px", overflow: "hidden" }}>
+                        {d.types.map(({ label, count, color }, i) => (
+                          <React.Fragment key={label}>
+                            {i > 0 && <div style={{ width: "2px", background: "#fff" }} />}
+                            <div style={{ flex: count, background: color }} />
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: 500, color: "#0f172a" }}>Type Distribution</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", paddingRight: "22px" }}>
+                        {d.types.map(({ label, count, color }) => (
+                          <div key={label} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "12px", color: "#9ca3af" }}>{label}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, flexShrink: 0 }} />
+                              <span style={{ fontSize: "14px", fontWeight: 600, color: "#0f172a" }}>{String(count).padStart(2, "0")}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Row — Top MHEs with Findings + Top Failing Parts */}
           <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
