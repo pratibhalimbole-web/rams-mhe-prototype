@@ -49,6 +49,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
 } from "recharts";
 import {
   Truck,
@@ -73,6 +75,7 @@ import {
   MinusCircle,
   RefreshCw,
   AlertCircle,
+  Forklift,
 } from "lucide-react";
 import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
@@ -83,17 +86,11 @@ import { MheInsightPanel } from "../../components/widgets/MheInsightPanel";
 import { MachinesRequiringInspectionAttention } from "../../components/widgets/MachinesRequiringInspectionAttention";
 import { CriticalIssuesBanner } from "../../components/widgets/CriticalIssuesBanner";
 import { KpiCardV3 } from "../../components/widgets/v3/KpiCardV3";
-import { EquipmentHealthCardV3 } from "../../components/widgets/v3/EquipmentHealthCardV3";
-import { SeverityTrendLineV3 } from "../../components/widgets/v3/SeverityTrendLineV3";
-import { MachinesAttentionV3 } from "../../components/widgets/v3/MachinesAttentionV3";
-import { ImpactDonutV3 } from "../../components/widgets/v3/ImpactDonutV3";
-import { ImpactTrendRankedV3 } from "../../components/widgets/v3/ImpactTrendRankedV3";
 import { WarrantyExpiryTableV3 } from "../../components/widgets/v3/WarrantyExpiryTableV3";
 import { MonitoringCardV3 } from "../../components/widgets/v3/MonitoringCardV3";
 import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSplitCardV3";
 import { TopFailingPartsV3 } from "../../components/widgets/v3/TopFailingPartsV3";
 import { TopMhesWithFindingsV3 } from "../../components/widgets/v3/TopMhesWithFindingsV3";
-import { SensorAssignmentV3 } from "../../components/widgets/v3/SensorAssignmentV3";
 
 // ─── Design System Colors ────────────────────────────────────────────────────
 export const COLORS = {
@@ -813,6 +810,9 @@ export function OperatorLicenseExpiryDrawer({
 export function FMSDashboard() {
   const [expandedKpi, setExpandedKpi] = useState<string | null>(null);
   const [selectedInspectionMhe, setSelectedInspectionMhe] = useState("Forklift");
+  const [selectedInspectionOem, setSelectedInspectionOem] = useState("all");
+  const [fleetOem,  setFleetOem]  = useState("all");
+  const [fleetType, setFleetType] = useState("all");
   const [selectedEquipment, setSelectedEquipment] = useState("Electric Forklift");
   const [selectedHealthEquipment, setSelectedHealthEquipment] = useState("Overall");
   const [isRenewDrawerOpen, setIsRenewDrawerOpen] = useState(false);
@@ -938,8 +938,16 @@ export function FMSDashboard() {
             </div>
           ))}
 
+          {/* Row — Top MHEs with Findings + Top Failing Parts */}
+          <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
+            <TopMhesWithFindingsV3 />
+          </div>
+          <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
+            <TopFailingPartsV3 />
+          </div>
+
           {/* ── TODAY'S ACTIVITY ── */}
-          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                 <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Today's Activity</span>
@@ -950,42 +958,47 @@ export function FMSDashboard() {
                 <span style={{ fontSize: "10px", fontStyle: "italic", color: "#1b59f8", whiteSpace: "nowrap" }}>Last Refresh 02:02:00</span>
               </div>
             </div>
-            <CardContent className="flex-1 px-5 pt-2 pb-5 flex flex-col">
+            <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col" style={{ gap: "20px" }}>
 
-              {/* Fleet status — 3 columns */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", gap: "0", marginBottom: "20px" }}>
-                {([
-                  { icon: CheckCircle2, label: "ACTIVE",      value: 28, pct: "67%", iconColor: "#16a34a", iconBg: "#f0fdf4" },
-                  { icon: Wrench,       label: "MAINTENANCE", value: 4,  pct: "10%", iconColor: "#f59e0b", iconBg: "#fffbeb" },
-                  { icon: MinusCircle,  label: "IDLE",        value: 10, pct: "24%", iconColor: "#94a3b8", iconBg: "#f1f5f9" },
-                ] as { icon: React.ElementType; label: string; value: number; pct: string; iconColor: string; iconBg: string }[]).flatMap(({ icon: Icon, label, value, pct, iconColor, iconBg }, i, arr) => [
-                  <div key={label} style={{ padding: "4px 12px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "10px" }}>
-                      <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Icon size={13} style={{ color: iconColor }} />
+              {/* Section 1 — Fleet Status */}
+              <div>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>
+                  FLEET STATUS: <span style={{ color: "#0f172a" }}>42 total MHEs</span>
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", gap: "0" }}>
+                  {([
+                    { icon: CheckCircle2, label: "ACTIVE",      value: 28, pct: "67%", iconColor: "#16a34a", iconBg: "#f0fdf4" },
+                    { icon: Wrench,       label: "MAINTENANCE", value: 4,  pct: "10%", iconColor: "#f59e0b", iconBg: "#fffbeb" },
+                    { icon: MinusCircle,  label: "IDLE",        value: 10, pct: "24%", iconColor: "#94a3b8", iconBg: "#f1f5f9" },
+                  ] as { icon: React.ElementType; label: string; value: number; pct: string; iconColor: string; iconBg: string }[]).flatMap(({ icon: Icon, label, value, iconColor, iconBg }, i, arr) => [
+                    <div key={label} style={{ padding: "4px 12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "10px" }}>
+                        <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={13} style={{ color: iconColor }} />
+                        </div>
+                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em" }}>{label}</span>
                       </div>
-                      <span style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em" }}>{label}</span>
-                    </div>
-                    <p style={{ fontSize: "26px", fontWeight: 700, color: "#0f172a", margin: "0 0 2px", lineHeight: 1 }}>{value}</p>
-                    <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{pct}</p>
-                  </div>,
-                  ...(i < arr.length - 1 ? [<div key={`sep-${i}`} style={{ background: "#e2e8f0" }} />] : []),
-                ])}
+                      <p style={{ fontSize: "20px", fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{value}</p>
+                    </div>,
+                    ...(i < arr.length - 1 ? [<div key={`sep-${i}`} style={{ background: "#e2e8f0" }} />] : []),
+                  ])}
+                </div>
               </div>
 
-              {/* Productivity rows with icons */}
-              <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
+              {/* Section 2 — Productivity Metrics */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 12px" }}>PRODUCTIVITY METRICS</p>
                 {([
-                  { icon: Route,   label: "Trips Today",   value: "342",   sub: "↑ +18 vs yesterday" },
-                  { icon: Package, label: "Pallets Moved", value: "1,284", sub: "Across 4 zones"      },
-                  { icon: Clock,   label: "Fleet Hours",   value: "186h",  sub: "Total time logged"   },
-                ] as { icon: React.ElementType; label: string; value: string; sub: string }[]).map(({ icon: _Icon, label, value, sub }, i, arr) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                  { label: "Trips Today",   value: "342",   sub: "↑ +18 vs yesterday" },
+                  { label: "Pallets Moved", value: "1,284", sub: "Across 4 zones"      },
+                  { label: "Fleet Hours",   value: "186h",  sub: "Total time logged"   },
+                ] as { label: string; value: string; sub: string }[]).map(({ label, value, sub }, i, arr) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
                     <div>
                       <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: 0 }}>{label}</p>
                       <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{sub}</p>
                     </div>
-                    <span style={{ fontSize: "18px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>{value}</span>
+                    <span style={{ fontSize: "15px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -994,92 +1007,83 @@ export function FMSDashboard() {
           </Card>
 
           {/* ── TRIP LOAD BREAKDOWN ── */}
-          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                 <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Trip Load Breakdown</span>
                 <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Loaded vs empty trips · last 30 days</span>
               </div>
             </div>
-            <CardContent className="flex-1 px-5 pt-2 pb-5 flex flex-col justify-between">
+            <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col" style={{ gap: "20px" }}>
 
-              {/* Twin hero stats */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", marginBottom: "24px" }}>
-                <div style={{ paddingRight: "20px" }}>
-                  <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 6px", fontWeight: 500 }}>Total Trips</p>
-                  <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 4px" }}>342</p>
-                  <p style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 500, margin: 0 }}>Across all zones</p>
-                </div>
-                <div style={{ background: "#e2e8f0" }} />
-                <div style={{ paddingLeft: "20px" }}>
-                  <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 6px", fontWeight: 500 }}>Load Efficiency</p>
-                  <p style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 4px" }}>73%</p>
-                  <p style={{ fontSize: "10px", color: "#16a34a", fontWeight: 500, margin: 0 }}>↑ Exceeds 65% target</p>
+              {/* Section 1 — Trip Overview */}
+              <div>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>TRIP OVERVIEW</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr" }}>
+                  <div style={{ paddingRight: "20px" }}>
+                    <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 8px", fontWeight: 500 }}>Total Trips</p>
+                    <p style={{ fontSize: "22px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 8px" }}>342</p>
+                    <p style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 500, margin: 0 }}>Across all zones</p>
+                  </div>
+                  <div style={{ background: "#e2e8f0" }} />
+                  <div style={{ paddingLeft: "20px" }}>
+                    <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 8px", fontWeight: 500 }}>Load Efficiency</p>
+                    <p style={{ fontSize: "22px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 8px" }}>73%</p>
+                    <p style={{ fontSize: "10px", color: "#16a34a", fontWeight: 500, margin: 0 }}>↑ Exceeds 65% target</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Donut section title */}
-              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", fontWeight: 600, color: "#0f172a", margin: "0 0 12px" }}>Trip Distribution by Load Status</p>
+              {/* Section 2 — Load Distribution */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>LOAD DISTRIBUTION</p>
 
-              {/* Single donut + legend */}
-              <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
-
-                {/* Donut chart */}
-                <div style={{ position: "relative", flexShrink: 0 }}>
-                  <PieChart width={140} height={140}>
-                    <Pie
-                      data={[
-                        { value: 64 },
-                        { value: 19 },
-                        { value: 18 },
-                      ]}
-                      cx={66} cy={66}
-                      innerRadius={50} outerRadius={62}
-                      startAngle={90} endAngle={-270}
-                      paddingAngle={4}
-                      dataKey="value"
-                      strokeWidth={0}
-                    >
-                      <Cell fill={COLORS.noIssues} />
-                      <Cell fill={COLORS.healthy} />
-                      <Cell fill={COLORS.warning} />
-                    </Pie>
-                  </PieChart>
-                  {/* Center label */}
-                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", pointerEvents: "none" }}>
-                    <p style={{ fontSize: "18px", fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>342</p>
-                    <p style={{ fontSize: "9px", color: "#94a3b8", margin: "3px 0 0" }}>trips</p>
-                  </div>
+                {/* Stacked horizontal bar — TopFailingParts style */}
+                <div style={{ display: "flex", height: "10px", marginBottom: "8px" }}>
+                  <div style={{ flex: 64, background: COLORS.noIssues, borderRadius: "3px 0 0 3px" }} />
+                  <div style={{ flex: 19, background: COLORS.healthy }} />
+                  <div style={{ flex: 18, background: COLORS.warning,  borderRadius: "0 3px 3px 0" }} />
                 </div>
 
-                {/* Legend */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px", flex: 1 }}>
-                  {[
-                    { label: "Loaded",           sub: "Full load trips",      count: 218, pct: "64%", color: COLORS.noIssues },
-                    { label: "Partial",          sub: "Partially filled",     count: 64,  pct: "19%", color: COLORS.healthy  },
-                    { label: "Empty (Deadhead)", sub: "No load — return run", count: 60,  pct: "18%", color: COLORS.warning  },
-                  ].map(({ label, sub, count, pct, color }) => (
-                    <div key={label} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                          <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151" }}>{label}</span>
-                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>{pct}</span>
-                        </div>
-                        <p style={{ fontSize: "10px", color: "#94a3b8", margin: "2px 0 0" }}>{sub} · {count} trips</p>
-                      </div>
+                {/* Labels below each segment */}
+                <div style={{ display: "flex", marginBottom: "14px" }}>
+                  {([
+                    { pct: "64%", flex: 64 },
+                    { pct: "19%", flex: 19 },
+                    { pct: "18%", flex: 18 },
+                  ]).map(({ pct, flex }) => (
+                    <div key={pct} style={{ flex, paddingTop: "5px" }}>
+                      <span style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8" }}>{pct}</span>
                     </div>
                   ))}
                 </div>
 
+                {/* Legend rows */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  {[
+                    { label: "Loaded",           sub: "Full load trips",      count: 218, pct: "64%", color: COLORS.noIssues },
+                    { label: "Partial",          sub: "Partially filled",     count: 64,  pct: "19%", color: COLORS.healthy  },
+                    { label: "Empty (Deadhead)", sub: "No load — return run", count: 60,  pct: "18%", color: COLORS.warning  },
+                  ].map(({ label, sub, count, pct, color }, i, arr) => (
+                    <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                      <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: 0 }}>{label}</p>
+                          <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{sub} · {count} trips</p>
+                        </div>
+                        <span style={{ fontSize: "15px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>{pct}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-
 
             </CardContent>
           </Card>
 
           {/* ── INSPECTION HEALTH ── */}
-          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col">
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
             {/* Header — common dashboard widget style */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
@@ -1090,105 +1094,278 @@ export function FMSDashboard() {
                   Severity distribution by MHE type
                 </span>
               </div>
-              <Select value={selectedInspectionMhe} onValueChange={setSelectedInspectionMhe}>
-                <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif" }}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Forklift">Forklift</SelectItem>
-                  <SelectItem value="Reach Truck">Reach Truck</SelectItem>
-                  <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>
-                  <SelectItem value="Stacker">Stacker</SelectItem>
-                </SelectContent>
-              </Select>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Select value={selectedInspectionOem} onValueChange={setSelectedInspectionOem}>
+                  <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif" }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All OEMs</SelectItem>
+                    <SelectItem value="toyota">Toyota</SelectItem>
+                    <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
+                    <SelectItem value="tata">TATA</SelectItem>
+                    <SelectItem value="mahindra">Mahindra</SelectItem>
+                    <SelectItem value="raymond">Raymond</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={selectedInspectionMhe} onValueChange={setSelectedInspectionMhe}>
+                  <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif" }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Forklift">Forklift</SelectItem>
+                    <SelectItem value="Reach Truck">Reach Truck</SelectItem>
+                    <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>
+                    <SelectItem value="Stacker">Stacker</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <CardContent className="flex-1 px-5 pt-2 pb-5 flex flex-col">
+            <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col" style={{ gap: "20px" }}>
 
-              {/* MHE count */}
-              <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "20px" }}>
-                <span style={{ fontSize: "34px", fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>42</span>
-                <span style={{ fontSize: "13px", color: "#64748b" }}>{selectedInspectionMhe} MHEs</span>
-              </div>
-
-              {/* Parts Healthy Comparison */}
-              <p style={{ fontSize: "12px", fontWeight: 600, color: "#0f172a", margin: "0 0 10px" }}>Parts Healthy Comparison:</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "12px", columnGap: "8px", marginBottom: "20px" }}>
-                {([
-                  { sub: "Most Red Severity",   value: "Battery" },
-                  { sub: "Most Green Severity", value: "Light"   },
-                  { sub: "Most Amber Issues",   value: "Tyres"   },
-                  { sub: "No Issue at Parts",   value: "Engine"  },
-                ] as { sub: string; value: string }[]).map(({ sub, value }) => (
-                  <div key={sub}>
-                    <p style={{ fontSize: "10px", color: "#94a3b8", margin: "0 0 2px" }}>{sub}</p>
-                    <p style={{ fontSize: "13px", fontWeight: 600, color: "#0f172a", margin: 0 }}>{value}</p>
+              {/* Section 1 — Inspection Status Hero */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {/* Hero row */}
+                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Forklift size={16} style={{ color: "#2563eb" }} />
                   </div>
-                ))}
-              </div>
-
-              {/* Divider */}
-              <div style={{ height: "1px", background: "#f1f5f9", marginBottom: "16px" }} />
-
-              {/* Severity Distribution — V3 bar rows */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {([
-                  { label: "Red",       count: 120, color: "#ef4444", iconBg: "#fef2f2", Icon: AlertCircle   },
-                  { label: "Amber",     count: 90,  color: "#f59e0b", iconBg: "#fffbeb", Icon: AlertTriangle },
-                  { label: "Green",     count: 90,  color: "#16a34a", iconBg: "#f0fdf4", Icon: CheckCircle2  },
-                  { label: "No Issues", count: 90,  color: "#94a3b8", iconBg: "#f8fafc", Icon: MinusCircle   },
-                ] as { label: string; count: number; color: string; iconBg: string; Icon: React.ElementType }[]).map(({ label, count, color, iconBg, Icon }) => (
-                  <div key={label}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "5px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: iconBg, border: `1px solid ${color}25`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Icon size={10} style={{ color }} />
+                  <div style={{ padding: "0 6px" }}>
+                    <span style={{ fontSize: "30px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.75px", lineHeight: "36px" }}>42</span>
+                  </div>
+                  <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 400 }}>
+                    {selectedInspectionMhe} MHEs{selectedInspectionOem !== "all" ? ` · ${selectedInspectionOem === "toyota-industries" ? "Toyota Industries" : selectedInspectionOem.charAt(0).toUpperCase() + selectedInspectionOem.slice(1)}` : ""}
+                  </span>
+                </div>
+                {/* Parts Comparison */}
+                <div>
+                  <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>PARTS COMPARISON</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", rowGap: "10px", columnGap: "8px" }}>
+                    {([
+                      { sub: "Most Red",   value: "Battery", dot: "#ef4444" },
+                      { sub: "Most Amber", value: "Tyres",   dot: "#f59e0b" },
+                      { sub: "Most Green", value: "Light",   dot: "#16a34a" },
+                    ] as { sub: string; value: string; dot: string }[]).map(({ sub, value, dot }) => (
+                      <div key={sub}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
+                          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: dot, flexShrink: 0 }} />
+                          <p style={{ fontSize: "10px", color: "#94a3b8", margin: 0 }}>{sub}</p>
                         </div>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: "10px", color: "#64748b" }}>{label}</span>
+                        <p style={{ fontSize: "12px", fontWeight: 600, color: "#0f172a", margin: 0 }}>{value}</p>
                       </div>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", color: "#0f172a" }}>{count}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2 — Severity Distribution */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: 0 }}>SEVERITY DISTRIBUTION</p>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                {([
+                  { label: "RED",   insight: { mheId: "MHE0015", part: "Battery" }, count: 120, color: "#ef4444", Icon: AlertCircle   },
+                  { label: "AMBER", insight: { mheId: "MHE0023", part: "Tyres"   }, count: 90,  color: "#f59e0b", Icon: AlertTriangle },
+                  { label: "GREEN", insight: { mheId: "MHE0008", part: "Light"   }, count: 90,  color: "#16a34a", Icon: CheckCircle2  },
+                ] as { label: string; insight: { mheId: string; part: string }; count: number; color: string; Icon: React.ElementType }[]).map(({ label, insight, count, color, Icon }) => (
+                  <div key={label} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {/* Top: icon+label | count */}
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <div style={{ flex: 1, display: "flex", gap: "8px", alignItems: "center" }}>
+                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={13} style={{ color }} />
+                        </div>
+                        <span style={{ fontSize: "9px", fontWeight: 600, color: "#64748b", letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</span>
+                      </div>
+                      <span style={{ fontSize: "16px", fontWeight: 700, color: "#64748b", letterSpacing: "-0.027em" }}>{count}</span>
                     </div>
-                    <div style={{ width: "100%", height: "3px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
-                      <div style={{ width: `${(count / 120) * 100}%`, height: "100%", background: color, borderRadius: "3px" }} />
+                    {/* Insight: MHE ID | Part inline */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 400 }}>MHE ID: </span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{insight.mheId}</span>
+                      <span style={{ fontSize: "10px", color: "#64748b" }}>|</span>
+                      <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 400 }}>Part: </span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{insight.part}</span>
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
 
             </CardContent>
 
           </Card>
 
-          {/* Row — Top Failing Parts + Top MHEs with Findings */}
-          <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
-            <TopFailingPartsV3 />
-          </div>
-          <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
-            <TopMhesWithFindingsV3 />
-          </div>
+          {/* ── FLEET COMPOSITION ── */}
+          {(() => {
+            type FleetRow = { label: string; count: number; color: string };
+            const FLEET_DATA: Record<string, { total: number; types: FleetRow[] }> = { // eslint-disable-line
+              "all|all":                    { total: 42, types: [{ label: "Forklift", count: 18, color: "#1B59F8" }, { label: "Reach Truck", count: 12, color: "#4C7DFF" }, { label: "Pallet Jack", count: 8,  color: "#8FB2FF" }, { label: "Stacker", count: 4, color: "#C9DBFF" }] },
+              "forklift|all":               { total: 18, types: [{ label: "Forklift", count: 18, color: "#1B59F8" }] },
+              "reach-truck|all":            { total: 12, types: [{ label: "Reach Truck", count: 12, color: "#4C7DFF" }] },
+              "pallet-jack|all":            { total: 8,  types: [{ label: "Pallet Jack", count: 8,  color: "#8FB2FF" }] },
+              "stacker|all":                { total: 4,  types: [{ label: "Stacker", count: 4, color: "#C9DBFF" }] },
+              "all|toyota":                 { total: 20, types: [{ label: "Forklift", count: 8,  color: "#1B59F8" }, { label: "Reach Truck", count: 10, color: "#4C7DFF" }, { label: "Stacker", count: 2, color: "#C9DBFF" }] },
+              "forklift|toyota":            { total: 8,  types: [{ label: "Forklift", count: 8,  color: "#1B59F8" }] },
+              "reach-truck|toyota":         { total: 10, types: [{ label: "Reach Truck", count: 10, color: "#4C7DFF" }] },
+              "all|toyota-industries":      { total: 5,  types: [{ label: "Pallet Jack", count: 5,  color: "#8FB2FF" }] },
+              "pallet-jack|toyota-industries": { total: 5, types: [{ label: "Pallet Jack", count: 5, color: "#8FB2FF" }] },
+              "all|tata":                   { total: 8,  types: [{ label: "Forklift", count: 5,  color: "#1B59F8" }, { label: "Stacker", count: 3, color: "#C9DBFF" }] },
+              "forklift|tata":              { total: 5,  types: [{ label: "Forklift", count: 5,  color: "#1B59F8" }] },
+              "all|mahindra":               { total: 6,  types: [{ label: "Reach Truck", count: 2, color: "#4C7DFF" }, { label: "Stacker", count: 4, color: "#C9DBFF" }] },
+              "stacker|mahindra":           { total: 4,  types: [{ label: "Stacker", count: 4,  color: "#C9DBFF" }] },
+              "all|raymond":                { total: 3,  types: [{ label: "Forklift", count: 2,  color: "#1B59F8" }, { label: "Pallet Jack", count: 1, color: "#8FB2FF" }] },
+              "pallet-jack|raymond":        { total: 1,  types: [{ label: "Pallet Jack", count: 1, color: "#8FB2FF" }] },
+            };
+            const key = `${fleetType}|${fleetOem}`;
+            const fd  = FLEET_DATA[key] ?? FLEET_DATA[`all|${fleetOem}`] ?? FLEET_DATA["all|all"];
+            const filterStyle2: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
+            return (
+              <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Fleet Composition</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>MHEs by type</span>
+                  </div>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <Select value={fleetOem} onValueChange={setFleetOem}>
+                      <SelectTrigger style={filterStyle2}><SelectValue placeholder="All OEMs" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All OEMs</SelectItem>
+                        <SelectItem value="toyota">Toyota</SelectItem>
+                        <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
+                        <SelectItem value="tata">TATA</SelectItem>
+                        <SelectItem value="mahindra">Mahindra</SelectItem>
+                        <SelectItem value="raymond">Raymond</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={fleetType} onValueChange={setFleetType}>
+                      <SelectTrigger style={filterStyle2}><SelectValue placeholder="All Types" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="forklift">Forklift</SelectItem>
+                        <SelectItem value="reach-truck">Reach Truck</SelectItem>
+                        <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
+                        <SelectItem value="stacker">Stacker</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col justify-between">
+                  {/* Donut */}
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
+                    <div style={{ position: "relative" }}>
+                      <PieChart width={200} height={200}>
+                        <Pie data={fd.types.map(t => ({ value: t.count }))} cx={96} cy={96} innerRadius={66} outerRadius={86} startAngle={90} endAngle={-270} paddingAngle={0} dataKey="value" strokeWidth={0}>
+                          {fd.types.map(({ label, color }) => <Cell key={label} fill={color} />)}
+                        </Pie>
+                      </PieChart>
+                      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", pointerEvents: "none" }}>
+                        <p style={{ fontSize: "26px", fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{fd.total}</p>
+                        <p style={{ fontSize: "10px", color: "#94a3b8", margin: "4px 0 0" }}>MHEs</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Legend */}
+                  <div>
+                    <div style={{ height: "1px", background: "#f1f5f9", marginBottom: "12px" }} />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "14px", columnGap: "8px" }}>
+                      {fd.types.map(({ label, count, color }) => (
+                        <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, flexShrink: 0 }} />
+                            <span style={{ fontSize: "12px", color: "#64748b" }}>{label}</span>
+                          </div>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
-          {/* Sensor Assignment */}
-          <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
-            <SensorAssignmentV3 />
-          </div>
+          {/* ── INSPECTIONS BY MHE TYPE ── */}
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Inspections by MHE Type</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Severity distribution per type · last 30 days</span>
+              </div>
+            </div>
+            <CardContent className="flex-1 px-5 pt-4 pb-4 flex flex-col" style={{ gap: "12px" }}>
+              {/* Legend */}
+              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                {([{ label: "Red", color: "#ef4444" }, { label: "Amber", color: "#f59e0b" }, { label: "Green", color: "#16a34a" }]).map(({ label, color }) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: color }} />
+                    <span style={{ fontSize: "10px", color: "#64748b" }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Bar chart */}
+              <div style={{ flex: 1 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { name: "Reach Truck", Red: 8,  Amber: 5,  Green: 22 },
+                      { name: "Forklift",    Red: 2,  Amber: 3,  Green: 20 },
+                      { name: "Pallet Jack", Red: 2,  Amber: 3,  Green: 23 },
+                      { name: "Stacker",     Red: 1,  Amber: 2,  Green: 11 },
+                      { name: "Order Picker",Red: 0,  Amber: 2,  Green: 8  },
+                      { name: "VNA Truck",   Red: 0,  Amber: 1,  Green: 5  },
+                    ]}
+                    barSize={24}
+                    margin={{ top: 4, right: 0, left: -28, bottom: 0 }}
+                  >
+                    <CartesianGrid vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={0} />
+                    <YAxis tick={{ fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ fontSize: "11px", borderRadius: "6px", border: "1px solid #e2e8f0" }} cursor={{ fill: "#f8fafc" }} />
+                    <Bar dataKey="Red"   stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Amber" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Green" stackId="a" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Row 4 — Severity trend + Fleet status */}
-          <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
-            <SeverityTrendLineV3 />
-          </div>
-          <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
-            <ImpactDonutV3 />
-          </div>
-
-          {/* Row 5 — 3 Operational widgets */}
-          <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
-            <MachinesAttentionV3 />
-          </div>
-          <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
-            <EquipmentHealthCardV3 />
-          </div>
-          <div className="col-span-12 md:col-span-6 xl:col-span-4 flex min-h-[360px]">
-            <ImpactTrendRankedV3 />
-          </div>
+          {/* ── TOP PERFORMING OPERATORS ── */}
+          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Top Performing Operators</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Composite score · last 7 days</span>
+              </div>
+            </div>
+            <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col justify-between">
+              {([
+                { rank: 1, initials: "RK", name: "Rajesh Kumar",  score: 92, rankColor: "#f59e0b" },
+                { rank: 2, initials: "SP", name: "Suresh Patil",  score: 88, rankColor: "#f59e0b" },
+                { rank: 3, initials: "VS", name: "Vikram Singh",  score: 85, rankColor: "#f59e0b" },
+                { rank: 4, initials: "PN", name: "Priya Nair",    score: 80, rankColor: "#94a3b8" },
+                { rank: 5, initials: "MS", name: "Manoj Sharma",  score: 76, rankColor: "#94a3b8" },
+              ]).map(({ rank, initials, name, score, rankColor }, i, arr) => {
+                const barColor = rank <= 3 ? "#16a34a" : "#1B59F8";
+                return (
+                  <div key={name} style={{ padding: "13px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: rankColor, width: "20px", flexShrink: 0 }}>#{rank}</span>
+                      <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "#ede9fe", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: "#7c3aed" }}>{initials}</span>
+                      </div>
+                      <span style={{ fontSize: "13px", fontWeight: 500, color: "#374151", flex: 1 }}>{name}</span>
+                      <span style={{ fontSize: "15px", fontWeight: 700, color: barColor }}>{score}</span>
+                    </div>
+                    <div style={{ marginLeft: "30px", height: "4px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
+                      <div style={{ width: `${score}%`, height: "100%", background: barColor, borderRadius: "3px" }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
 
           {/* Warranty / License Expiry Table */}
           <div className="col-span-12">

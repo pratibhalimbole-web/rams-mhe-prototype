@@ -6,11 +6,22 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 const MHE_SETS: Record<string, string[]> = {
-  all:           ["FL-007", "PJ-016", "RT-013", "FL-015", "PJ-003"],
-  forklift:      ["FL-007", "FL-015", "FL-022", "FL-011", "FL-008"],
-  "reach-truck": ["RT-013", "RT-007", "RT-002", "RT-018", "RT-005"],
-  "pallet-jack": ["PJ-016", "PJ-003", "PJ-009", "PJ-021", "PJ-004"],
-  stacker:       ["ST-001", "ST-005", "ST-003", "ST-007", "ST-002"],
+  "all|all":                    ["FL-007", "PJ-016", "RT-013", "FL-015", "PJ-003"],
+  "forklift|all":               ["FL-007", "FL-015", "FL-022", "FL-011", "FL-008"],
+  "reach-truck|all":            ["RT-013", "RT-007", "RT-002", "RT-018", "RT-005"],
+  "pallet-jack|all":            ["PJ-016", "PJ-003", "PJ-009", "PJ-021", "PJ-004"],
+  "stacker|all":                ["ST-001", "ST-005", "ST-003", "ST-007", "ST-002"],
+  "all|toyota":                 ["FL-007", "RT-013", "FL-015", "RT-007", "RT-002"],
+  "forklift|toyota":            ["FL-007", "FL-015", "FL-022", "FL-011", "FL-008"],
+  "reach-truck|toyota":         ["RT-013", "RT-007", "RT-002", "RT-018", "RT-005"],
+  "all|toyota-industries":      ["PJ-016", "PJ-003", "PJ-009", "PJ-021", "PJ-004"],
+  "pallet-jack|toyota-industries": ["PJ-016", "PJ-003", "PJ-009", "PJ-021", "PJ-004"],
+  "all|tata":                   ["FL-022", "FL-011", "ST-001", "FL-008", "ST-005"],
+  "forklift|tata":              ["FL-022", "FL-011", "FL-008", "FL-007", "FL-015"],
+  "all|mahindra":               ["ST-001", "ST-005", "ST-003", "ST-007", "ST-002"],
+  "stacker|mahindra":           ["ST-001", "ST-005", "ST-003", "ST-007", "ST-002"],
+  "all|raymond":                ["PJ-021", "PJ-004", "FL-011", "PJ-009", "FL-008"],
+  "pallet-jack|raymond":        ["PJ-021", "PJ-004", "PJ-009", "PJ-016", "PJ-003"],
 };
 
 function seededRandom(seed: number) {
@@ -120,10 +131,12 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export function TopMhesWithFindingsV3() {
-  const [type, setType]           = useState("all");
+  const [type,      setType]      = useState("all");
+  const [oem,       setOem]       = useState("all");
   const [dateRange, setDateRange] = useState("last_7_days");
 
-  const mhes = MHE_SETS[type] ?? MHE_SETS.all;
+  const key  = `${type}|${oem}`;
+  const mhes = MHE_SETS[key] ?? MHE_SETS[`${type}|all`] ?? MHE_SETS["all|all"];
   const data = useMemo(() => generateData(mhes, dateRange), [mhes, dateRange]);
 
   return (
@@ -134,7 +147,18 @@ export function TopMhesWithFindingsV3() {
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Top MHEs with Findings</span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Red vs Amber severity trend over time</span>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <Select value={oem} onValueChange={setOem}>
+            <SelectTrigger style={filterStyle}><SelectValue placeholder="All OEMs" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All OEMs</SelectItem>
+              <SelectItem value="toyota">Toyota</SelectItem>
+              <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
+              <SelectItem value="tata">TATA</SelectItem>
+              <SelectItem value="mahindra">Mahindra</SelectItem>
+              <SelectItem value="raymond">Raymond</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={type} onValueChange={setType}>
             <SelectTrigger style={filterStyle}><SelectValue placeholder="All Types" /></SelectTrigger>
             <SelectContent>

@@ -5,42 +5,30 @@ import {
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
-const ALL_DATA: Record<string, { name: string; red: number; amber: number }[]> = {
-  all: [
-    { name: "Hydraulic seal",  red: 3, amber: 8 },
-    { name: "Forks alignment", red: 2, amber: 6 },
-    { name: "Lift chain wear", red: 1, amber: 3 },
-    { name: "Brake pads",      red: 0, amber: 3 },
-    { name: "Battery cells",   red: 1, amber: 2 },
-  ],
-  forklift: [
-    { name: "Hydraulic seal",  red: 2, amber: 5 },
-    { name: "Lift chain wear", red: 1, amber: 3 },
-    { name: "Brake pads",      red: 0, amber: 2 },
-    { name: "Battery cells",   red: 1, amber: 2 },
-    { name: "Forks alignment", red: 1, amber: 1 },
-  ],
-  "reach-truck": [
-    { name: "Forks alignment", red: 1, amber: 4 },
-    { name: "Hydraulic seal",  red: 1, amber: 3 },
-    { name: "Mast wear",       red: 0, amber: 2 },
-    { name: "Battery cells",   red: 0, amber: 1 },
-    { name: "Brake pads",      red: 0, amber: 1 },
-  ],
-  "pallet-jack": [
-    { name: "Brake pads",      red: 0, amber: 2 },
-    { name: "Battery cells",   red: 0, amber: 1 },
-    { name: "Hydraulic seal",  red: 0, amber: 1 },
-    { name: "Lift chain wear", red: 0, amber: 1 },
-    { name: "Forks alignment", red: 0, amber: 1 },
-  ],
-  stacker: [
-    { name: "Lift chain wear", red: 1, amber: 2 },
-    { name: "Hydraulic seal",  red: 0, amber: 1 },
-    { name: "Battery cells",   red: 0, amber: 1 },
-    { name: "Brake pads",      red: 0, amber: 1 },
-    { name: "Forks alignment", red: 0, amber: 1 },
-  ],
+type PartRow = { name: string; red: number; amber: number };
+type DataKey = string;
+
+const ALL_DATA: Record<DataKey, PartRow[]> = {
+  "all|all":               [{ name: "Hydraulic seal",  red: 3, amber: 8 }, { name: "Forks alignment", red: 2, amber: 6 }, { name: "Lift chain wear", red: 1, amber: 3 }, { name: "Brake pads", red: 0, amber: 3 }, { name: "Battery cells", red: 1, amber: 2 }],
+  "forklift|all":          [{ name: "Hydraulic seal",  red: 2, amber: 5 }, { name: "Lift chain wear", red: 1, amber: 3 }, { name: "Brake pads", red: 0, amber: 2 }, { name: "Battery cells", red: 1, amber: 2 }, { name: "Forks alignment", red: 1, amber: 1 }],
+  "reach-truck|all":       [{ name: "Forks alignment", red: 1, amber: 4 }, { name: "Hydraulic seal",  red: 1, amber: 3 }, { name: "Mast wear", red: 0, amber: 2 }, { name: "Battery cells", red: 0, amber: 1 }, { name: "Brake pads", red: 0, amber: 1 }],
+  "pallet-jack|all":       [{ name: "Brake pads",      red: 0, amber: 2 }, { name: "Battery cells",   red: 0, amber: 1 }, { name: "Hydraulic seal", red: 0, amber: 1 }, { name: "Lift chain wear", red: 0, amber: 1 }, { name: "Forks alignment", red: 0, amber: 1 }],
+  "stacker|all":           [{ name: "Lift chain wear", red: 1, amber: 2 }, { name: "Hydraulic seal",  red: 0, amber: 1 }, { name: "Battery cells", red: 0, amber: 1 }, { name: "Brake pads", red: 0, amber: 1 }, { name: "Forks alignment", red: 0, amber: 1 }],
+  // Toyota
+  "all|toyota":            [{ name: "Battery cells",   red: 2, amber: 6 }, { name: "Hydraulic seal",  red: 1, amber: 4 }, { name: "Brake pads", red: 1, amber: 3 }, { name: "Forks alignment", red: 0, amber: 2 }, { name: "Lift chain wear", red: 0, amber: 2 }],
+  "forklift|toyota":       [{ name: "Battery cells",   red: 2, amber: 5 }, { name: "Hydraulic seal",  red: 1, amber: 3 }, { name: "Brake pads", red: 0, amber: 2 }, { name: "Forks alignment", red: 0, amber: 1 }, { name: "Lift chain wear", red: 0, amber: 1 }],
+  "reach-truck|toyota":    [{ name: "Mast wear",       red: 1, amber: 3 }, { name: "Battery cells",   red: 0, amber: 2 }, { name: "Forks alignment", red: 0, amber: 2 }, { name: "Hydraulic seal", red: 0, amber: 1 }, { name: "Brake pads", red: 0, amber: 1 }],
+  // TATA
+  "all|tata":              [{ name: "Hydraulic seal",  red: 3, amber: 5 }, { name: "Lift chain wear", red: 2, amber: 4 }, { name: "Brake pads", red: 1, amber: 3 }, { name: "Battery cells", red: 0, amber: 2 }, { name: "Forks alignment", red: 0, amber: 1 }],
+  "forklift|tata":         [{ name: "Hydraulic seal",  red: 2, amber: 4 }, { name: "Lift chain wear", red: 1, amber: 3 }, { name: "Brake pads", red: 1, amber: 2 }, { name: "Battery cells", red: 0, amber: 1 }, { name: "Forks alignment", red: 0, amber: 1 }],
+  // Mahindra
+  "all|mahindra":          [{ name: "Forks alignment", red: 2, amber: 5 }, { name: "Battery cells",   red: 1, amber: 4 }, { name: "Hydraulic seal", red: 1, amber: 2 }, { name: "Brake pads", red: 0, amber: 2 }, { name: "Lift chain wear", red: 0, amber: 1 }],
+  "stacker|mahindra":      [{ name: "Battery cells",   red: 1, amber: 3 }, { name: "Lift chain wear", red: 0, amber: 2 }, { name: "Hydraulic seal", red: 0, amber: 1 }, { name: "Brake pads", red: 0, amber: 1 }, { name: "Forks alignment", red: 0, amber: 1 }],
+  // Raymond
+  "all|raymond":           [{ name: "Battery cells",   red: 2, amber: 4 }, { name: "Brake pads",      red: 1, amber: 3 }, { name: "Hydraulic seal", red: 0, amber: 3 }, { name: "Lift chain wear", red: 0, amber: 2 }, { name: "Forks alignment", red: 0, amber: 1 }],
+  "pallet-jack|raymond":   [{ name: "Brake pads",      red: 1, amber: 2 }, { name: "Battery cells",   red: 0, amber: 2 }, { name: "Hydraulic seal", red: 0, amber: 1 }, { name: "Lift chain wear", red: 0, amber: 1 }, { name: "Forks alignment", red: 0, amber: 1 }],
+  // Toyota Industries
+  "all|toyota-industries": [{ name: "Lift chain wear", red: 1, amber: 5 }, { name: "Hydraulic seal",  red: 1, amber: 3 }, { name: "Battery cells", red: 0, amber: 3 }, { name: "Brake pads", red: 0, amber: 2 }, { name: "Forks alignment", red: 0, amber: 1 }],
 };
 
 const filterStyle: React.CSSProperties = {
@@ -82,7 +70,9 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export function TopFailingPartsV3() {
   const [type, setType] = useState("all");
-  const data = ALL_DATA[type] ?? ALL_DATA.all;
+  const [oem,  setOem]  = useState("all");
+  const key = `${type}|${oem}`;
+  const data = ALL_DATA[key] ?? ALL_DATA[`${type}|all`] ?? ALL_DATA["all|all"];
 
   return (
     <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
@@ -92,16 +82,29 @@ export function TopFailingPartsV3() {
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Top Failing Parts</span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Findings by part · last 30 days</span>
         </div>
-        <Select value={type} onValueChange={setType}>
-          <SelectTrigger style={filterStyle}><SelectValue placeholder="All Types" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="forklift">Forklift</SelectItem>
-            <SelectItem value="reach-truck">Reach Truck</SelectItem>
-            <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
-            <SelectItem value="stacker">Stacker</SelectItem>
-          </SelectContent>
-        </Select>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <Select value={oem} onValueChange={setOem}>
+            <SelectTrigger style={filterStyle}><SelectValue placeholder="All OEMs" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All OEMs</SelectItem>
+              <SelectItem value="toyota">Toyota</SelectItem>
+              <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
+              <SelectItem value="tata">TATA</SelectItem>
+              <SelectItem value="mahindra">Mahindra</SelectItem>
+              <SelectItem value="raymond">Raymond</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger style={filterStyle}><SelectValue placeholder="All Types" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="forklift">Forklift</SelectItem>
+              <SelectItem value="reach-truck">Reach Truck</SelectItem>
+              <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
+              <SelectItem value="stacker">Stacker</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Chart */}
