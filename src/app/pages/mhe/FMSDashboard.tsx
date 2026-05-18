@@ -1355,7 +1355,7 @@ export function FMSDashboard() {
                 </div>
 
                 {/* Scrollable list */}
-                <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ flex: 1, overflowY: "auto", padding: "0px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                   {machinesInspectionData.map((row: any) => {
                     const formattedDate = new Date(row.lastInspection).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
                     const partWithMostIssues = getPartWithMostIssuesForMHE(row.mheId);
@@ -1364,19 +1364,19 @@ export function FMSDashboard() {
                       <div key={row.mheId} style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                         {/* Row 1: icon + ID + date + badge */}
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
                             <div style={{ width: "30px", height: "30px", borderRadius: "7px", background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Truck style={{ width: "13px", height: "13px", color: "#1b59f8" }} />
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1px", minWidth: 0 }}>
                               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", fontWeight: 700, color: "#1b59f8", fontVariantNumeric: "tabular-nums" }}>{row.mheId}</span>
-                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Last Inspection: {formattedDate}</span>
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Last Inspection: {formattedDate}</span>
                             </div>
                           </div>
                           {partWithMostIssues ? (
-                            <div style={{ display: "flex", alignItems: "center", gap: "3px", padding: "2px 7px", borderRadius: "99px", background: "#eef2ff", border: "1px solid #e0e7ff", flexShrink: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "3px", padding: "2px 7px", borderRadius: "99px", background: "#eef2ff", border: "1px solid #e0e7ff", flexShrink: 0, maxWidth: "120px" }}>
                               <AlertTriangle style={{ width: "10px", height: "10px", color: "#2563eb", flexShrink: 0 }} />
-                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 500, color: "#1e40af" }}>Most Issues: {partWithMostIssues}</span>
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 500, color: "#1e40af", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Most Issues: {partWithMostIssues}</span>
                             </div>
                           ) : (
                             <div style={{ padding: "2px 7px", borderRadius: "99px", background: "#ecfdf5", border: "1px solid #d1fae5", flexShrink: 0 }}>
@@ -1385,16 +1385,16 @@ export function FMSDashboard() {
                           )}
                         </div>
 
-                        {/* Row 2: Reports Reported | Reports Closed */}
+                        {/* Row 2: Reported | Closed */}
                         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
                             <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{String(stats.reported).padStart(2, "0")}</span>
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Reports Reported</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Reported</span>
                           </div>
                           <div style={{ width: "1px", height: "28px", background: "#e2e8f0", flexShrink: 0 }} />
                           <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
                             <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{String(stats.closed).padStart(2, "0")}</span>
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Reports Closed</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Closed</span>
                           </div>
                         </div>
 
