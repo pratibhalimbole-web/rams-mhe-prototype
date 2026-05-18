@@ -175,13 +175,12 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
               <th style={thStyle}>License Expiry</th>
               <th style={thStyle}>Days Remaining</th>
               <th style={thStyle}>Status</th>
-              <th style={thStyle}>Action</th>
             </tr>
           </thead>
           <tbody>
             {pageRows.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ ...tdStyle, textAlign: "center", color: "#94a3b8", padding: "32px 24px" }}>
+                <td colSpan={5} style={{ ...tdStyle, textAlign: "center", color: "#94a3b8", padding: "32px 24px" }}>
                   No records found.
                 </td>
               </tr>
@@ -208,20 +207,6 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
                 <td style={tdStyle}>{row.expiry}</td>
                 <td style={{ ...tdStyle, color: "#64748b" }}>{row.days} Days</td>
                 <td style={tdStyle}><StatusBadge status={row.status} /></td>
-                <td style={tdStyle}>
-                  <span
-                    onClick={() => onRenew?.(row.id, category)}
-                    style={{
-                      fontFamily: "Inter, sans-serif",
-                      fontWeight: 500,
-                      fontSize: 13,
-                      color: "#2563eb",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Renew
-                  </span>
-                </td>
               </tr>
             ))}
           </tbody>
