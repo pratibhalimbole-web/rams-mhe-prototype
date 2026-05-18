@@ -99,6 +99,13 @@ export const COLORS = {
 };
 
 // ─── Chart Configs ───────────────────────────────────────────────────────────
+export const donutChartConfig = {
+  noIssues: { label: "No Issues",       color: COLORS.noIssues },
+  healthy:  { label: "Healthy (Green)", color: COLORS.healthy  },
+  warning:  { label: "Warning (Amber)", color: COLORS.warning  },
+  critical: { label: "Critical (Red)",  color: COLORS.critical },
+} satisfies ChartConfig;
+
 export const failureChartConfig = {
   "No Issues": { label: "No Issues", color: "hsl(217, 98%, 54%)" },
   "Green":     { label: "Healthy",   color: "hsl(222, 84%, 62%)" },
@@ -1289,80 +1296,109 @@ export function FMSDashboard() {
 
           {/* ── INSPECTIONS BY MHE TYPE ── */}
           {(() => {
-            const inspData = [
-              { type: "Reach Truck",  short: "Reach",   red: 8,  amber: 5,  green: 22 },
-              { type: "Forklift",     short: "Fork",    red: 2,  amber: 3,  green: 20 },
-              { type: "Order Picker", short: "Order",   red: 0,  amber: 2,  green: 8  },
-              { type: "Pallet Jack",  short: "Pallet",  red: 2,  amber: 3,  green: 23 },
-              { type: "VNA Truck",    short: "VNA",     red: 0,  amber: 1,  green: 5  },
-              { type: "Stacker",      short: "Stacker", red: 1,  amber: 2,  green: 11 },
-            ];
-            const totalRed   = inspData.reduce((s, r) => s + r.red,   0);
-            const totalAmber = inspData.reduce((s, r) => s + r.amber, 0);
-            const totalGreen = inspData.reduce((s, r) => s + r.green, 0);
-            const grandTotal = totalRed + totalAmber + totalGreen;
-            const overallPass = Math.round((totalGreen / grandTotal) * 100);
-            const chartData = inspData.map(r => ({ name: r.short, Critical: r.red, Attention: r.amber, Healthy: r.green }));
-            const inspChartConfig = {
-              Critical:  { label: "Critical",  color: "#ef4444" },
-              Attention: { label: "Attention", color: "#f59e0b" },
-              Healthy:   { label: "Healthy",   color: "#22c55e" },
-            } satisfies ChartConfig;
-            return (
-              <Card className="col-span-12 xl:col-span-6 shadow-none border-[var(--border)] flex flex-col">
-                {/* Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Inspections by MHE Type</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Severity distribution · last 30 days</span>
-                  </div>
-                  {/* Summary badges */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    {([
-                      { label: `${totalRed} Red`,   color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
-                      { label: `${totalAmber} Amb`, color: "#d97706", bg: "#fffbeb", border: "#fde68a" },
-                      { label: `${overallPass}% ✓`, color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0" },
-                    ]).map(({ label, color, bg, border }) => (
-                      <span key={label} style={{ fontSize: "10px", fontWeight: 700, color, background: bg, border: `1px solid ${border}`, borderRadius: "99px", padding: "2px 8px", lineHeight: "16px" }}>{label}</span>
+            const INSP_DATA: Record<string, { name: string; short: string; Critical: number; Attention: number; Healthy: number }[]> = {
+              "all":          [{ name: "Reach Truck",  short: "Reach",   Critical: 8,  Attention: 5,  Healthy: 22 }, { name: "Forklift",     short: "Fork",    Critical: 2,  Attention: 3,  Healthy: 20 }, { name: "Pallet Jack",  short: "Pallet",  Critical: 2,  Attention: 3,  Healthy: 23 }, { name: "Stacker",      short: "Stacker", Critical: 1,  Attention: 2,  Healthy: 11 }, { name: "Order Picker", short: "Order",   Critical: 0,  Attention: 2,  Healthy: 8  }, { name: "VNA Truck",    short: "VNA",     Critical: 0,  Attention: 1,  Healthy: 5  }],
+              "last_7_days":  [{ name: "Reach Truck",  short: "Reach",   Critical: 3,  Attention: 2,  Healthy: 8  }, { name: "Forklift",     short: "Fork",    Critical: 1,  Attention: 1,  Healthy: 7  }, { name: "Pallet Jack",  short: "Pallet",  Critical: 1,  Attention: 1,  Healthy: 9  }, { name: "Stacker",      short: "Stacker", Critical: 0,  Attention: 1,  Healthy: 4  }, { name: "Order Picker", short: "Order",   Critical: 0,  Attention: 1,  Healthy: 3  }, { name: "VNA Truck",    short: "VNA",     Critical: 0,  Attention: 0,  Healthy: 2  }],
+              "last_90_days": [{ name: "Reach Truck",  short: "Reach",   Critical: 22, Attention: 14, Healthy: 60 }, { name: "Forklift",     short: "Fork",    Critical: 6,  Attention: 9,  Healthy: 55 }, { name: "Pallet Jack",  short: "Pallet",  Critical: 5,  Attention: 8,  Healthy: 62 }, { name: "Stacker",      short: "Stacker", Critical: 3,  Attention: 6,  Healthy: 30 }, { name: "Order Picker", short: "Order",   Critical: 1,  Attention: 5,  Healthy: 22 }, { name: "VNA Truck",    short: "VNA",     Critical: 0,  Attention: 3,  Healthy: 14 }],
+            };
+            const filterStyle: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
+
+            function InspByTypeWidget() {
+              const [period, setPeriod] = React.useState("all");
+              const data = INSP_DATA[period] ?? INSP_DATA["all"];
+              const chartData = data.map(r => ({ ...r, name: r.short }));
+              const top  = data.reduce((a, b) => (a.Critical > b.Critical ? a : b));
+
+              function CustomTooltip({ active, payload, label }: any) {
+                if (!active || !payload?.length) return null;
+                const fullName = data.find(r => r.short === label)?.name ?? label;
+                const c = payload.find((p: any) => p.dataKey === "Critical")?.value  ?? 0;
+                const a = payload.find((p: any) => p.dataKey === "Attention")?.value ?? 0;
+                const h = payload.find((p: any) => p.dataKey === "Healthy")?.value   ?? 0;
+                return (
+                  <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "150px" }}>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a", margin: "0 0 8px" }}>{fullName}</p>
+                    {([["Red", "#ef4444", c], ["Amber", "#f59e0b", a], ["Green", "#16a34a", h]] as [string, string, number][]).map(([l, col, v]) => (
+                      <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
+                          <span style={{ width: "7px", height: "7px", borderRadius: "2px", background: col, flexShrink: 0, display: "inline-block" }} />{l}
+                        </span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{v}</span>
+                      </div>
                     ))}
+                    <div style={{ height: "0.5px", background: "#e2e8f0", margin: "6px 0 4px" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>Total</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "#0f172a" }}>{c + a + h}</span>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="col-span-12 xl:col-span-6 flex flex-col" style={{ minHeight: "422px" }}>
+                  <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Inspections by MHE Type</span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Severity findings by type · last 30 days</span>
+                      </div>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <Select value={period} onValueChange={setPeriod}>
+                          <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Last 30 days</SelectItem>
+                            <SelectItem value="last_7_days">Last 7 days</SelectItem>
+                            <SelectItem value="last_90_days">Last 90 days</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Chart */}
+                    <div style={{ flex: 1, padding: "14px 16px 12px 4px", minHeight: 0 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }} barSize={10} barCategoryGap="30%">
+                          <CartesianGrid vertical={false} stroke="#f1f5f9" strokeDasharray="" />
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <YAxis
+                            tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#94a3b8" }}
+                            axisLine={false}
+                            tickLine={false}
+                            width={32}
+                          />
+                          <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f8fafc" }} />
+                          <Bar dataKey="Critical"  fill="#1b59f8" stackId="s" radius={[0, 0, 0, 0]} />
+                          <Bar dataKey="Attention" fill="#7397f6" stackId="s" radius={[0, 0, 0, 0]} />
+                          <Bar dataKey="Healthy"   fill="#c9dbff" stackId="s" radius={[3, 3, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {top.name} has highest Red severity — {top.Critical} Red · {top.Attention} Amber
+                        </span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                        </span>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-
-                <CardContent className="flex-1 flex flex-col px-4 pt-3 pb-3 gap-0" style={{ minHeight: 0 }}>
-                  {/* Shadcn ChartContainer with stacked BarChart */}
-                  <ChartContainer config={inspChartConfig} className="flex-1 w-full" style={{ minHeight: 0 }}>
-                    <BarChart
-                      data={chartData}
-                      barSize={32}
-                      margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
-                    >
-                      <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
-                      <XAxis
-                        dataKey="name"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 10, fontWeight: 600, fill: "#64748b", fontFamily: "Inter, sans-serif" }}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 10, fill: "#94a3b8", fontFamily: "Inter, sans-serif" }}
-                        tickCount={5}
-                        width={36}
-                      />
-                      <ChartTooltip
-                        cursor={{ fill: "var(--muted)", opacity: 0.5, radius: 6 }}
-                        content={<ChartTooltipContent indicator="dot" />}
-                      />
-                      <ChartLegend content={<ChartLegendContent />} />
-                      <Bar dataKey="Critical"  stackId="s" fill="var(--color-Critical)"  radius={[0, 0, 0, 0]} />
-                      <Bar dataKey="Attention" stackId="s" fill="var(--color-Attention)" radius={[0, 0, 0, 0]} />
-                      <Bar dataKey="Healthy"   stackId="s" fill="var(--color-Healthy)"   radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-            );
+              );
+            }
+            return <InspByTypeWidget />;
           })()}
 
           {/* Warranty / License Expiry Table */}
