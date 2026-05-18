@@ -40,9 +40,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import {
-  PieChart,
   Pie,
-  Cell,
   Sector,
   BarChart,
   Bar,
@@ -101,13 +99,6 @@ export const COLORS = {
 };
 
 // ─── Chart Configs ───────────────────────────────────────────────────────────
-export const donutChartConfig = {
-  noIssues: { label: "No Issues",       color: COLORS.noIssues },
-  healthy:  { label: "Healthy (Green)", color: COLORS.healthy  },
-  warning:  { label: "Warning (Amber)", color: COLORS.warning  },
-  critical: { label: "Critical (Red)",  color: COLORS.critical },
-} satisfies ChartConfig;
-
 export const failureChartConfig = {
   "No Issues": { label: "No Issues", color: "hsl(217, 98%, 54%)" },
   "Green":     { label: "Healthy",   color: "hsl(222, 84%, 62%)" },
@@ -811,8 +802,6 @@ export function FMSDashboard() {
   const [expandedKpi, setExpandedKpi] = useState<string | null>(null);
   const [selectedInspectionMhe, setSelectedInspectionMhe] = useState("Forklift");
   const [selectedInspectionOem, setSelectedInspectionOem] = useState("all");
-  const [fleetOem,    setFleetOem]    = useState("all");
-  const [fleetType,   setFleetType]   = useState("all");
   const [impactOem,   setImpactOem]   = useState("all");
   const [impactType,  setImpactType]  = useState("all");
   const [selectedEquipment, setSelectedEquipment] = useState("Electric Forklift");
@@ -939,107 +928,6 @@ export function FMSDashboard() {
               </div>
             </div>
           ))}
-
-          {/* ── FLEET COMPOSITION (full-width stacked bar) ── */}
-          {(() => {
-            type ImpactRow = { label: string; count: number; color: string };
-            const IMPACT_DATA: Record<string, { total: number; oemLabel: string; types: ImpactRow[] }> = {
-              "all|all":               { total: 42, oemLabel: "All OEMs",          types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }, { label: "Forklift",     count: 8,  color: "#4c7dff" }, { label: "Order Picker", count: 9,  color: "#7397f6" }, { label: "Pallet Jack",  count: 6,  color: "#8fb2ff" }, { label: "VNA Truck",    count: 5,  color: "#a8c4ff" }, { label: "Stacker",      count: 4,  color: "#c9dbff" }] },
-              "all|toyota":            { total: 18, oemLabel: "Toyota",            types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }, { label: "Forklift",     count: 5,  color: "#4c7dff" }, { label: "VNA Truck",    count: 3,  color: "#a8c4ff" }] },
-              "all|toyota-industries": { total: 9,  oemLabel: "Toyota Industries", types: [{ label: "Order Picker", count: 6,  color: "#7397f6" }, { label: "Pallet Jack",  count: 3,  color: "#8fb2ff" }] },
-              "all|tata":              { total: 7,  oemLabel: "TATA",              types: [{ label: "Forklift",     count: 3,  color: "#4c7dff" }, { label: "Order Picker", count: 2,  color: "#7397f6" }, { label: "Stacker",      count: 2,  color: "#c9dbff" }] },
-              "all|mahindra":          { total: 5,  oemLabel: "Mahindra",          types: [{ label: "Stacker",      count: 2,  color: "#c9dbff" }, { label: "Pallet Jack",  count: 2,  color: "#8fb2ff" }, { label: "VNA Truck",    count: 1,  color: "#a8c4ff" }] },
-              "all|raymond":           { total: 3,  oemLabel: "Raymond",           types: [{ label: "Forklift",     count: 2,  color: "#4c7dff" }, { label: "Order Picker", count: 1,  color: "#7397f6" }] },
-              "forklift|all":          { total: 8,  oemLabel: "All OEMs",          types: [{ label: "Forklift",     count: 8,  color: "#4c7dff" }] },
-              "reach-truck|all":       { total: 10, oemLabel: "All OEMs",          types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }] },
-              "pallet-jack|all":       { total: 6,  oemLabel: "All OEMs",          types: [{ label: "Pallet Jack",  count: 6,  color: "#8fb2ff" }] },
-              "stacker|all":           { total: 4,  oemLabel: "All OEMs",          types: [{ label: "Stacker",      count: 4,  color: "#c9dbff" }] },
-              "order-picker|all":      { total: 9,  oemLabel: "All OEMs",          types: [{ label: "Order Picker", count: 9,  color: "#7397f6" }] },
-              "vna-truck|all":         { total: 5,  oemLabel: "All OEMs",          types: [{ label: "VNA Truck",    count: 5,  color: "#a8c4ff" }] },
-              "reach-truck|toyota":    { total: 10, oemLabel: "Toyota",            types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }] },
-              "forklift|toyota":       { total: 5,  oemLabel: "Toyota",            types: [{ label: "Forklift",     count: 5,  color: "#4c7dff" }] },
-              "order-picker|toyota-industries": { total: 6, oemLabel: "Toyota Industries", types: [{ label: "Order Picker", count: 6, color: "#7397f6" }] },
-              "forklift|tata":         { total: 3,  oemLabel: "TATA",              types: [{ label: "Forklift",     count: 3,  color: "#4c7dff" }] },
-              "stacker|mahindra":      { total: 2,  oemLabel: "Mahindra",          types: [{ label: "Stacker",      count: 2,  color: "#c9dbff" }] },
-            };
-            const key = `${impactType}|${impactOem}`;
-            const d   = IMPACT_DATA[key] ?? IMPACT_DATA[`all|${impactOem}`] ?? IMPACT_DATA["all|all"];
-            const fsImpact: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
-            return (
-              <div className="col-span-12">
-                <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden" }}>
-                  {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", height: "80px", boxSizing: "border-box" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "13px", lineHeight: "19.5px", color: "#0f172a" }}>Fleet Composition</span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", lineHeight: "18px", color: "#64748b" }}>MHEs by type</span>
-                    </div>
-                    <div style={{ display: "flex", gap: "12px" }}>
-                      <Select value={impactOem} onValueChange={setImpactOem}>
-                        <SelectTrigger style={fsImpact}><SelectValue placeholder="All OEMs" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All OEMs</SelectItem>
-                          <SelectItem value="toyota">Toyota</SelectItem>
-                          <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
-                          <SelectItem value="tata">TATA</SelectItem>
-                          <SelectItem value="mahindra">Mahindra</SelectItem>
-                          <SelectItem value="raymond">Raymond</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Select value={impactType} onValueChange={setImpactType}>
-                        <SelectTrigger style={fsImpact}><SelectValue placeholder="All Types" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="reach-truck">Reach Truck</SelectItem>
-                          <SelectItem value="forklift">Forklift</SelectItem>
-                          <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
-                          <SelectItem value="stacker">Stacker</SelectItem>
-                          <SelectItem value="order-picker">Order Picker</SelectItem>
-                          <SelectItem value="vna-truck">VNA Truck</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  {/* Body */}
-                  <div style={{ padding: "10px 20px 20px", display: "flex", flexDirection: "column", gap: "20px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: "10px", color: "#64748b" }}>MHE OEM Type : <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{d.oemLabel}</span></span>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ fontSize: "10px", color: "#64748b" }}>Total:</span>
-                          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563eb" }}>{d.total}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", height: "10px", borderRadius: "3px", overflow: "hidden" }}>
-                        {d.types.map(({ label, count, color }, i) => (
-                          <React.Fragment key={label}>
-                            {i > 0 && <div style={{ width: "2px", background: "#fff" }} />}
-                            <div style={{ flex: count, background: color }} />
-                          </React.Fragment>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                      <span style={{ fontSize: "12px", fontWeight: 500, color: "#0f172a" }}>Type Distribution</span>
-                      <div style={{ display: "flex", justifyContent: "space-between", paddingRight: "22px" }}>
-                        {d.types.map(({ label, count, color }) => (
-                          <div key={label} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                            <span style={{ fontSize: "12px", color: "#9ca3af" }}>{label}</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, flexShrink: 0 }} />
-                              <span style={{ fontSize: "14px", fontWeight: 600, color: "#0f172a" }}>{String(count).padStart(2, "0")}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
 
           {/* Row — Top MHEs with Findings + Top Failing Parts */}
           <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
@@ -1298,177 +1186,184 @@ export function FMSDashboard() {
 
           </Card>
 
-          {/* ── FLEET COMPOSITION ── */}
+          {/* ── FLEET COMPOSITION (full-width stacked bar) ── */}
           {(() => {
-            type FleetRow = { label: string; count: number; color: string };
-            const FLEET_DATA: Record<string, { total: number; types: FleetRow[] }> = { // eslint-disable-line
-              "all|all":                    { total: 42, types: [{ label: "Forklift", count: 18, color: "#1B59F8" }, { label: "Reach Truck", count: 12, color: "#4C7DFF" }, { label: "Pallet Jack", count: 8,  color: "#8FB2FF" }, { label: "Stacker", count: 4, color: "#C9DBFF" }] },
-              "forklift|all":               { total: 18, types: [{ label: "Forklift", count: 18, color: "#1B59F8" }] },
-              "reach-truck|all":            { total: 12, types: [{ label: "Reach Truck", count: 12, color: "#4C7DFF" }] },
-              "pallet-jack|all":            { total: 8,  types: [{ label: "Pallet Jack", count: 8,  color: "#8FB2FF" }] },
-              "stacker|all":                { total: 4,  types: [{ label: "Stacker", count: 4, color: "#C9DBFF" }] },
-              "all|toyota":                 { total: 20, types: [{ label: "Forklift", count: 8,  color: "#1B59F8" }, { label: "Reach Truck", count: 10, color: "#4C7DFF" }, { label: "Stacker", count: 2, color: "#C9DBFF" }] },
-              "forklift|toyota":            { total: 8,  types: [{ label: "Forklift", count: 8,  color: "#1B59F8" }] },
-              "reach-truck|toyota":         { total: 10, types: [{ label: "Reach Truck", count: 10, color: "#4C7DFF" }] },
-              "all|toyota-industries":      { total: 5,  types: [{ label: "Pallet Jack", count: 5,  color: "#8FB2FF" }] },
-              "pallet-jack|toyota-industries": { total: 5, types: [{ label: "Pallet Jack", count: 5, color: "#8FB2FF" }] },
-              "all|tata":                   { total: 8,  types: [{ label: "Forklift", count: 5,  color: "#1B59F8" }, { label: "Stacker", count: 3, color: "#C9DBFF" }] },
-              "forklift|tata":              { total: 5,  types: [{ label: "Forklift", count: 5,  color: "#1B59F8" }] },
-              "all|mahindra":               { total: 6,  types: [{ label: "Reach Truck", count: 2, color: "#4C7DFF" }, { label: "Stacker", count: 4, color: "#C9DBFF" }] },
-              "stacker|mahindra":           { total: 4,  types: [{ label: "Stacker", count: 4,  color: "#C9DBFF" }] },
-              "all|raymond":                { total: 3,  types: [{ label: "Forklift", count: 2,  color: "#1B59F8" }, { label: "Pallet Jack", count: 1, color: "#8FB2FF" }] },
-              "pallet-jack|raymond":        { total: 1,  types: [{ label: "Pallet Jack", count: 1, color: "#8FB2FF" }] },
+            type ImpactRow = { label: string; count: number; color: string };
+            const IMPACT_DATA: Record<string, { total: number; oemLabel: string; types: ImpactRow[] }> = {
+              "all|all":               { total: 42, oemLabel: "All OEMs",          types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }, { label: "Forklift",     count: 8,  color: "#4c7dff" }, { label: "Order Picker", count: 9,  color: "#7397f6" }, { label: "Pallet Jack",  count: 6,  color: "#8fb2ff" }, { label: "VNA Truck",    count: 5,  color: "#a8c4ff" }, { label: "Stacker",      count: 4,  color: "#c9dbff" }] },
+              "all|toyota":            { total: 18, oemLabel: "Toyota",            types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }, { label: "Forklift",     count: 5,  color: "#4c7dff" }, { label: "VNA Truck",    count: 3,  color: "#a8c4ff" }] },
+              "all|toyota-industries": { total: 9,  oemLabel: "Toyota Industries", types: [{ label: "Order Picker", count: 6,  color: "#7397f6" }, { label: "Pallet Jack",  count: 3,  color: "#8fb2ff" }] },
+              "all|tata":              { total: 7,  oemLabel: "TATA",              types: [{ label: "Forklift",     count: 3,  color: "#4c7dff" }, { label: "Order Picker", count: 2,  color: "#7397f6" }, { label: "Stacker",      count: 2,  color: "#c9dbff" }] },
+              "all|mahindra":          { total: 5,  oemLabel: "Mahindra",          types: [{ label: "Stacker",      count: 2,  color: "#c9dbff" }, { label: "Pallet Jack",  count: 2,  color: "#8fb2ff" }, { label: "VNA Truck",    count: 1,  color: "#a8c4ff" }] },
+              "all|raymond":           { total: 3,  oemLabel: "Raymond",           types: [{ label: "Forklift",     count: 2,  color: "#4c7dff" }, { label: "Order Picker", count: 1,  color: "#7397f6" }] },
+              "forklift|all":          { total: 8,  oemLabel: "All OEMs",          types: [{ label: "Forklift",     count: 8,  color: "#4c7dff" }] },
+              "reach-truck|all":       { total: 10, oemLabel: "All OEMs",          types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }] },
+              "pallet-jack|all":       { total: 6,  oemLabel: "All OEMs",          types: [{ label: "Pallet Jack",  count: 6,  color: "#8fb2ff" }] },
+              "stacker|all":           { total: 4,  oemLabel: "All OEMs",          types: [{ label: "Stacker",      count: 4,  color: "#c9dbff" }] },
+              "order-picker|all":      { total: 9,  oemLabel: "All OEMs",          types: [{ label: "Order Picker", count: 9,  color: "#7397f6" }] },
+              "vna-truck|all":         { total: 5,  oemLabel: "All OEMs",          types: [{ label: "VNA Truck",    count: 5,  color: "#a8c4ff" }] },
+              "reach-truck|toyota":    { total: 10, oemLabel: "Toyota",            types: [{ label: "Reach Truck",  count: 10, color: "#1b59f8" }] },
+              "forklift|toyota":       { total: 5,  oemLabel: "Toyota",            types: [{ label: "Forklift",     count: 5,  color: "#4c7dff" }] },
+              "order-picker|toyota-industries": { total: 6, oemLabel: "Toyota Industries", types: [{ label: "Order Picker", count: 6, color: "#7397f6" }] },
+              "forklift|tata":         { total: 3,  oemLabel: "TATA",              types: [{ label: "Forklift",     count: 3,  color: "#4c7dff" }] },
+              "stacker|mahindra":      { total: 2,  oemLabel: "Mahindra",          types: [{ label: "Stacker",      count: 2,  color: "#c9dbff" }] },
             };
-            const key = `${fleetType}|${fleetOem}`;
-            const fd  = FLEET_DATA[key] ?? FLEET_DATA[`all|${fleetOem}`] ?? FLEET_DATA["all|all"];
-            const filterStyle2: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
+            const key = `${impactType}|${impactOem}`;
+            const d   = IMPACT_DATA[key] ?? IMPACT_DATA[`all|${impactOem}`] ?? IMPACT_DATA["all|all"];
+            const fsImpact: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
             return (
-              <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Fleet Composition</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>MHEs by type</span>
+              <div className="col-span-12 xl:col-span-6 flex flex-col">
+                <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden", height: "100%" }}>
+                  {/* Header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", height: "80px", boxSizing: "border-box" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "13px", lineHeight: "19.5px", color: "#0f172a" }}>Fleet Composition</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", lineHeight: "18px", color: "#64748b" }}>MHEs by type</span>
+                    </div>
+                    <div style={{ display: "flex", gap: "12px" }}>
+                      <Select value={impactOem} onValueChange={setImpactOem}>
+                        <SelectTrigger style={fsImpact}><SelectValue placeholder="All OEMs" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All OEMs</SelectItem>
+                          <SelectItem value="toyota">Toyota</SelectItem>
+                          <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
+                          <SelectItem value="tata">TATA</SelectItem>
+                          <SelectItem value="mahindra">Mahindra</SelectItem>
+                          <SelectItem value="raymond">Raymond</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={impactType} onValueChange={setImpactType}>
+                        <SelectTrigger style={fsImpact}><SelectValue placeholder="All Types" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Types</SelectItem>
+                          <SelectItem value="reach-truck">Reach Truck</SelectItem>
+                          <SelectItem value="forklift">Forklift</SelectItem>
+                          <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
+                          <SelectItem value="stacker">Stacker</SelectItem>
+                          <SelectItem value="order-picker">Order Picker</SelectItem>
+                          <SelectItem value="vna-truck">VNA Truck</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    <Select value={fleetOem} onValueChange={setFleetOem}>
-                      <SelectTrigger style={filterStyle2}><SelectValue placeholder="All OEMs" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All OEMs</SelectItem>
-                        <SelectItem value="toyota">Toyota</SelectItem>
-                        <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
-                        <SelectItem value="tata">TATA</SelectItem>
-                        <SelectItem value="mahindra">Mahindra</SelectItem>
-                        <SelectItem value="raymond">Raymond</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={fleetType} onValueChange={setFleetType}>
-                      <SelectTrigger style={filterStyle2}><SelectValue placeholder="All Types" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="forklift">Forklift</SelectItem>
-                        <SelectItem value="reach-truck">Reach Truck</SelectItem>
-                        <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
-                        <SelectItem value="stacker">Stacker</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col justify-between">
-                  {/* Donut */}
-                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
-                    <div style={{ position: "relative" }}>
-                      <PieChart width={200} height={200}>
-                        <Pie data={fd.types.map(t => ({ value: t.count }))} cx={96} cy={96} innerRadius={66} outerRadius={86} startAngle={90} endAngle={-270} paddingAngle={0} dataKey="value" strokeWidth={0}>
-                          {fd.types.map(({ label, color }) => <Cell key={label} fill={color} />)}
-                        </Pie>
-                      </PieChart>
-                      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", pointerEvents: "none" }}>
-                        <p style={{ fontSize: "26px", fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{fd.total}</p>
-                        <p style={{ fontSize: "10px", color: "#94a3b8", margin: "4px 0 0" }}>MHEs</p>
+                  {/* Body */}
+                  <div style={{ padding: "10px 20px 20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: "10px", color: "#64748b" }}>MHE OEM Type : <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{d.oemLabel}</span></span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span style={{ fontSize: "10px", color: "#64748b" }}>Total:</span>
+                          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563eb" }}>{d.total}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", height: "10px", borderRadius: "3px", overflow: "hidden" }}>
+                        {d.types.map(({ label, count, color }, i) => (
+                          <React.Fragment key={label}>
+                            {i > 0 && <div style={{ width: "2px", background: "#fff" }} />}
+                            <div style={{ flex: count, background: color }} />
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: 500, color: "#0f172a" }}>Type Distribution</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", paddingRight: "22px" }}>
+                        {d.types.map(({ label, count, color }) => (
+                          <div key={label} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "12px", color: "#9ca3af" }}>{label}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, flexShrink: 0 }} />
+                              <span style={{ fontSize: "14px", fontWeight: 600, color: "#0f172a" }}>{String(count).padStart(2, "0")}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
-                  {/* Legend */}
-                  <div>
-                    <div style={{ height: "1px", background: "#f1f5f9", marginBottom: "12px" }} />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "14px", columnGap: "8px" }}>
-                      {fd.types.map(({ label, count, color }) => (
-                        <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, flexShrink: 0 }} />
-                            <span style={{ fontSize: "12px", color: "#64748b" }}>{label}</span>
-                          </div>
-                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>{count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })()}
 
           {/* ── INSPECTIONS BY MHE TYPE ── */}
-          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Inspections by MHE Type</span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Severity distribution per type · last 30 days</span>
-              </div>
-            </div>
-            <CardContent className="flex-1 px-5 pt-4 pb-4 flex flex-col" style={{ gap: "12px" }}>
-              {/* Legend */}
-              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                {([{ label: "Red", color: "#ef4444" }, { label: "Amber", color: "#f59e0b" }, { label: "Green", color: "#16a34a" }]).map(({ label, color }) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: color }} />
-                    <span style={{ fontSize: "10px", color: "#64748b" }}>{label}</span>
+          {(() => {
+            const inspData = [
+              { type: "Reach Truck",  short: "Reach",   red: 8,  amber: 5,  green: 22 },
+              { type: "Forklift",     short: "Fork",    red: 2,  amber: 3,  green: 20 },
+              { type: "Order Picker", short: "Order",   red: 0,  amber: 2,  green: 8  },
+              { type: "Pallet Jack",  short: "Pallet",  red: 2,  amber: 3,  green: 23 },
+              { type: "VNA Truck",    short: "VNA",     red: 0,  amber: 1,  green: 5  },
+              { type: "Stacker",      short: "Stacker", red: 1,  amber: 2,  green: 11 },
+            ];
+            const totalRed   = inspData.reduce((s, r) => s + r.red,   0);
+            const totalAmber = inspData.reduce((s, r) => s + r.amber, 0);
+            const totalGreen = inspData.reduce((s, r) => s + r.green, 0);
+            const grandTotal = totalRed + totalAmber + totalGreen;
+            const overallPass = Math.round((totalGreen / grandTotal) * 100);
+            const chartData = inspData.map(r => ({ name: r.short, Critical: r.red, Attention: r.amber, Healthy: r.green }));
+            const inspChartConfig = {
+              Critical:  { label: "Critical",  color: "#ef4444" },
+              Attention: { label: "Attention", color: "#f59e0b" },
+              Healthy:   { label: "Healthy",   color: "#22c55e" },
+            } satisfies ChartConfig;
+            return (
+              <Card className="col-span-12 xl:col-span-6 shadow-none border-[var(--border)] flex flex-col">
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Inspections by MHE Type</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Severity distribution · last 30 days</span>
                   </div>
-                ))}
-              </div>
-              {/* Bar chart */}
-              <div style={{ flex: 1 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={[
-                      { name: "Reach Truck", Red: 8,  Amber: 5,  Green: 22 },
-                      { name: "Forklift",    Red: 2,  Amber: 3,  Green: 20 },
-                      { name: "Pallet Jack", Red: 2,  Amber: 3,  Green: 23 },
-                      { name: "Stacker",     Red: 1,  Amber: 2,  Green: 11 },
-                      { name: "Order Picker",Red: 0,  Amber: 2,  Green: 8  },
-                      { name: "VNA Truck",   Red: 0,  Amber: 1,  Green: 5  },
-                    ]}
-                    barSize={24}
-                    margin={{ top: 4, right: 0, left: -28, bottom: 0 }}
-                  >
-                    <CartesianGrid vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={0} />
-                    <YAxis tick={{ fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ fontSize: "11px", borderRadius: "6px", border: "1px solid #e2e8f0" }} cursor={{ fill: "#f8fafc" }} />
-                    <Bar dataKey="Red"   stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="Amber" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="Green" stackId="a" fill="#16a34a" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+                  {/* Summary badges */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    {([
+                      { label: `${totalRed} Red`,   color: "#ef4444", bg: "#fef2f2", border: "#fecaca" },
+                      { label: `${totalAmber} Amb`, color: "#d97706", bg: "#fffbeb", border: "#fde68a" },
+                      { label: `${overallPass}% ✓`, color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0" },
+                    ]).map(({ label, color, bg, border }) => (
+                      <span key={label} style={{ fontSize: "10px", fontWeight: 700, color, background: bg, border: `1px solid ${border}`, borderRadius: "99px", padding: "2px 8px", lineHeight: "16px" }}>{label}</span>
+                    ))}
+                  </div>
+                </div>
 
-          {/* ── TOP PERFORMING OPERATORS ── */}
-          <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Top Performing Operators</span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Composite score · last 7 days</span>
-              </div>
-            </div>
-            <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col justify-between">
-              {([
-                { rank: 1, initials: "RK", name: "Rajesh Kumar",  score: 92, rankColor: "#f59e0b" },
-                { rank: 2, initials: "SP", name: "Suresh Patil",  score: 88, rankColor: "#f59e0b" },
-                { rank: 3, initials: "VS", name: "Vikram Singh",  score: 85, rankColor: "#f59e0b" },
-                { rank: 4, initials: "PN", name: "Priya Nair",    score: 80, rankColor: "#94a3b8" },
-                { rank: 5, initials: "MS", name: "Manoj Sharma",  score: 76, rankColor: "#94a3b8" },
-              ]).map(({ rank, initials, name, score, rankColor }, i, arr) => {
-                const barColor = rank <= 3 ? "#16a34a" : "#1B59F8";
-                return (
-                  <div key={name} style={{ padding: "13px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: rankColor, width: "20px", flexShrink: 0 }}>#{rank}</span>
-                      <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "#ede9fe", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <span style={{ fontSize: "10px", fontWeight: 700, color: "#7c3aed" }}>{initials}</span>
-                      </div>
-                      <span style={{ fontSize: "13px", fontWeight: 500, color: "#374151", flex: 1 }}>{name}</span>
-                      <span style={{ fontSize: "15px", fontWeight: 700, color: barColor }}>{score}</span>
-                    </div>
-                    <div style={{ marginLeft: "30px", height: "4px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
-                      <div style={{ width: `${score}%`, height: "100%", background: barColor, borderRadius: "3px" }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+                <CardContent className="flex-1 flex flex-col px-4 pt-3 pb-3 gap-0" style={{ minHeight: 0 }}>
+                  {/* Shadcn ChartContainer with stacked BarChart */}
+                  <ChartContainer config={inspChartConfig} className="flex-1 w-full" style={{ minHeight: 0 }}>
+                    <BarChart
+                      data={chartData}
+                      barSize={32}
+                      margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
+                    >
+                      <CartesianGrid vertical={false} stroke="var(--border)" strokeOpacity={0.6} />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fontWeight: 600, fill: "#64748b", fontFamily: "Inter, sans-serif" }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fill: "#94a3b8", fontFamily: "Inter, sans-serif" }}
+                        tickCount={5}
+                        width={36}
+                      />
+                      <ChartTooltip
+                        cursor={{ fill: "var(--muted)", opacity: 0.5, radius: 6 }}
+                        content={<ChartTooltipContent indicator="dot" />}
+                      />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Bar dataKey="Critical"  stackId="s" fill="var(--color-Critical)"  radius={[0, 0, 0, 0]} />
+                      <Bar dataKey="Attention" stackId="s" fill="var(--color-Attention)" radius={[0, 0, 0, 0]} />
+                      <Bar dataKey="Healthy"   stackId="s" fill="var(--color-Healthy)"   radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* Warranty / License Expiry Table */}
           <div className="col-span-12">
