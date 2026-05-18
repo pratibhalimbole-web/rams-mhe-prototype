@@ -41,6 +41,8 @@ import {
 } from "../../components/ui/table";
 import {
   Pie,
+  PieChart,
+  Cell,
   Sector,
   BarChart,
   Bar,
@@ -1193,7 +1195,7 @@ export function FMSDashboard() {
 
           </Card>
 
-          {/* ── FLEET COMPOSITION (full-width stacked bar) ── */}
+          {/* ── FLEET COMPOSITION (pie chart) ── */}
           {(() => {
             type ImpactRow = { label: string; count: number; color: string };
             const IMPACT_DATA: Record<string, { total: number; oemLabel: string; types: ImpactRow[] }> = {
@@ -1215,19 +1217,42 @@ export function FMSDashboard() {
               "forklift|tata":         { total: 3,  oemLabel: "TATA",              types: [{ label: "Forklift",     count: 3,  color: "#4c7dff" }] },
               "stacker|mahindra":      { total: 2,  oemLabel: "Mahindra",          types: [{ label: "Stacker",      count: 2,  color: "#c9dbff" }] },
             };
-            const key = `${impactType}|${impactOem}`;
-            const d   = IMPACT_DATA[key] ?? IMPACT_DATA[`all|${impactOem}`] ?? IMPACT_DATA["all|all"];
+            const key     = `${impactType}|${impactOem}`;
+            const d       = IMPACT_DATA[key] ?? IMPACT_DATA[`all|${impactOem}`] ?? IMPACT_DATA["all|all"];
+            const pieData = d.types.map(({ label, count, color }) => ({ name: label, value: count, color }));
+            const topType = pieData[0];
             const fsImpact: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
-            return (
-              <div className="col-span-12 xl:col-span-6 flex flex-col">
-                <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden", height: "100%" }}>
-                  {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", height: "80px", boxSizing: "border-box" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "13px", lineHeight: "19.5px", color: "#0f172a" }}>Fleet Composition</span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", lineHeight: "18px", color: "#64748b" }}>MHEs by type</span>
+
+            function PieTooltip({ active, payload }: any) {
+              if (!active || !payload?.length) return null;
+              const { name, value, color } = payload[0].payload;
+              const pct = Math.round((value / d.total) * 100);
+              return (
+                <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "140px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                    <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: color, flexShrink: 0, display: "inline-block" }} />
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a" }}>{name}</span>
+                  </div>
+                  {([["Count", value], ["Share", `${pct}%`]] as [string, string | number][]).map(([l, v]) => (
+                    <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "2px" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{l}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{v}</span>
                     </div>
-                    <div style={{ display: "flex", gap: "12px" }}>
+                  ))}
+                </div>
+              );
+            }
+
+            return (
+              <div className="col-span-12 xl:col-span-4 flex flex-col" style={{ minHeight: "422px" }}>
+                <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+                  {/* Header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Fleet Composition</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>MHEs by type · {d.oemLabel}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: "6px" }}>
                       <Select value={impactOem} onValueChange={setImpactOem}>
                         <SelectTrigger style={fsImpact}><SelectValue placeholder="All OEMs" /></SelectTrigger>
                         <SelectContent>
@@ -1253,44 +1278,159 @@ export function FMSDashboard() {
                       </Select>
                     </div>
                   </div>
-                  {/* Body */}
-                  <div style={{ padding: "10px 20px 20px", display: "flex", flexDirection: "column", gap: "20px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: "10px", color: "#64748b" }}>MHE OEM Type : <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{d.oemLabel}</span></span>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span style={{ fontSize: "10px", color: "#64748b" }}>Total:</span>
-                          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <span style={{ fontSize: "12px", fontWeight: 700, color: "#2563eb" }}>{d.total}</span>
-                          </div>
+
+                  {/* Body: outer centres the row vertically */}
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "16px 20px", minHeight: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                      {/* Donut chart */}
+                      <div style={{ width: "180px", height: "180px", position: "relative", flexShrink: 0 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={pieData} cx="50%" cy="50%" innerRadius={52} outerRadius={76} paddingAngle={2} dataKey="value" strokeWidth={0}>
+                              {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                            </Pie>
+                            <Tooltip content={<PieTooltip />} wrapperStyle={{ zIndex: 20 }} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", pointerEvents: "none" }}>
+                          <div style={{ fontFamily: "Inter, sans-serif", fontSize: "24px", fontWeight: 700, color: "#0f172a", lineHeight: 1.1 }}>{d.total}</div>
+                          <div style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8", lineHeight: 1.6 }}>Total MHEs</div>
                         </div>
                       </div>
-                      <div style={{ display: "flex", height: "10px", borderRadius: "3px", overflow: "hidden" }}>
-                        {d.types.map(({ label, count, color }, i) => (
-                          <React.Fragment key={label}>
-                            {i > 0 && <div style={{ width: "2px", background: "#fff" }} />}
-                            <div style={{ flex: count, background: color }} />
-                          </React.Fragment>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                      <span style={{ fontSize: "12px", fontWeight: 500, color: "#0f172a" }}>Type Distribution</span>
-                      <div style={{ display: "flex", justifyContent: "space-between", paddingRight: "22px" }}>
-                        {d.types.map(({ label, count, color }) => (
-                          <div key={label} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                            <span style={{ fontSize: "12px", color: "#9ca3af" }}>{label}</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: color, flexShrink: 0 }} />
-                              <span style={{ fontSize: "14px", fontWeight: 600, color: "#0f172a" }}>{String(count).padStart(2, "0")}</span>
-                            </div>
+
+                      {/* Legend */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {pieData.map(({ name, value, color }) => (
+                          <div key={name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: color, flexShrink: 0, display: "inline-block" }} />
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{name}</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>· {value}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
+
+                  {/* Footer */}
+                  <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {topType?.name} is the largest segment · {topType?.value} of {d.total} units
+                      </span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
+            );
+          })()}
+
+          {/* ── MACHINES REQUIRING INSPECTION ATTENTION ── */}
+          {(() => {
+            const inspStats: Record<string, { reported: number; closed: number }> = {
+              "MHE-001": { reported: 10, closed: 5 },
+              "MHE-004": { reported: 7,  closed: 4 },
+              "MHE-012": { reported: 9,  closed: 6 },
+              "MHE-025": { reported: 13, closed: 2 },
+              "MHE-031": { reported: 4,  closed: 3 },
+            };
+            return (
+              <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ height: "422px" }}>
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Machines Requiring Inspection Attention</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Inspection workload by operator</span>
+                  </div>
+                  <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
+                    <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 }}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Electric Forklift">Forklift</SelectItem>
+                      <SelectItem value="Reach Truck">Reach Truck</SelectItem>
+                      <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Scrollable list */}
+                <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {machinesInspectionData.map((row: any) => {
+                    const formattedDate = new Date(row.lastInspection).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                    const partWithMostIssues = getPartWithMostIssuesForMHE(row.mheId);
+                    const stats = inspStats[row.mheId] ?? { reported: 10, closed: 5 };
+                    return (
+                      <div key={row.mheId} style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {/* Row 1: icon + ID + date + badge */}
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ width: "30px", height: "30px", borderRadius: "7px", background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Truck style={{ width: "13px", height: "13px", color: "#1b59f8" }} />
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", fontWeight: 700, color: "#1b59f8", fontVariantNumeric: "tabular-nums" }}>{row.mheId}</span>
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Last Inspection: {formattedDate}</span>
+                            </div>
+                          </div>
+                          {partWithMostIssues ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "3px", padding: "2px 7px", borderRadius: "99px", background: "#eef2ff", border: "1px solid #e0e7ff", flexShrink: 0 }}>
+                              <AlertTriangle style={{ width: "10px", height: "10px", color: "#2563eb", flexShrink: 0 }} />
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 500, color: "#1e40af" }}>Most Issues: {partWithMostIssues}</span>
+                            </div>
+                          ) : (
+                            <div style={{ padding: "2px 7px", borderRadius: "99px", background: "#ecfdf5", border: "1px solid #d1fae5", flexShrink: 0 }}>
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 500, color: "#065f46" }}>All Good</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Row 2: Reports Reported | Reports Closed */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{String(stats.reported).padStart(2, "0")}</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Reports Reported</span>
+                          </div>
+                          <div style={{ width: "1px", height: "28px", background: "#e2e8f0", flexShrink: 0 }} />
+                          <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{String(stats.closed).padStart(2, "0")}</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Reports Closed</span>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{ height: "1px", background: "#f1f5f9" }} />
+
+                        {/* Row 3: findings */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          {[
+                            { label: "Red",   value: row.redFindings,   color: "#ef4444" },
+                            { label: "Amber", value: row.amberFindings, color: "#f59e0b" },
+                            { label: "Green", value: row.greenFindings, color: "#16a34a" },
+                          ].map(({ label, value, color }) => (
+                            <div key={label} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block" }} />
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{label} {value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Footer */}
+                <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      9 inspections skipped per MHE; Battery drives amber severity
+                    </span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8" }}>
+                      May 7 – May 13, 2026
+                    </span>
+                  </div>
+                </div>
+              </Card>
             );
           })()}
 
@@ -1318,7 +1458,7 @@ export function FMSDashboard() {
                 return (
                   <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "150px" }}>
                     <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a", margin: "0 0 8px" }}>{fullName}</p>
-                    {([["Red", "#ef4444", c], ["Amber", "#f59e0b", a], ["Green", "#16a34a", h]] as [string, string, number][]).map(([l, col, v]) => (
+                    {([["Red", "#1b59f8", c], ["Amber", "#7397f6", a], ["Green", "#c9dbff", h]] as [string, string, number][]).map(([l, col, v]) => (
                       <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>
                         <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
                           <span style={{ width: "7px", height: "7px", borderRadius: "2px", background: col, flexShrink: 0, display: "inline-block" }} />{l}
@@ -1336,7 +1476,7 @@ export function FMSDashboard() {
               }
 
               return (
-                <div className="col-span-12 xl:col-span-6 flex flex-col" style={{ minHeight: "422px" }}>
+                <div className="col-span-12 xl:col-span-4 flex flex-col" style={{ minHeight: "422px" }}>
                   <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
                     {/* Header */}
