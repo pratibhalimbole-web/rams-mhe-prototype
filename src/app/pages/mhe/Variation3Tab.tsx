@@ -412,8 +412,11 @@ function ShiftPerformanceWidget() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+type CorrTooltip = { row: typeof INSP_IMPACT_CORR[0]; x: number; y: number } | null;
+
 export function Variation3Tab() {
   const [issuesOpen, setIssuesOpen] = useState(false);
+  const [corrTooltip, setCorrTooltip] = useState<CorrTooltip>(null);
 
   const criticalCount = warrantyExpiryData.filter(r => r.status === "expired").length
     + operatorLicenseData.filter(o => o.status === "expired").length
@@ -610,7 +613,14 @@ export function Variation3Tab() {
               </div>
 
               {/* Grid lines + bar groups */}
-              <div style={{ flex: 1, position: "relative" }}>
+              <div
+                style={{ flex: 1, position: "relative" }}
+                onMouseMove={e => {
+                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                  setCorrTooltip(t => t ? { ...t, x: e.clientX - rect.left, y: e.clientY - rect.top } : t);
+                }}
+                onMouseLeave={() => setCorrTooltip(null)}
+              >
                 {/* Vertical grid lines */}
                 {[0, 25, 50, 75, 100].map(pct => (
                   <div key={pct} style={{ position: "absolute", left: `${pct}%`, top: 0, bottom: 0, width: 1, background: "#f1f5f9", zIndex: 0 }} />
@@ -618,12 +628,53 @@ export function Variation3Tab() {
                 {/* Bar groups — space-around gives ~40px gap between groups */}
                 <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-around", position: "relative", zIndex: 1 }}>
                   {INSP_IMPACT_CORR.map(row => (
-                    <div key={row.mheId} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div
+                      key={row.mheId}
+                      style={{ display: "flex", flexDirection: "column", gap: 4, cursor: "default" }}
+                      onMouseEnter={e => {
+                        const rect = (e.currentTarget.parentElement!.parentElement as HTMLElement).getBoundingClientRect();
+                        setCorrTooltip({ row, x: e.clientX - rect.left, y: e.clientY - rect.top });
+                      }}
+                    >
                       <div style={{ height: 8, borderRadius: "0 3px 3px 0", background: "#f59e0b", width: `${(row.repeatedFindings / 8) * 100}%` }} />
                       <div style={{ height: 8, borderRadius: "0 3px 3px 0", background: "#ef4444", width: `${(row.impactEvents / 8) * 100}%` }} />
                     </div>
                   ))}
                 </div>
+
+                {/* Tooltip */}
+                {corrTooltip && (
+                  <div style={{
+                    position: "absolute",
+                    left: corrTooltip.x + 12,
+                    top: corrTooltip.y - 10,
+                    background: "#fff",
+                    border: "1px solid #e8e8e8",
+                    borderRadius: 6,
+                    padding: "10px 14px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                    minWidth: 180,
+                    pointerEvents: "none",
+                    zIndex: 50,
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, paddingBottom: 6, borderBottom: "0.64px solid #e2e8f0" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, color: "#0f172a" }}>{corrTooltip.row.mheId}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8" }}>{corrTooltip.row.type}</span>
+                    </div>
+                    {[
+                      { label: "Repeated Findings (MEPS)", value: corrTooltip.row.repeatedFindings, color: "#f59e0b" },
+                      { label: "Impact Events (RTSS)",     value: corrTooltip.row.impactEvents,     color: "#ef4444" },
+                    ].map(item => (
+                      <div key={item.label} style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 3 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: item.color, display: "inline-block", flexShrink: 0 }} />
+                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b" }}>{item.label}</span>
+                        </div>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "#0f172a" }}>{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
