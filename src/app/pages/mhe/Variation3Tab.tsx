@@ -21,7 +21,7 @@ import {
   ChartLegend, ChartLegendContent,
 } from "../../components/ui/chart";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid,
   ResponsiveContainer, Tooltip as ReTooltip,
 } from "recharts";
 import {
@@ -116,6 +116,59 @@ const OPERATIONAL_LOSS = [
 ];
 const TOTAL_LOSS_HOURS = 52.5;
 
+// ─── Safety Violation Trend Intelligence Data ─────────────────────────────────
+// Multi-source: RTSS violations + MEPS inspection findings + FMS fleet activity + Command Center
+
+type SafetyTimePoint = {
+  label: string;
+  shift: string;
+  safetyViolations: number;
+  impactEvents: number;
+  nearMisses: number;
+  overspeed: number;
+  restrictedZone: number;
+  rackImpact: number;
+  collision: number;
+  pedestrianWarning: number;
+  activeMhes: number;
+  activeOperators: number;
+  mostAffectedZone: string;
+  mepsRedFindings: number;
+};
+
+const SAFETY_TREND_7D: SafetyTimePoint[] = [
+  { label: "Mon", shift: "Shift A", safetyViolations: 8,  impactEvents: 3, nearMisses: 6,  overspeed: 5,  restrictedZone: 3, rackImpact: 2, collision: 1, pedestrianWarning: 4,  activeMhes: 22, activeOperators: 16, mostAffectedZone: "Storage A", mepsRedFindings: 1 },
+  { label: "Tue", shift: "Shift A", safetyViolations: 11, impactEvents: 4, nearMisses: 9,  overspeed: 7,  restrictedZone: 4, rackImpact: 3, collision: 1, pedestrianWarning: 6,  activeMhes: 24, activeOperators: 18, mostAffectedZone: "Storage B", mepsRedFindings: 2 },
+  { label: "Wed", shift: "Shift B", safetyViolations: 7,  impactEvents: 2, nearMisses: 5,  overspeed: 4,  restrictedZone: 3, rackImpact: 1, collision: 1, pedestrianWarning: 3,  activeMhes: 20, activeOperators: 14, mostAffectedZone: "Loading",   mepsRedFindings: 1 },
+  { label: "Thu", shift: "Shift B", safetyViolations: 14, impactEvents: 6, nearMisses: 12, overspeed: 9,  restrictedZone: 5, rackImpact: 4, collision: 2, pedestrianWarning: 8,  activeMhes: 26, activeOperators: 20, mostAffectedZone: "Storage B", mepsRedFindings: 3 },
+  { label: "Fri", shift: "Shift A", safetyViolations: 10, impactEvents: 5, nearMisses: 7,  overspeed: 6,  restrictedZone: 4, rackImpact: 3, collision: 2, pedestrianWarning: 5,  activeMhes: 25, activeOperators: 19, mostAffectedZone: "Picking",   mepsRedFindings: 2 },
+  { label: "Sat", shift: "Shift C", safetyViolations: 19, impactEvents: 8, nearMisses: 15, overspeed: 12, restrictedZone: 7, rackImpact: 5, collision: 3, pedestrianWarning: 11, activeMhes: 28, activeOperators: 22, mostAffectedZone: "Storage B", mepsRedFindings: 4 },
+  { label: "Sun", shift: "Shift C", safetyViolations: 13, impactEvents: 5, nearMisses: 10, overspeed: 8,  restrictedZone: 5, rackImpact: 3, collision: 2, pedestrianWarning: 7,  activeMhes: 24, activeOperators: 18, mostAffectedZone: "Loading",   mepsRedFindings: 2 },
+];
+
+const SAFETY_TREND_24H: SafetyTimePoint[] = [
+  { label: "6AM",  shift: "Morning", safetyViolations: 2,  impactEvents: 1, nearMisses: 2,  overspeed: 1, restrictedZone: 1, rackImpact: 0, collision: 1, pedestrianWarning: 1, activeMhes: 12, activeOperators: 8,  mostAffectedZone: "Loading",   mepsRedFindings: 0 },
+  { label: "7AM",  shift: "Morning", safetyViolations: 3,  impactEvents: 1, nearMisses: 3,  overspeed: 2, restrictedZone: 1, rackImpact: 1, collision: 0, pedestrianWarning: 2, activeMhes: 16, activeOperators: 11, mostAffectedZone: "Storage A", mepsRedFindings: 0 },
+  { label: "8AM",  shift: "Morning", safetyViolations: 5,  impactEvents: 2, nearMisses: 4,  overspeed: 3, restrictedZone: 2, rackImpact: 1, collision: 1, pedestrianWarning: 3, activeMhes: 20, activeOperators: 15, mostAffectedZone: "Storage A", mepsRedFindings: 1 },
+  { label: "9AM",  shift: "Morning", safetyViolations: 7,  impactEvents: 3, nearMisses: 5,  overspeed: 4, restrictedZone: 3, rackImpact: 2, collision: 1, pedestrianWarning: 4, activeMhes: 22, activeOperators: 17, mostAffectedZone: "Storage B", mepsRedFindings: 1 },
+  { label: "10AM", shift: "Morning", safetyViolations: 6,  impactEvents: 2, nearMisses: 5,  overspeed: 4, restrictedZone: 2, rackImpact: 1, collision: 1, pedestrianWarning: 3, activeMhes: 23, activeOperators: 17, mostAffectedZone: "Picking",   mepsRedFindings: 1 },
+  { label: "11AM", shift: "Morning", safetyViolations: 4,  impactEvents: 2, nearMisses: 3,  overspeed: 2, restrictedZone: 2, rackImpact: 1, collision: 1, pedestrianWarning: 2, activeMhes: 22, activeOperators: 16, mostAffectedZone: "Storage A", mepsRedFindings: 0 },
+  { label: "12PM", shift: "Evening", safetyViolations: 8,  impactEvents: 3, nearMisses: 6,  overspeed: 5, restrictedZone: 3, rackImpact: 2, collision: 1, pedestrianWarning: 4, activeMhes: 24, activeOperators: 18, mostAffectedZone: "Storage B", mepsRedFindings: 2 },
+  { label: "1PM",  shift: "Evening", safetyViolations: 9,  impactEvents: 4, nearMisses: 7,  overspeed: 5, restrictedZone: 4, rackImpact: 3, collision: 1, pedestrianWarning: 5, activeMhes: 25, activeOperators: 19, mostAffectedZone: "Storage B", mepsRedFindings: 2 },
+  { label: "2PM",  shift: "Evening", safetyViolations: 6,  impactEvents: 2, nearMisses: 5,  overspeed: 4, restrictedZone: 2, rackImpact: 1, collision: 1, pedestrianWarning: 3, activeMhes: 24, activeOperators: 18, mostAffectedZone: "Loading",   mepsRedFindings: 1 },
+  { label: "3PM",  shift: "Evening", safetyViolations: 11, impactEvents: 4, nearMisses: 9,  overspeed: 7, restrictedZone: 4, rackImpact: 3, collision: 1, pedestrianWarning: 6, activeMhes: 26, activeOperators: 20, mostAffectedZone: "Storage B", mepsRedFindings: 2 },
+  { label: "4PM",  shift: "Evening", safetyViolations: 14, impactEvents: 6, nearMisses: 11, overspeed: 9, restrictedZone: 5, rackImpact: 4, collision: 2, pedestrianWarning: 8, activeMhes: 27, activeOperators: 21, mostAffectedZone: "Storage B", mepsRedFindings: 3 },
+  { label: "5PM",  shift: "Evening", safetyViolations: 9,  impactEvents: 3, nearMisses: 7,  overspeed: 6, restrictedZone: 3, rackImpact: 2, collision: 1, pedestrianWarning: 5, activeMhes: 25, activeOperators: 19, mostAffectedZone: "Picking",   mepsRedFindings: 2 },
+  { label: "6PM",  shift: "Night",   safetyViolations: 12, impactEvents: 5, nearMisses: 10, overspeed: 8, restrictedZone: 4, rackImpact: 3, collision: 2, pedestrianWarning: 7, activeMhes: 23, activeOperators: 17, mostAffectedZone: "Storage B", mepsRedFindings: 3 },
+];
+
+const SAFETY_TREND_30D: SafetyTimePoint[] = [
+  { label: "Wk 1", shift: "Mixed", safetyViolations: 42, impactEvents: 14, nearMisses: 31, overspeed: 26, restrictedZone: 16, rackImpact: 9,  collision: 5,  pedestrianWarning: 22, activeMhes: 24, activeOperators: 18, mostAffectedZone: "Storage A", mepsRedFindings: 4 },
+  { label: "Wk 2", shift: "Mixed", safetyViolations: 58, impactEvents: 21, nearMisses: 44, overspeed: 36, restrictedZone: 22, rackImpact: 13, collision: 8,  pedestrianWarning: 32, activeMhes: 25, activeOperators: 19, mostAffectedZone: "Storage B", mepsRedFindings: 7 },
+  { label: "Wk 3", shift: "Mixed", safetyViolations: 49, impactEvents: 17, nearMisses: 38, overspeed: 31, restrictedZone: 18, rackImpact: 11, collision: 6,  pedestrianWarning: 27, activeMhes: 23, activeOperators: 17, mostAffectedZone: "Loading",   mepsRedFindings: 5 },
+  { label: "Wk 4", shift: "Mixed", safetyViolations: 71, impactEvents: 28, nearMisses: 56, overspeed: 45, restrictedZone: 26, rackImpact: 17, collision: 11, pedestrianWarning: 42, activeMhes: 27, activeOperators: 21, mostAffectedZone: "Storage B", mepsRedFindings: 9 },
+];
+
 // ─── Chart configs ─────────────────────────────────────────────────────────────
 
 const shiftChartConfig = {
@@ -144,6 +197,32 @@ const QUADRANT = [
 
 function readinessColor(v: number) {
   return v >= 70 ? "#22c55e" : v >= 45 ? "#f59e0b" : "#ef4444";
+}
+
+function getSafetyRiskLevel(d: SafetyTimePoint): RiskBand {
+  const score = d.safetyViolations + d.impactEvents * 2.5 + d.nearMisses * 0.8;
+  if (score >= 42) return "critical";
+  if (score >= 26) return "high";
+  if (score >= 12) return "medium";
+  return "low";
+}
+
+function detectSafetyAlerts(data: SafetyTimePoint[]): string[] {
+  const alerts: string[] = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i].impactEvents > 0 && data[i-1].impactEvents > 0 && data[i].impactEvents > data[i-1].impactEvents * 1.2) {
+      const pct = Math.round((data[i].impactEvents / data[i-1].impactEvents - 1) * 100);
+      alerts.push(`Impact events ↑${pct}% at ${data[i].label} — investigate ${data[i].mostAffectedZone}`);
+    }
+  }
+  const zoneCounts: Record<string, number> = {};
+  data.forEach(d => { zoneCounts[d.mostAffectedZone] = (zoneCounts[d.mostAffectedZone] || 0) + 1; });
+  Object.entries(zoneCounts).forEach(([zone, count]) => {
+    if (count >= Math.ceil(data.length * 0.4)) {
+      alerts.push(`${zone} repeatedly flagged as highest-risk zone (${count}/${data.length} periods)`);
+    }
+  });
+  return alerts.slice(0, 2);
 }
 
 function SL({ children }: { children: React.ReactNode }) {
@@ -251,6 +330,347 @@ function OperatorQuadrantMatrix() {
         ))}
       </div>
     </div>
+  );
+}
+
+// ─── Widget: Safety Violation Trend Intelligence ─────────────────────────────
+// Hero 8-column widget · multi-line area chart (violations + impacts + near-misses)
+// Data sources: RTSS + MEPS + FMS + Command Center
+
+function SafetyTrendTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0]?.payload as SafetyTimePoint;
+  const risk = getSafetyRiskLevel(d);
+  const rb = RISK_BAND[risk];
+  const fmt = (n: number) => String(n).padStart(2, "0");
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: 8, padding: "12px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)", minWidth: 224, maxWidth: 264, pointerEvents: "none" as const, fontFamily: "Inter, sans-serif" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 8, borderBottom: "0.64px solid #e2e8f0" }}>
+        <span style={{ fontWeight: 600, fontSize: 11, color: "#0f172a" }}>{label} · {d.shift}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}`, whiteSpace: "nowrap" as const }}>{rb.label}</span>
+      </div>
+      {/* Safety Violations */}
+      <div style={{ marginBottom: 7 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#1b59f8", display: "inline-block", flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>Safety Violations</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#1b59f8" }}>{d.safetyViolations}</span>
+        </div>
+        <div style={{ paddingLeft: 12 }}>
+          {([["Overspeed", d.overspeed], ["Restricted Zone", d.restrictedZone]] as [string, number][]).map(([k, v]) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 1 }}>
+              <span style={{ fontSize: 9, color: "#94a3b8" }}>{k}</span>
+              <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b" }}>{fmt(v)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Impact Events */}
+      <div style={{ marginBottom: 7 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#ef4444", display: "inline-block", flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>Impact Events</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#ef4444" }}>{d.impactEvents}</span>
+        </div>
+        <div style={{ paddingLeft: 12 }}>
+          {([["Rack Impact", d.rackImpact], ["Collision", d.collision]] as [string, number][]).map(([k, v]) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 1 }}>
+              <span style={{ fontSize: 9, color: "#94a3b8" }}>{k}</span>
+              <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b" }}>{fmt(v)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Near Misses */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#f59e0b", display: "inline-block", flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>Near Misses</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b" }}>{d.nearMisses}</span>
+        </div>
+        <div style={{ paddingLeft: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 9, color: "#94a3b8" }}>Pedestrian Warning</span>
+            <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b" }}>{fmt(d.pedestrianWarning)}</span>
+          </div>
+        </div>
+      </div>
+      {/* Operational Context */}
+      <div style={{ borderTop: "0.64px solid #e2e8f0", paddingTop: 8 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "#94a3b8", marginBottom: 5 }}>Operational Context</div>
+        {([
+          ["Active MHEs",       d.activeMhes,         "#0f172a"],
+          ["Active Operators",  d.activeOperators,    "#0f172a"],
+          ["Most Affected Zone",d.mostAffectedZone,   "#ef4444"],
+        ] as [string, string|number, string][]).map(([lbl, val, col]) => (
+          <div key={lbl} style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+            <span style={{ fontSize: 9, color: "#94a3b8" }}>{lbl}</span>
+            <span style={{ fontSize: 9, fontWeight: 600, color: col }}>{val}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const SAFETY_LINE_ITEMS: [string, string, string][] = [
+  ["safetyViolations", "Safety Violations (RTSS)", "#1b59f8"],
+  ["impactEvents",     "Impact Events (RTSS+FMS)", "#ef4444"],
+  ["nearMisses",       "Near Misses (CC)",         "#f59e0b"],
+];
+
+function SafetyViolationTrendWidget() {
+  const [timeRange, setTimeRange] = useState("7d");
+  const [zone,      setZone]      = useState("all");
+  const [mheType,   setMheType]   = useState("all");
+  const [shift,     setShift]     = useState("all");
+  const [hoveredLine, setHoveredLine] = useState<string | null>(null);
+
+  const rawData =
+    timeRange === "24h" ? SAFETY_TREND_24H :
+    timeRange === "30d" ? SAFETY_TREND_30D :
+    SAFETY_TREND_7D;
+
+  const data = shift === "all" ? rawData
+    : rawData.filter(d =>
+        (shift === "morning" && d.shift === "Morning") ||
+        (shift === "evening" && d.shift === "Evening") ||
+        (shift === "night"   && d.shift === "Night")   ||
+        d.shift.startsWith("Shift") || d.shift === "Mixed"
+      );
+
+  const alerts = detectSafetyAlerts(data);
+  const yMax = Math.max(...data.map(d => Math.max(d.safetyViolations, d.nearMisses))) + 4;
+  const yStep = Math.ceil(yMax / 4);
+  const yTicks = [0, yStep, yStep * 2, yStep * 3, yStep * 4];
+
+  const lineOpacity = (key: string) => hoveredLine === null ? 1 : hoveredLine === key ? 1 : 0.15;
+  const strokeWidth = (key: string) => hoveredLine === key ? 2.5 : 2;
+
+  const makeDot = (color: string) => (props: any) => {
+    const { cx, cy, payload } = props;
+    if (getSafetyRiskLevel(payload) !== "critical") return <g key={`dot-${cx}-${cy}`} />;
+    return (
+      <g key={`dot-${cx}-${cy}`}>
+        <circle cx={cx} cy={cy} r={9} fill={color} fillOpacity={0.13} />
+        <circle cx={cx} cy={cy} r={4} fill={color} stroke="#fff" strokeWidth={1.5} />
+      </g>
+    );
+  };
+
+  const footerInsight =
+    timeRange === "24h" ? "Evening 4PM surge — 14 violations and 6 impact events, Storage B highest risk hour"
+    : timeRange === "30d" ? "Week 4 shows 69% escalation vs Week 1 — Storage B is a persistent risk concentration point"
+    : "Saturday Shift C drove the week peak — 19 violations with 8 impact events in Storage B";
+
+  return (
+    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+      <style>{`@keyframes v3SafetyPulse { 0%,100%{opacity:.5} 50%{opacity:.1} }`}</style>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, minHeight: "81px", boxSizing: "border-box" as const, gap: 12, flexWrap: "wrap" as const }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
+              Safety Violation Trend Intelligence
+            </span>
+            {alerts.length > 0 && (
+              <span style={{ display: "flex", alignItems: "center", gap: 4, background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 4, padding: "1px 7px", fontSize: 9, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap" as const }}>
+                <AlertTriangle style={{ width: 9, height: 9, color: "#f59e0b" }} />
+                {alerts.length} ALERT{alerts.length > 1 ? "S" : ""}
+              </span>
+            )}
+          </div>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>
+            Safety violations · impact events · near-misses correlated across RTSS + MEPS + FMS
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const, flexShrink: 0 }}>
+          {[
+            { val: timeRange, set: setTimeRange, items: [["24h","Last 24 Hours"],["7d","Last 7 Days"],["30d","Last 30 Days"]] as [string,string][] },
+            { val: zone,      set: setZone,      items: [["all","All Zones"],["storageA","Storage A"],["storageB","Storage B"],["loading","Loading"],["picking","Picking"]] as [string,string][] },
+            { val: mheType,   set: setMheType,   items: [["all","All MHE Types"],["forklift","Forklift"],["reachtruck","Reach Truck"],["palletjack","Pallet Jack"]] as [string,string][] },
+            { val: shift,     set: setShift,     items: [["all","All Shifts"],["morning","Morning"],["evening","Evening"],["night","Night"]] as [string,string][] },
+          ].map(({ val, set, items }) => (
+            <Select key={items[0][0]+items[1][0]} value={val} onValueChange={set}>
+              <SelectTrigger style={SHIFT_FILTER_STYLE}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {items.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          ))}
+          <MTags tags={["RTSS", "MEPS", "FMS"]} />
+        </div>
+      </div>
+
+      {/* Alert bar */}
+      {alerts.length > 0 && (
+        <div style={{ background: "#fffbeb", borderBottom: "1px solid #fde68a", padding: "5px 16px", flexShrink: 0 }}>
+          {alerts.map((a, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: i < alerts.length - 1 ? 3 : 0 }}>
+              <AlertTriangle style={{ width: 10, height: 10, color: "#f59e0b", flexShrink: 0 }} />
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#92400e" }}>{a}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Chart */}
+      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <div style={{ position: "absolute", top: "20px", right: "14px", bottom: 0, left: "14px", overflow: "hidden" }}>
+          <div style={{ width: "100%", height: "100%" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gradSV" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#1b59f8" stopOpacity={0.14} />
+                    <stop offset="95%" stopColor="#1b59f8" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gradIV" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#ef4444" stopOpacity={0.12} />
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gradNM" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#f59e0b" stopOpacity={0.12} />
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="label" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} dy={6} />
+                <YAxis tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} dx={-4} domain={[0, yStep * 4]} ticks={yTicks} />
+                <ReTooltip content={<SafetyTrendTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1, strokeDasharray: "4 2" }} />
+                <Area type="monotone" dataKey="safetyViolations" name="Safety Violations"
+                  stroke="#1b59f8" strokeWidth={strokeWidth("safetyViolations")} strokeOpacity={lineOpacity("safetyViolations")}
+                  fill="url(#gradSV)" fillOpacity={lineOpacity("safetyViolations")}
+                  dot={makeDot("#1b59f8")} activeDot={{ r: 5, fill: "#1b59f8", stroke: "#fff", strokeWidth: 2 }} />
+                <Area type="monotone" dataKey="impactEvents" name="Impact Events"
+                  stroke="#ef4444" strokeWidth={strokeWidth("impactEvents")} strokeOpacity={lineOpacity("impactEvents")}
+                  fill="url(#gradIV)" fillOpacity={lineOpacity("impactEvents")}
+                  dot={makeDot("#ef4444")} activeDot={{ r: 5, fill: "#ef4444", stroke: "#fff", strokeWidth: 2 }} />
+                <Area type="monotone" dataKey="nearMisses" name="Near Misses"
+                  stroke="#f59e0b" strokeWidth={strokeWidth("nearMisses")} strokeOpacity={lineOpacity("nearMisses")}
+                  fill="url(#gradNM)" fillOpacity={lineOpacity("nearMisses")}
+                  dot={false} activeDot={{ r: 5, fill: "#f59e0b", stroke: "#fff", strokeWidth: 2 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Legend — hover to dim other lines */}
+      <div style={{ display: "flex", gap: "16px", padding: "8px 16px 12px", justifyContent: "center", flexWrap: "wrap" as const, flexShrink: 0 }}>
+        {SAFETY_LINE_ITEMS.map(([key, label, color]) => (
+          <span key={key}
+            style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: hoveredLine === null || hoveredLine === key ? "#64748b" : "#cbd5e1", cursor: "default", transition: "color 0.15s" }}
+            onMouseEnter={() => setHoveredLine(key)}
+            onMouseLeave={() => setHoveredLine(null)}
+          >
+            <span style={{ width: "20px", height: "2px", background: color, display: "inline-block", flexShrink: 0, borderRadius: 1, opacity: hoveredLine === null || hoveredLine === key ? 1 : 0.25, transition: "opacity 0.15s" }} />
+            {label}
+          </span>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {footerInsight}
+          </span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            Operational safety trend — RTSS violations · MEPS findings · FMS fleet activity · Command Center
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Widget: Safety Risk Snapshot (4-col companion) ──────────────────────────
+
+function SafetyRiskSnapshot() {
+  const data = SAFETY_TREND_7D;
+  const latest = data[data.length - 1];
+  const risk = getSafetyRiskLevel(latest);
+  const rb = RISK_BAND[risk];
+  const totalV = data.reduce((s, d) => s + d.safetyViolations, 0);
+  const totalI = data.reduce((s, d) => s + d.impactEvents, 0);
+  const totalN = data.reduce((s, d) => s + d.nearMisses, 0);
+  const totalMeps = data.reduce((s, d) => s + d.mepsRedFindings, 0);
+  const peak = data.reduce((m, d) => d.safetyViolations > m.safetyViolations ? d : m, data[0]);
+  const alerts = detectSafetyAlerts(data);
+  const zoneCounts: Record<string, number> = {};
+  data.forEach(d => { zoneCounts[d.mostAffectedZone] = (zoneCounts[d.mostAffectedZone] || 0) + 1; });
+  const topZone = Object.entries(zoneCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ?? "—";
+
+  return (
+    <>
+      {/* Current risk */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px 12px", borderBottom: "1px solid #f1f5f9" }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: rb.bg, border: `1px solid ${rb.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <ShieldCheck style={{ width: 18, height: 18, color: rb.color }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.07em", color: "#94a3b8", marginBottom: 2 }}>Current Risk Level</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: rb.color, lineHeight: 1 }}>{rb.label}</div>
+        </div>
+        <div style={{ textAlign: "right" as const }}>
+          <div style={{ fontSize: 9, color: "#94a3b8" }}>Latest period</div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: "#64748b" }}>{latest.label} · {latest.shift}</div>
+        </div>
+      </div>
+
+      {/* Period totals */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: "1px solid #f1f5f9" }}>
+        {[
+          { label: "Violations", value: totalV, color: "#1b59f8" },
+          { label: "Impacts",    value: totalI, color: "#ef4444" },
+          { label: "Near Miss",  value: totalN, color: "#f59e0b" },
+        ].map((m, i) => (
+          <div key={m.label} style={{ padding: "12px 8px", borderRight: i < 2 ? "1px solid #f1f5f9" : "none", textAlign: "center" as const }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: m.color, lineHeight: 1 }}>{m.value}</div>
+            <div style={{ fontSize: 9, color: "#94a3b8", marginTop: 3, fontWeight: 500 }}>{m.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Intelligence rows */}
+      <div style={{ padding: "14px 20px", display: "flex", flexDirection: "column", gap: 11, flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", marginTop: 4, flexShrink: 0, display: "inline-block" }} />
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#0f172a" }}>Peak Risk Period</div>
+            <div style={{ fontSize: 10, color: "#64748b", marginTop: 1 }}>{peak.label} — {peak.safetyViolations} violations, {peak.impactEvents} impacts in {peak.mostAffectedZone}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b", marginTop: 4, flexShrink: 0, display: "inline-block" }} />
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#0f172a" }}>Highest Risk Zone</div>
+            <div style={{ fontSize: 10, color: "#64748b", marginTop: 1 }}>{topZone} — flagged in {zoneCounts[topZone]} of {data.length} periods this week</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1b59f8", marginTop: 4, flexShrink: 0, display: "inline-block" }} />
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#0f172a" }}>MEPS Inspection Link</div>
+            <div style={{ fontSize: 10, color: "#64748b", marginTop: 1 }}>{totalMeps} red findings correlate with {totalI} impact events this period</div>
+          </div>
+        </div>
+        {alerts.length > 0 && (
+          <div style={{ background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 6, padding: "8px 10px" }}>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "#92400e", marginBottom: 5 }}>Active Alerts</div>
+            {alerts.map((a, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 5, marginBottom: i < alerts.length - 1 ? 4 : 0 }}>
+                <AlertTriangle style={{ width: 9, height: 9, color: "#f59e0b", marginTop: 1, flexShrink: 0 }} />
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#92400e", lineHeight: "13px" }}>{a}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -510,7 +930,41 @@ export function Variation3Tab() {
         </div>
       </div>
 
-      {/* ══ Row 2: Operator Risk Matrix + Fleet Readiness Intelligence ════
+      {/* ══ Row 2: Safety Violation Trend Intelligence (Hero) ════════════
+          RTSS violations + MEPS findings + FMS activity + Command Center
+          8-col area chart hero · 4-col risk snapshot companion            */}
+      <div className="grid grid-cols-12 gap-6">
+        <SL>RTSS · MEPS · FMS · COMMAND CENTER — Operational Safety Trend Intelligence</SL>
+
+        {/* Hero: Safety Violation Trend Intelligence — 8 columns */}
+        <div className="col-span-12 xl:col-span-8 flex" style={{ minHeight: "480px" }}>
+          <SafetyViolationTrendWidget />
+        </div>
+
+        {/* Companion: Safety Risk Snapshot — 4 columns */}
+        <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Safety Risk Snapshot</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>7-day period · cross-system intelligence</span>
+            </div>
+            <MTags tags={["RTSS", "MEPS", "FMS"]} />
+          </div>
+          <SafetyRiskSnapshot />
+          <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                Storage B remains highest-risk zone — 4 of 7 days flagged with compound violations
+              </span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                Risk snapshot — RTSS · MEPS findings · FMS activity correlation
+              </span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* ══ Row 3: Operator Risk Matrix + Fleet Readiness Intelligence ════
           RTSS + FMS + MEPS — Who is unsafe and which fleet is degrading?    */}
       <div className="grid grid-cols-12 gap-6">
         <SL>RTSS · FMS · MEPS — Operator Safety vs Productivity Intelligence</SL>
