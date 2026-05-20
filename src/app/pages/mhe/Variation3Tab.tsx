@@ -994,13 +994,13 @@ export function Variation3Tab() {
       <div className="grid grid-cols-12 gap-6">
         <SL>RTSS · MEPS · FMS · COMMAND CENTER — Operational Safety Trend Intelligence</SL>
 
-        {/* Safety Violation Trend — same size as TopMhesWithFindings */}
-        <div className="col-span-12 xl:col-span-8 flex" style={{ minHeight: "422px" }}>
+        {/* Safety Violation Trend — matches Shift Performance height */}
+        <div className="col-span-12 xl:col-span-8 flex" style={{ minHeight: "520px" }}>
           <SafetyViolationTrendWidget />
         </div>
 
-        {/* Active Safety Alerts — same size as TopFailingParts */}
-        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "422px" }}>
+        {/* Active Safety Alerts — matches Shift Performance height */}
+        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "520px" }}>
           <ActiveSafetyAlertsWidget />
         </div>
       </div>
