@@ -587,93 +587,6 @@ function SafetyViolationTrendWidget() {
   );
 }
 
-// ─── Widget: Safety Risk Snapshot (4-col companion) ──────────────────────────
-
-function SafetyRiskSnapshot() {
-  const data = SAFETY_TREND_7D;
-  const latest = data[data.length - 1];
-  const risk = getSafetyRiskLevel(latest);
-  const rb = RISK_BAND[risk];
-  const totalV = data.reduce((s, d) => s + d.safetyViolations, 0);
-  const totalI = data.reduce((s, d) => s + d.impactEvents, 0);
-  const totalN = data.reduce((s, d) => s + d.nearMisses, 0);
-  const totalMeps = data.reduce((s, d) => s + d.mepsRedFindings, 0);
-  const peak = data.reduce((m, d) => d.safetyViolations > m.safetyViolations ? d : m, data[0]);
-  const alerts = detectSafetyAlerts(data);
-  const zoneCounts: Record<string, number> = {};
-  data.forEach(d => { zoneCounts[d.mostAffectedZone] = (zoneCounts[d.mostAffectedZone] || 0) + 1; });
-  const topZone = Object.entries(zoneCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ?? "—";
-
-  return (
-    <>
-      {/* Current risk */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px 12px", borderBottom: "1px solid #f1f5f9" }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: rb.bg, border: `1px solid ${rb.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <ShieldCheck style={{ width: 18, height: 18, color: rb.color }} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.07em", color: "#94a3b8", marginBottom: 2 }}>Current Risk Level</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: rb.color, lineHeight: 1 }}>{rb.label}</div>
-        </div>
-        <div style={{ textAlign: "right" as const }}>
-          <div style={{ fontSize: 9, color: "#94a3b8" }}>Latest period</div>
-          <div style={{ fontSize: 10, fontWeight: 600, color: "#64748b" }}>{latest.label} · {latest.shift}</div>
-        </div>
-      </div>
-
-      {/* Period totals */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderBottom: "1px solid #f1f5f9" }}>
-        {[
-          { label: "Violations", value: totalV, color: "#1b59f8" },
-          { label: "Impacts",    value: totalI, color: "#ef4444" },
-          { label: "Near Miss",  value: totalN, color: "#f59e0b" },
-        ].map((m, i) => (
-          <div key={m.label} style={{ padding: "12px 8px", borderRight: i < 2 ? "1px solid #f1f5f9" : "none", textAlign: "center" as const }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: m.color, lineHeight: 1 }}>{m.value}</div>
-            <div style={{ fontSize: 9, color: "#94a3b8", marginTop: 3, fontWeight: 500 }}>{m.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Intelligence rows */}
-      <div style={{ padding: "14px 20px", display: "flex", flexDirection: "column", gap: 11, flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", marginTop: 4, flexShrink: 0, display: "inline-block" }} />
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: "#0f172a" }}>Peak Risk Period</div>
-            <div style={{ fontSize: 10, color: "#64748b", marginTop: 1 }}>{peak.label} — {peak.safetyViolations} violations, {peak.impactEvents} impacts in {peak.mostAffectedZone}</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b", marginTop: 4, flexShrink: 0, display: "inline-block" }} />
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: "#0f172a" }}>Highest Risk Zone</div>
-            <div style={{ fontSize: 10, color: "#64748b", marginTop: 1 }}>{topZone} — flagged in {zoneCounts[topZone]} of {data.length} periods this week</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#1b59f8", marginTop: 4, flexShrink: 0, display: "inline-block" }} />
-          <div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: "#0f172a" }}>MEPS Inspection Link</div>
-            <div style={{ fontSize: 10, color: "#64748b", marginTop: 1 }}>{totalMeps} red findings correlate with {totalI} impact events this period</div>
-          </div>
-        </div>
-        {alerts.length > 0 && (
-          <div style={{ background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 6, padding: "8px 10px" }}>
-            <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "#92400e", marginBottom: 5 }}>Active Alerts</div>
-            {alerts.map((a, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 5, marginBottom: i < alerts.length - 1 ? 4 : 0 }}>
-                <AlertTriangle style={{ width: 9, height: 9, color: "#f59e0b", marginTop: 1, flexShrink: 0 }} />
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#92400e", lineHeight: "13px" }}>{a}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
-  );
-}
-
 // ─── Widget: Shift Performance Stacked Bar ───────────────────────────────────
 
 const SHIFT_FILTER_STYLE: React.CSSProperties = {
@@ -931,37 +844,13 @@ export function Variation3Tab() {
       </div>
 
       {/* ══ Row 2: Safety Violation Trend Intelligence (Hero) ════════════
-          RTSS violations + MEPS findings + FMS activity + Command Center
-          8-col area chart hero · 4-col risk snapshot companion            */}
+          RTSS violations + MEPS findings + FMS activity + Command Center */}
       <div className="grid grid-cols-12 gap-6">
         <SL>RTSS · MEPS · FMS · COMMAND CENTER — Operational Safety Trend Intelligence</SL>
 
-        {/* Hero: Safety Violation Trend Intelligence — 8 columns */}
-        <div className="col-span-12 xl:col-span-8 flex" style={{ minHeight: "480px" }}>
+        <div className="col-span-12 flex" style={{ minHeight: "480px" }}>
           <SafetyViolationTrendWidget />
         </div>
-
-        {/* Companion: Safety Risk Snapshot — 4 columns */}
-        <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Safety Risk Snapshot</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>7-day period · cross-system intelligence</span>
-            </div>
-            <MTags tags={["RTSS", "MEPS", "FMS"]} />
-          </div>
-          <SafetyRiskSnapshot />
-          <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                Storage B remains highest-risk zone — 4 of 7 days flagged with compound violations
-              </span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                Risk snapshot — RTSS · MEPS findings · FMS activity correlation
-              </span>
-            </div>
-          </div>
-        </Card>
       </div>
 
       {/* ══ Row 3: Operator Risk Matrix + Fleet Readiness Intelligence ════
