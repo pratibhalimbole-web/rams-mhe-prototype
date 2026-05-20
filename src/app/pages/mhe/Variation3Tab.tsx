@@ -603,10 +603,11 @@ export function Variation3Tab() {
             {/* Y-labels + bars row — fills remaining space */}
             <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-              {/* Y-axis labels — space-around aligns with bars */}
-              <div style={{ width: 56, flexShrink: 0, display: "flex", flexDirection: "column", justifyContent: "space-around" }}>
+              {/* Y-axis labels — flex:1 rows align with bar rows */}
+              <div style={{ width: 56, flexShrink: 0, display: "flex", flexDirection: "column" }}>
                 {INSP_IMPACT_CORR.map(row => (
-                  <div key={row.mheId} style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8 }}>
+                  <div key={row.mheId} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8,
+                    background: corrTooltip?.row.mheId === row.mheId ? "#f8fafc" : "transparent" }}>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: 1 }}>{row.mheId}</span>
                   </div>
                 ))}
@@ -615,24 +616,30 @@ export function Variation3Tab() {
               {/* Grid lines + bar groups */}
               <div
                 style={{ flex: 1, position: "relative" }}
-                onMouseMove={e => {
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  setCorrTooltip(t => t ? { ...t, x: e.clientX - rect.left, y: e.clientY - rect.top } : t);
-                }}
                 onMouseLeave={() => setCorrTooltip(null)}
               >
                 {/* Vertical grid lines */}
                 {[0, 25, 50, 75, 100].map(pct => (
                   <div key={pct} style={{ position: "absolute", left: `${pct}%`, top: 0, bottom: 0, width: 1, background: "#f1f5f9", zIndex: 0 }} />
                 ))}
-                {/* Bar groups — space-around gives ~40px gap between groups */}
-                <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-around", position: "relative", zIndex: 1 }}>
+                {/* Bar groups — flex:1 so entire row height is hoverable */}
+                <div style={{ height: "100%", display: "flex", flexDirection: "column", position: "relative", zIndex: 1 }}>
                   {INSP_IMPACT_CORR.map(row => (
                     <div
                       key={row.mheId}
-                      style={{ display: "flex", flexDirection: "column", gap: 4, cursor: "default" }}
-                      onMouseEnter={e => {
-                        const rect = (e.currentTarget.parentElement!.parentElement as HTMLElement).getBoundingClientRect();
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        gap: 4,
+                        cursor: "default",
+                        background: corrTooltip?.row.mheId === row.mheId ? "#f8fafc" : "transparent",
+                        borderRadius: 4,
+                      }}
+                      onMouseMove={e => {
+                        const gridDiv = (e.currentTarget.parentElement!.parentElement as HTMLElement);
+                        const rect = gridDiv.getBoundingClientRect();
                         setCorrTooltip({ row, x: e.clientX - rect.left, y: e.clientY - rect.top });
                       }}
                     >
@@ -642,12 +649,12 @@ export function Variation3Tab() {
                   ))}
                 </div>
 
-                {/* Tooltip */}
+                {/* Tooltip — follows cursor like ShiftStackedTooltip */}
                 {corrTooltip && (
                   <div style={{
                     position: "absolute",
                     left: corrTooltip.x + 12,
-                    top: corrTooltip.y - 10,
+                    top: Math.max(0, corrTooltip.y - 40),
                     background: "#fff",
                     border: "1px solid #e8e8e8",
                     borderRadius: 6,
