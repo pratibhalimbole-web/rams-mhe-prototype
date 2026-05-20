@@ -169,6 +169,31 @@ const SAFETY_TREND_30D: SafetyTimePoint[] = [
   { label: "Wk 4", shift: "Mixed", safetyViolations: 71, impactEvents: 28, nearMisses: 56, overspeed: 45, restrictedZone: 26, rackImpact: 17, collision: 11, pedestrianWarning: 42, activeMhes: 27, activeOperators: 21, mostAffectedZone: "Storage B", mepsRedFindings: 9 },
 ];
 
+// ─── Active Safety Alerts feed data ─────────────────────────────────────────
+// Cross-system: RTSS violations + MEPS red findings + FMS issues + IMDS expiry
+
+type AlertCard = {
+  id: string;
+  severity: RiskBand;
+  title: string;
+  description: string;
+  mheId: string;
+  zone: string;
+  time: string;
+  module: string;
+  category: string;
+};
+
+const ACTIVE_ALERTS: AlertCard[] = [
+  { id: "A001", severity: "critical", title: "Multiple Impact Events Detected",      description: "3 rack impacts in 2 hours — compound risk pattern forming",  mheId: "MHE-025", zone: "Storage B", time: "14 min ago",  module: "RTSS",      category: "Impact Event"       },
+  { id: "A002", severity: "critical", title: "Red Finding Unresolved — 3+ Days",     description: "Critical brake failure still open, MHE operating with active finding", mheId: "MHE-004", zone: "Loading",   time: "3 days ago", module: "MEPS",      category: "Red Finding"        },
+  { id: "A003", severity: "high",     title: "Overspeed Violations Spike",           description: "9 events in Shift B — 3× the daily average for this zone",   mheId: "MHE-007", zone: "Storage B", time: "2 hrs ago",  module: "RTSS",      category: "Overspeed"          },
+  { id: "A004", severity: "high",     title: "Restricted Zone Entry Repeat",         description: "3 pedestrian zone entries in 1 hour — operator review needed", mheId: "MHE-022", zone: "Picking",   time: "1 hr ago",   module: "RTSS",      category: "Zone Violation"     },
+  { id: "A005", severity: "medium",   title: "Inspection Skipped — Warranty Risk",   description: "2 consecutive MEPS checks missed while under expiry warning",  mheId: "MHE-001", zone: "Storage A", time: "Today",      module: "MEPS",      category: "Skipped Inspection" },
+  { id: "A006", severity: "medium",   title: "Fleet Utilization Drop Detected",      description: "Pallet Jack fleet at 54% — 3 MHEs idle, no scheduled task",   mheId: "Fleet",   zone: "Loading",   time: "This shift", module: "FMS",       category: "Utilization"        },
+  { id: "A007", severity: "low",      title: "Near-Miss Pattern — Same Zone",        description: "4 pedestrian near-misses over 3 consecutive shifts in zone",   mheId: "—",       zone: "Storage B", time: "Recurring",  module: "RTSS",      category: "Near Miss"          },
+];
+
 // ─── Chart configs ─────────────────────────────────────────────────────────────
 
 const shiftChartConfig = {
@@ -587,6 +612,127 @@ function SafetyViolationTrendWidget() {
   );
 }
 
+// ─── Widget: Active Safety Alerts ────────────────────────────────────────────
+// 4-col companion · cross-system alert feed with severity filter pills
+
+const ALERT_ACCENT: Record<RiskBand, string> = {
+  critical: "#ef4444",
+  high:     "#f59e0b",
+  medium:   "#3b82f6",
+  low:      "#94a3b8",
+};
+
+function ActiveSafetyAlertsWidget() {
+  const [filter, setFilter] = useState<string>("all");
+
+  const counts = {
+    critical: ACTIVE_ALERTS.filter(a => a.severity === "critical").length,
+    high:     ACTIVE_ALERTS.filter(a => a.severity === "high").length,
+    medium:   ACTIVE_ALERTS.filter(a => a.severity === "medium").length,
+    low:      ACTIVE_ALERTS.filter(a => a.severity === "low").length,
+  };
+
+  const visible = filter === "all" ? ACTIVE_ALERTS : ACTIVE_ALERTS.filter(a => a.severity === filter);
+
+  const pills: [string, string, number, string, string][] = [
+    ["all",      "All",      ACTIVE_ALERTS.length, "#64748b", "#f1f5f9"],
+    ["critical", "Critical", counts.critical,       "#dc2626", "#fef2f2"],
+    ["high",     "High",     counts.high,           "#92400e", "#fef3c7"],
+    ["medium",   "Medium",   counts.medium,         "#1e40af", "#eff6ff"],
+  ];
+
+  return (
+    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Active Safety Alerts</span>
+            <span style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 4, padding: "1px 7px", fontSize: 9, fontWeight: 700, color: "#dc2626" }}>
+              {ACTIVE_ALERTS.length}
+            </span>
+          </div>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Live cross-system feed — RTSS · MEPS · FMS</span>
+        </div>
+        <MTags tags={["RTSS", "MEPS", "FMS"]} />
+      </div>
+
+      {/* Severity filter pills */}
+      <div style={{ display: "flex", gap: 3, padding: "7px 16px 6px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+        {pills.map(([val, label, count, textColor, bg]) => (
+          <button key={val} onClick={() => setFilter(val)} style={{
+            display: "flex", alignItems: "center", gap: 4,
+            padding: "3px 8px", borderRadius: 5, border: "none", cursor: "pointer",
+            fontFamily: "Inter, sans-serif", fontSize: 10,
+            fontWeight: filter === val ? 700 : 400,
+            background: filter === val ? bg : "transparent",
+            color: filter === val ? textColor : "#94a3b8",
+            transition: "all 0.12s",
+          }}>
+            {label}
+            <span style={{
+              fontSize: 9, fontWeight: 700, padding: "0 4px", borderRadius: 3,
+              background: filter === val ? "rgba(0,0,0,0.07)" : "#f1f5f9",
+              color: filter === val ? textColor : "#94a3b8",
+            }}>{count}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Alert card list */}
+      <div style={{ flex: 1, overflowY: "auto" as const }}>
+        {visible.map((alert, i) => {
+          const rb = RISK_BAND[alert.severity];
+          const modBg    = alert.module === "MEPS" ? "#fef3c7" : alert.module === "FMS" ? "#eff6ff" : "#fef2f2";
+          const modColor = alert.module === "MEPS" ? "#92400e" : alert.module === "FMS" ? "#1e40af" : "#dc2626";
+          return (
+            <div key={alert.id}
+              style={{ display: "flex", gap: 10, padding: "10px 16px", borderBottom: i < visible.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s", cursor: "default" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
+            >
+              {/* Severity accent bar */}
+              <div style={{ width: 3, borderRadius: 2, background: ALERT_ACCENT[alert.severity], flexShrink: 0, alignSelf: "stretch", minHeight: 44 }} />
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Title row */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6, marginBottom: 3 }}>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", lineHeight: "15px", flex: 1 }}>{alert.title}</span>
+                  <span style={{ fontSize: 8, fontWeight: 700, padding: "2px 5px", borderRadius: 3, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}`, whiteSpace: "nowrap" as const, flexShrink: 0 }}>{rb.label}</span>
+                </div>
+                {/* Description */}
+                <div style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: "14px", marginBottom: 5 }}>{alert.description}</div>
+                {/* Meta row */}
+                <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" as const }}>
+                  <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, color: "#1b59f8" }}>{alert.mheId}</span>
+                  <span style={{ fontSize: 9, color: "#cbd5e1" }}>·</span>
+                  <span style={{ fontSize: 9, color: "#64748b" }}>{alert.zone}</span>
+                  <span style={{ fontSize: 9, color: "#cbd5e1" }}>·</span>
+                  <span style={{ fontSize: 9, color: "#94a3b8" }}>{alert.time}</span>
+                  <span style={{ marginLeft: "auto", fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: modBg, color: modColor }}>{alert.module}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            2 critical alerts need immediate action — MHE-025 impact events and MHE-004 red finding
+          </span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            Cross-system alert feed — RTSS violations · MEPS findings · FMS fleet status
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Widget: Shift Performance Stacked Bar ───────────────────────────────────
 
 const SHIFT_FILTER_STYLE: React.CSSProperties = {
@@ -843,13 +989,19 @@ export function Variation3Tab() {
         </div>
       </div>
 
-      {/* ══ Row 2: Safety Violation Trend Intelligence (Hero) ════════════
-          RTSS violations + MEPS findings + FMS activity + Command Center */}
+      {/* ══ Row 2: Safety Violation Trend Intelligence + Active Safety Alerts ═
+          Trend chart (8-col) + live alert feed (4-col) — RTSS+MEPS+FMS+CC   */}
       <div className="grid grid-cols-12 gap-6">
         <SL>RTSS · MEPS · FMS · COMMAND CENTER — Operational Safety Trend Intelligence</SL>
 
-        <div className="col-span-12 flex" style={{ minHeight: "480px" }}>
+        {/* Safety Violation Trend — same size as TopMhesWithFindings */}
+        <div className="col-span-12 xl:col-span-8 flex" style={{ minHeight: "422px" }}>
           <SafetyViolationTrendWidget />
+        </div>
+
+        {/* Active Safety Alerts — same size as TopFailingParts */}
+        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "422px" }}>
+          <ActiveSafetyAlertsWidget />
         </div>
       </div>
 
