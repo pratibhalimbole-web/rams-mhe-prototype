@@ -123,10 +123,6 @@ const shiftChartConfig = {
   safety:       { label: "Safety Score",  color: "#22c55e" },
   compliance:   { label: "Compliance",    color: "#f59e0b" },
 };
-const corrChartConfig = {
-  repeatedFindings: { label: "Repeated Findings (MEPS)", color: "#f59e0b" },
-  impactEvents:     { label: "Impact Events (RTSS)",     color: "#ef4444" },
-};
 
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
@@ -348,8 +344,8 @@ function ShiftPerformanceWidget() {
       </div>
 
       {/* Chart */}
-      <div style={{ flex: 1, padding: "12px 14px 0 14px", minHeight: 0, position: "relative" }}>
-        <div style={{ position: "absolute", inset: 0, overflowX: "hidden", overflowY: "hidden" }}>
+      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <div style={{ position: "absolute", top: "20px", right: "14px", bottom: 0, left: "14px", overflowX: "hidden", overflowY: "hidden" }}>
           <div style={{ width: "100%", height: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={SHIFT_PERFORMANCE_NORM} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} barCategoryGap="45%">
@@ -587,45 +583,84 @@ export function Variation3Tab() {
         </div>
 
         {/* Widget: Repeated Inspection Failures vs Safety Impact Frequency */}
-        <Card className="col-span-12 xl:col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
-          <CardHeader style={{ padding: "14px 20px 12px", borderBottom: "1px solid var(--border)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-              <div>
-                <CardTitle style={{ fontSize: 13, fontWeight: 600 }}>Repeated Inspection Failures vs Safety Impacts</CardTitle>
-                <CardDescription style={{ fontSize: 12 }}>
-                  MHEs with repeated findings (MEPS) correlated with impact event frequency (RTSS)
-                </CardDescription>
-              </div>
-              <MTags tags={["MEPS", "RTSS"]} />
+        <Card className="col-span-12 xl:col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ minHeight: "520px" }}>
+
+          {/* Header — matches ShiftPerformanceWidget */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Repeated Inspection Failures vs Safety Impacts</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>MHEs with repeated findings (MEPS) correlated with impact event frequency (RTSS)</span>
             </div>
-          </CardHeader>
-          <CardContent style={{ padding: "20px 20px 8px" }}>
-            <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
-              {[
-                { label: "Repeated Findings (MEPS)", color: "#f59e0b" },
-                { label: "Impact Events (RTSS)",     color: "#ef4444" },
-              ].map(l => (
-                <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 2, background: l.color, display: "inline-block" }} />
-                  <span style={{ fontSize: 11, color: "#64748B" }}>{l.label}</span>
+            <MTags tags={["MEPS", "RTSS"]} />
+          </div>
+
+          {/* Chart — pure flex, no absolute positioning, no scroll */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "16px 14px 0 14px", overflow: "hidden" }}>
+
+            {/* Y-labels + bars row — fills remaining space */}
+            <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+              {/* Y-axis labels — space-around aligns with bars */}
+              <div style={{ width: 56, flexShrink: 0, display: "flex", flexDirection: "column", justifyContent: "space-around" }}>
+                {INSP_IMPACT_CORR.map(row => (
+                  <div key={row.mheId} style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8 }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: 1 }}>{row.mheId}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Grid lines + bar groups */}
+              <div style={{ flex: 1, position: "relative" }}>
+                {/* Vertical grid lines */}
+                {[0, 25, 50, 75, 100].map(pct => (
+                  <div key={pct} style={{ position: "absolute", left: `${pct}%`, top: 0, bottom: 0, width: 1, background: "#f1f5f9", zIndex: 0 }} />
+                ))}
+                {/* Bar groups — space-around gives ~40px gap between groups */}
+                <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-around", position: "relative", zIndex: 1 }}>
+                  {INSP_IMPACT_CORR.map(row => (
+                    <div key={row.mheId} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div style={{ height: 8, borderRadius: "0 3px 3px 0", background: "#f59e0b", width: `${(row.repeatedFindings / 8) * 100}%` }} />
+                      <div style={{ height: 8, borderRadius: "0 3px 3px 0", background: "#ef4444", width: `${(row.impactEvents / 8) * 100}%` }} />
+                    </div>
+                  ))}
                 </div>
+              </div>
+            </div>
+
+            {/* X-axis labels */}
+            <div style={{ display: "flex", justifyContent: "space-between", paddingLeft: 56, paddingTop: 8, paddingBottom: 4, flexShrink: 0 }}>
+              {[0, 2, 4, 6, 8].map(tick => (
+                <span key={tick} style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: 1 }}>{tick}</span>
               ))}
             </div>
-            <ChartContainer config={corrChartConfig} style={{ width: "100%", height: 220 }}>
-              <BarChart data={INSP_IMPACT_CORR} layout="vertical" barCategoryGap="25%" barGap={3} margin={{ left: 8, right: 24, top: 8, bottom: 8 }}>
-                <CartesianGrid horizontal={false} stroke="var(--border)" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="mheId" type="category" width={64} tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="repeatedFindings" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={16} name="Repeated Findings (MEPS)" />
-                <Bar dataKey="impactEvents"     fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={16} name="Impact Events (RTSS)" />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-          <FI
-            insight="MHE-025 shows highest correlation — 8 repeated findings coincide with 7 impact events"
-            sub="Unresolved inspection findings are predictive of safety impact events — MEPS + RTSS"
-          />
+
+          </div>
+
+          {/* Legend — centered at bottom, matches ShiftPerformanceWidget */}
+          <div style={{ display: "flex", gap: "16px", padding: "8px 16px 12px", justifyContent: "center", flexWrap: "wrap" as const, flexShrink: 0 }}>
+            {[
+              { label: "Repeated Findings (MEPS)", color: "#f59e0b" },
+              { label: "Impact Events (RTSS)",     color: "#ef4444" },
+            ].map(l => (
+              <span key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
+                <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: l.color, display: "inline-block", flexShrink: 0 }} />
+                {l.label}
+              </span>
+            ))}
+          </div>
+
+          {/* Footer — matches ShiftPerformanceWidget */}
+          <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                MHE-025 shows highest correlation — 8 repeated findings coincide with 7 impact events
+              </span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                Unresolved inspection findings are predictive of safety impact events — MEPS + RTSS
+              </span>
+            </div>
+          </div>
+
         </Card>
       </div>
 
