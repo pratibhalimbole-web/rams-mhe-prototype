@@ -36,32 +36,6 @@ import {
 
 // ─── Cross-system data ────────────────────────────────────────────────────────
 
-// Operator Risk vs Productivity (RTSS safety score + FMS productivity + MEPS compliance)
-type RiskLevel = "safe" | "monitor" | "risk";
-const OPERATOR_MATRIX = [
-  { name: "Abhishek S.", mhe: "MHE-005", productivity: 94, safety: 88, impacts: 2, risk: "safe"    as RiskLevel },
-  { name: "Priya P.",    mhe: "MHE-012", productivity: 85, safety: 92, impacts: 1, risk: "safe"    as RiskLevel },
-  { name: "Ramesh P.",   mhe: "MHE-008", productivity: 88, safety: 80, impacts: 3, risk: "safe"    as RiskLevel },
-  { name: "Sunita R.",   mhe: "MHE-031", productivity: 78, safety: 66, impacts: 4, risk: "monitor" as RiskLevel },
-  { name: "Vikram S.",   mhe: "MHE-022", productivity: 62, safety: 52, impacts: 6, risk: "monitor" as RiskLevel },
-  { name: "Rajesh K.",   mhe: "MHE-004", productivity: 72, safety: 38, impacts: 9, risk: "risk"    as RiskLevel },
-  { name: "James W.",    mhe: "MHE-007", productivity: 44, safety: 30, impacts: 14, risk: "risk"   as RiskLevel },
-];
-const RISK_COLOR: Record<RiskLevel, string> = {
-  safe:    "#22c55e",
-  monitor: "#f59e0b",
-  risk:    "#ef4444",
-};
-
-// Fleet Readiness Intelligence (FMS utilization + MEPS findings + IMDS compliance)
-const FLEET_READINESS = [
-  { type: "Electric Forklift", count: 12, utilization: 78, redFindings: 2, amberFindings: 5, warrantyRisk: false, impacts: 5,  compliance: 88, readiness: 82 },
-  { type: "Reach Truck",       count:  8, utilization: 62, redFindings: 1, amberFindings: 3, warrantyRisk: false, impacts: 3,  compliance: 85, readiness: 74 },
-  { type: "Pallet Jack",       count:  8, utilization: 54, redFindings: 3, amberFindings: 7, warrantyRisk: true,  impacts: 8,  compliance: 62, readiness: 44 },
-  { type: "Order Picker",      count:  7, utilization: 45, redFindings: 1, amberFindings: 4, warrantyRisk: true,  impacts: 5,  compliance: 40, readiness: 30 },
-  { type: "Tow Tractor",       count:  7, utilization: 38, redFindings: 0, amberFindings: 2, warrantyRisk: false, impacts: 2,  compliance: 90, readiness: 65 },
-];
-
 // Shift Performance across ALL modules (FMS + RTSS + MEPS + IMDS)
 const SHIFT_PERFORMANCE = [
   { shift: "1st",  productivity: 88, safety: 85, compliance: 92 },
@@ -211,13 +185,6 @@ const RISK_BAND: Record<RiskBand, { bg: string; color: string; label: string; bo
   low:      { bg: "#f0fdf4", color: "#166534", label: "Low",      border: "#bbf7d0" },
 };
 
-const QUADRANT = [
-  { key: "sh", label: "Safe · High Productivity",  prodMin: 75, safeMin: 75, bg: "#f0fdf4", border: "#86efac", text: "#166534" },
-  { key: "sh2", label: "Safe · Low Productivity",  prodMin: 0,  prodMax: 75, safeMin: 75, bg: "#eff6ff", border: "#bfdbfe", text: "#1e40af" },
-  { key: "rm", label: "Productive · Risk Safety",  prodMin: 75, safeMin: 0,  safeMax: 75, bg: "#fef3c7", border: "#fde68a", text: "#92400e" },
-  { key: "rz", label: "Risk Zone",                 prodMax: 75, safeMax: 75, bg: "#fef2f2", border: "#fecaca", text: "#dc2626" },
-];
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function readinessColor(v: number) {
@@ -282,78 +249,6 @@ function MTags({ tags }: { tags: string[] }) {
       {tags.map(t => (
         <span key={t} style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, ...c[t] }}>{t}</span>
       ))}
-    </div>
-  );
-}
-
-// ─── Widget: Operator Quadrant Matrix ─────────────────────────────────────────
-// Plots operators across Safety vs Productivity axes in quadrant cards.
-// Bubble size = impact frequency. Cross-system: RTSS + FMS + MEPS.
-
-function OperatorQuadrantMatrix() {
-  const safe    = OPERATOR_MATRIX.filter(o => o.productivity >= 75 && o.safety >= 75);
-  const monProd = OPERATOR_MATRIX.filter(o => o.productivity >= 75 && o.safety <  75);
-  const monSafe = OPERATOR_MATRIX.filter(o => o.productivity <  75 && o.safety >= 75);
-  const riskZone= OPERATOR_MATRIX.filter(o => o.productivity <  75 && o.safety <  75);
-
-  const QuadCell = ({ label, operators, bg, border, textColor }: {
-    label: string; operators: typeof OPERATOR_MATRIX; bg: string; border: string; textColor: string;
-  }) => (
-    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 8, padding: "12px 14px", minHeight: 110 }}>
-      <p style={{ fontSize: 10, fontWeight: 700, color: textColor, textTransform: "uppercase" as const, letterSpacing: "0.06em", margin: "0 0 8px" }}>{label}</p>
-      <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 5 }}>
-        {operators.length === 0 && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>No operators</span>}
-        {operators.map(op => (
-          <div key={op.name} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", borderRadius: 20, padding: "4px 9px", border: `1px solid ${border}` }}>
-            <span style={{ width: Math.min(6 + op.impacts, 14), height: Math.min(6 + op.impacts, 14), borderRadius: "50%", background: RISK_COLOR[op.risk], display: "inline-block", flexShrink: 0, opacity: 0.85 }} />
-            <span style={{ fontSize: 11, color: "#1F2937", fontWeight: 600 }}>{op.name}</span>
-            <span style={{ fontSize: 10, color: "#94a3b8" }}>{op.impacts} impacts</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
-      {/* Axis labels */}
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "0 2px" }}>
-        <span style={{ fontSize: 10, color: "#94a3b8" }}>← LOW PRODUCTIVITY</span>
-        <span style={{ fontSize: 10, color: "#94a3b8" }}>HIGH PRODUCTIVITY →</span>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        {/* Top row: High Safety */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <span style={{ fontSize: 10, color: "#94a3b8", writingMode: "horizontal-tb" as const }}>↑ HIGH SAFETY</span>
-          </div>
-          <QuadCell label="Safe · Low Productivity"    operators={monSafe}  bg="#eff6ff" border="#bfdbfe" textColor="#1e40af" />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ height: 16 }} />
-          <QuadCell label="Safe · High Productivity ✓"  operators={safe}    bg="#f0fdf4" border="#86efac" textColor="#166534" />
-        </div>
-        {/* Bottom row: Low Safety */}
-        <div>
-          <QuadCell label="Risk Zone ⚠"               operators={riskZone} bg="#fef2f2" border="#fecaca" textColor="#dc2626" />
-        </div>
-        <div>
-          <QuadCell label="Productive · Safety Risk !"  operators={monProd} bg="#fef3c7" border="#fde68a" textColor="#92400e" />
-        </div>
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "0 2px" }}>
-        <span style={{ fontSize: 10, color: "#94a3b8" }}>↓ LOW SAFETY</span>
-        <span style={{ fontSize: 10, color: "#94a3b8" }}>Bubble size = impact events</span>
-      </div>
-      {/* Legend */}
-      <div style={{ display: "flex", gap: 12, paddingTop: 4 }}>
-        {(["safe", "monitor", "risk"] as RiskLevel[]).map(r => (
-          <div key={r} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: RISK_COLOR[r], display: "inline-block" }} />
-            <span style={{ fontSize: 11, color: "#64748B", textTransform: "capitalize" as const }}>{r}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -1003,71 +898,6 @@ export function Variation3Tab() {
         <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "520px" }}>
           <ActiveSafetyAlertsWidget />
         </div>
-      </div>
-
-      {/* ══ Row 3: Operator Risk Matrix + Fleet Readiness Intelligence ════
-          RTSS + FMS + MEPS — Who is unsafe and which fleet is degrading?    */}
-      <div className="grid grid-cols-12 gap-6">
-        <SL>RTSS · FMS · MEPS — Operator Safety vs Productivity Intelligence</SL>
-
-        {/* Widget: Operator Risk vs Productivity Quadrant Matrix */}
-        <Card className="col-span-12 xl:col-span-8 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
-          <CardHeader className="pb-2 border-b border-[var(--border)]">
-            <div className="flex items-start justify-between w-full gap-4">
-              <div className="flex flex-col gap-1 flex-1">
-                <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">Operator Risk vs Productivity Matrix</CardTitle>
-                <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">
-                  Operator positioned by Safety Score (RTSS) × Productivity (FMS). Bubble = impact frequency.
-                </CardDescription>
-              </div>
-              <MTags tags={["RTSS", "FMS", "MEPS"]} />
-            </div>
-          </CardHeader>
-          <CardContent style={{ padding: "20px 20px", flex: 1, display: "flex", flexDirection: "column" }}>
-            <OperatorQuadrantMatrix />
-          </CardContent>
-          <FI
-            insight="2 operators in Risk Zone — Rajesh K. and James W. show high impacts with low safety scores"
-            sub="Safety Score × Productivity Score × Impact Events — RTSS + FMS correlation"
-          />
-        </Card>
-
-        {/* Widget: Fleet Readiness Intelligence */}
-        <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
-          <CardHeader className="pb-2 border-b border-[var(--border)]">
-            <div className="flex items-start justify-between w-full gap-4">
-              <div className="flex flex-col gap-1 flex-1">
-                <CardTitle className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)]">Fleet Readiness Intelligence</CardTitle>
-                <CardDescription className="text-[length:var(--text-xs)] text-[var(--muted-foreground)]">Utilization + Health + Compliance per OEM type</CardDescription>
-              </div>
-              <MTags tags={["FMS", "MEPS", "IMDS"]} />
-            </div>
-          </CardHeader>
-          <CardContent style={{ padding: "12px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-            {FLEET_READINESS.map((f, i) => (
-              <div key={f.type} style={{ padding: "10px 0", borderBottom: i < FLEET_READINESS.length - 1 ? "1px solid var(--border)" : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1F2937" }}>{f.type}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    {f.warrantyRisk && <Badge variant="destructive" style={{ fontSize: 9, padding: "1px 5px" }}>Expiry</Badge>}
-                    <span style={{ fontSize: 14, fontWeight: 700, color: readinessColor(f.readiness) }}>{f.readiness}%</span>
-                  </div>
-                </div>
-                <Progress value={f.readiness} className="h-1.5" />
-                <div style={{ display: "flex", gap: 10, marginTop: 5 }}>
-                  <span style={{ fontSize: 10, color: "#64748B" }}>{f.count} MHEs</span>
-                  <span style={{ fontSize: 10, color: "#64748B" }}>Util: <strong>{f.utilization}%</strong></span>
-                  {f.redFindings > 0 && <span style={{ fontSize: 10, color: "#ef4444", fontWeight: 600 }}>{f.redFindings} Red</span>}
-                  {f.amberFindings > 0 && <span style={{ fontSize: 10, color: "#f59e0b", fontWeight: 600 }}>{f.amberFindings} Amber</span>}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-          <FI
-            insight="Order Picker readiness at 30% — expired warranty, lowest utilization, active findings"
-            sub="Fleet Readiness = Utilization × Inspection Health × Compliance — FMS + MEPS + IMDS"
-          />
-        </Card>
       </div>
 
       {/* ══ Row 3: Shift Performance + Inspection × Impact Correlation ═════
