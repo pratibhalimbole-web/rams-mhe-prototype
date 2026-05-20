@@ -80,16 +80,6 @@ const ASSET_DEGRADATION = [
   { mheId: "MHE-031", type: "Reach Truck",       amberTrend: 1, productivityDrop: 3,  impacts: 1,  skipped: 0, expiryRisk: false, risk: "low"      as RiskBand },
 ];
 
-// Operational Loss Attribution (FMS + RTSS + MEPS — ALL modules)
-const OPERATIONAL_LOSS = [
-  { cause: "Idle with Load Time",       hours: 18.5, pct: 35, module: "FMS",         color: "#f59e0b" },
-  { cause: "Congestion Delays",         hours: 14.2, pct: 27, module: "FMS + RTSS",  color: "#ef4444" },
-  { cause: "Unsafe Behavior Stops",     hours:  8.3, pct: 16, module: "RTSS",        color: "#dc2626" },
-  { cause: "Inspection Downtime",       hours:  6.1, pct: 12, module: "MEPS",        color: "#3b82f6" },
-  { cause: "Empty Travel Loss",         hours:  5.4, pct: 10, module: "FMS",         color: "#94a3b8" },
-];
-const TOTAL_LOSS_HOURS = 52.5;
-
 // ─── Safety Violation Trend Intelligence Data ─────────────────────────────────
 // Multi-source: RTSS violations + MEPS inspection findings + FMS fleet activity + Command Center
 
@@ -1139,64 +1129,6 @@ export function Variation3Tab() {
           <FI
             insight="MHE-025 and MHE-004 show multi-signal degradation — warrant immediate inspection and service scheduling"
             sub="Predictive risk: Repeated findings + productivity decline + impact events + expiry risk — MEPS + RTSS + FMS + IMDS"
-          />
-        </Card>
-      </div>
-
-      {/* ══ Row 5: Operational Loss Attribution ══════════════════════════
-          What is costing the warehouse time? ALL modules cross-referenced.  */}
-      <div className="grid grid-cols-12 gap-6">
-        <SL>ALL MODULES — Operational Loss Attribution Intelligence</SL>
-
-        <Card className="col-span-12 shadow-none border-[var(--border)] overflow-hidden">
-          <CardHeader style={{ padding: "14px 24px 12px", borderBottom: "1px solid var(--border)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-              <div>
-                <CardTitle style={{ fontSize: 13, fontWeight: 600 }}>Operational Loss Attribution</CardTitle>
-                <CardDescription style={{ fontSize: 12 }}>
-                  Where is the warehouse losing productive hours? Traced across FMS · RTSS · MEPS systems.
-                </CardDescription>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <MTags tags={["FMS", "RTSS", "MEPS"]} />
-                <div style={{ textAlign: "right" as const }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: "#ef4444", lineHeight: 1 }}>{TOTAL_LOSS_HOURS}h</div>
-                  <div style={{ fontSize: 11, color: "#94a3b8" }}>total lost / week</div>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
-            {OPERATIONAL_LOSS.map(loss => (
-              <div key={loss.cause} style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                {/* Cause + module */}
-                <div style={{ width: 220, flexShrink: 0 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#1F2937" }}>{loss.cause}</span>
-                  <div style={{ display: "flex", gap: 4, marginTop: 3 }}>
-                    {loss.module.split(" + ").map(m => (
-                      <span key={m} style={{ fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3,
-                        background: m === "RTSS" ? "#fef2f2" : m === "MEPS" ? "#fef3c7" : "#eff6ff",
-                        color: m === "RTSS" ? "#dc2626" : m === "MEPS" ? "#92400e" : "#1e40af",
-                      }}>{m}</span>
-                    ))}
-                  </div>
-                </div>
-                {/* Bar */}
-                <div style={{ flex: 1, position: "relative" as const, height: 28, background: "#f8fafc", borderRadius: 6, overflow: "hidden" as const, border: "1px solid var(--border)" }}>
-                  <div style={{ width: `${loss.pct}%`, height: "100%", background: loss.color, opacity: 0.85, borderRadius: 6, transition: "width 0.3s ease", display: "flex", alignItems: "center", paddingLeft: 10 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{loss.hours}h</span>
-                  </div>
-                </div>
-                {/* Pct */}
-                <div style={{ width: 44, textAlign: "right" as const, flexShrink: 0 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: loss.color }}>{loss.pct}%</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-          <FI
-            insight="Congestion + Idle-with-Load account for 62% of all operational loss — highest impact reduction opportunity"
-            sub="FMS task data · RTSS zone intelligence · MEPS downtime correlation — Total 52.5h lost / week"
           />
         </Card>
       </div>
