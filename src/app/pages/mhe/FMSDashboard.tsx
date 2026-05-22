@@ -806,6 +806,261 @@ export function OperatorLicenseExpiryDrawer({
   );
 }
 
+// ─── Operational Status Layer ─────────────────────────────────────────────────
+// 4 light-card operational pulse cards — Fleet Readiness · Operator Safety · Utilization · Inspection
+
+const DSL_CARD: React.CSSProperties = {
+  background: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: 12,
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
+  overflow: "hidden",
+  boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+};
+
+const DSL_DIVIDER: React.CSSProperties = {
+  height: 1,
+  background: "#f1f5f9",
+};
+
+type DarkBadgeVariant = "low" | "medium" | "high" | "healthy" | "warning" | "critical" | "info";
+
+const DARK_BADGE_STYLES: Record<DarkBadgeVariant, { bg: string; text: string; border: string; label: string }> = {
+  low:      { bg: "#f0fdf4", text: "#16a34a", border: "#86efac", label: "LOW RISK"    },
+  medium:   { bg: "#fef3c7", text: "#92400e", border: "#fde68a", label: "MEDIUM RISK" },
+  high:     { bg: "#fef2f2", text: "#dc2626", border: "#fecaca", label: "HIGH RISK"   },
+  healthy:  { bg: "#f0fdf4", text: "#16a34a", border: "#86efac", label: "HEALTHY"     },
+  warning:  { bg: "#fef3c7", text: "#92400e", border: "#fde68a", label: "WARNING"     },
+  critical: { bg: "#fef2f2", text: "#dc2626", border: "#fecaca", label: "CRITICAL"    },
+  info:     { bg: "#f1f5f9", text: "#475569", border: "#e2e8f0", label: "INFO"        },
+};
+
+function DarkStatusBadge({ variant }: { variant: DarkBadgeVariant }) {
+  const s = DARK_BADGE_STYLES[variant];
+  return (
+    <span style={{
+      fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 700, letterSpacing: "0.05em",
+      padding: "3px 7px", borderRadius: 10, whiteSpace: "nowrap" as const,
+      background: s.bg, color: s.text, border: `1px solid ${s.border}`,
+    }}>
+      {s.label}
+    </span>
+  );
+}
+
+export function OperationalStatusLayer() {
+  return (
+    <>
+      {/* ── Section label ── */}
+      <div className="col-span-12">
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: -2 }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#64748b", whiteSpace: "nowrap" }}>
+            Operational Status Layer
+          </span>
+          <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8", whiteSpace: "nowrap" }}>FMS · RTSS · MEPS · IMDS</span>
+        </div>
+      </div>
+
+      {/* ══ CARD 1 — Fleet Operational Readiness ══════════════════════════════ */}
+      <div className="col-span-12 md:col-span-6 xl:col-span-3">
+        <div style={{ ...DSL_CARD }}>
+
+          {/* Header */}
+          <div style={{ padding: "16px 18px 13px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Fleet Operational Readiness</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Operational availability of active warehouse fleet</p>
+          </div>
+          <div style={{ ...DSL_DIVIDER }} />
+
+          {/* 3-metric icon row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", padding: "18px 0 16px" }}>
+            {([
+              { label: "ACTIVE",      value: "42", color: "#1b59f8", bg: "#eff6ff", icon: CheckCircle2 },
+              { label: "READY",       value: "36", color: "#16a34a", bg: "#f0fdf4", icon: ShieldCheck  },
+              { label: "MAINTENANCE", value: "06", color: "#dc2626", bg: "#fef2f2", icon: Wrench       },
+            ] as { label: string; value: string; color: string; bg: string; icon: React.ElementType }[]).flatMap((item, i, arr) => [
+              <div key={item.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "0 6px" }}>
+                <div style={{ width: 30, height: 30, borderRadius: 8, background: item.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <item.icon size={13} color={item.color} />
+                </div>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{item.value}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#94a3b8", margin: 0, letterSpacing: "0.07em", textAlign: "center" as const, lineHeight: "11px" }}>{item.label}</p>
+              </div>,
+              ...(i < arr.length - 1 ? [<div key={`dv${i}`} style={{ width: 1, background: "#f1f5f9", alignSelf: "stretch" }} />] : []),
+            ])}
+          </div>
+
+          <div style={{ ...DSL_DIVIDER }} />
+
+          {/* Progress section */}
+          <div style={{ padding: "13px 18px 14px", flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 500, color: "#64748b" }}>Fleet Readiness</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: "#1b59f8" }}>86%</span>
+            </div>
+            <div style={{ height: 4, background: "#e2e8f0", borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ width: "86%", height: "100%", background: "linear-gradient(90deg,#1b59f8 0%,#3b82f6 100%)", borderRadius: 3 }} />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · MEPS · IMDS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>12% of fleet unavailable due to unresolved inspection findings.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ CARD 2 — Operator Safety Status ══════════════════════════════════ */}
+      <div className="col-span-12 md:col-span-6 xl:col-span-3">
+        <div style={{ ...DSL_CARD }}>
+
+          {/* Header */}
+          <div style={{ padding: "16px 18px 13px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Operator Safety Status</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Live operator safety compliance overview</p>
+          </div>
+          <div style={{ ...DSL_DIVIDER }} />
+
+          {/* Operator rows */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 0" }}>
+            {([
+              { initials: "RJ", name: "R. Johnson", score: 92, violations: "01", badge: "low"    as DarkBadgeVariant, avatarBg: "#f0fdf4", avatarColor: "#16a34a" },
+              { initials: "MK", name: "M. Kumar",   score: 74, violations: "05", badge: "medium" as DarkBadgeVariant, avatarBg: "#fef3c7", avatarColor: "#92400e" },
+              { initials: "AS", name: "A. Sharma",  score: 58, violations: "09", badge: "high"   as DarkBadgeVariant, avatarBg: "#fef2f2", avatarColor: "#dc2626" },
+            ]).map((op, i, arr) => (
+              <div key={op.initials} style={{ flex: 1 }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 18px", cursor: "default", transition: "background 0.12s" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#f8fafc"}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                >
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: op.avatarBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, color: op.avatarColor }}>{op.initials}</span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "14px" }}>{op.name}</p>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Safe Score <span style={{ color: "#64748b", fontWeight: 600 }}>{op.score}</span></span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Violations <span style={{ color: op.violations !== "01" ? "#dc2626" : "#64748b", fontWeight: 600 }}>{op.violations}</span></span>
+                    </div>
+                  </div>
+                  <DarkStatusBadge variant={op.badge} />
+                </div>
+                {i < arr.length - 1 && <div style={{ ...DSL_DIVIDER, margin: "0 18px" }} />}
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>RTSS · MEPS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>A. Sharma recorded highest unsafe driving frequency.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ CARD 3 — Fleet Utilization ════════════════════════════════════════ */}
+      <div className="col-span-12 md:col-span-6 xl:col-span-3">
+        <div style={{ ...DSL_CARD }}>
+
+          {/* Header */}
+          <div style={{ padding: "16px 18px 13px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Fleet Utilization</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Current warehouse equipment utilization state</p>
+          </div>
+          <div style={{ ...DSL_DIVIDER }} />
+
+          {/* Utilization status rows */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 0" }}>
+            {([
+              { label: "Active Utilization",  pct: 74, barColor: "#1b59f8", barBg: "#eff6ff", valueColor: "#1b59f8" },
+              { label: "Idle with Load",       pct: 12, barColor: "#f59e0b", barBg: "#fef3c7", valueColor: "#d97706" },
+              { label: "Underutilized Fleet",  pct: 8,  barColor: "#ef4444", barBg: "#fef2f2", valueColor: "#dc2626" },
+              { label: "Congestion Loss",      pct: 6,  barColor: "#6366f1", barBg: "#eef2ff", valueColor: "#4f46e5" },
+            ]).map((row, i, arr) => (
+              <div key={row.label} style={{ flex: 1 }}>
+                <div
+                  style={{ padding: "9px 18px", cursor: "default", transition: "background 0.12s" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#f8fafc"}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 500, color: "#64748b" }}>{row.label}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: row.valueColor }}>{row.pct}%</span>
+                  </div>
+                  <div style={{ height: 3, background: row.barBg, borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ width: `${row.pct}%`, height: "100%", background: row.barColor, borderRadius: 2 }} />
+                  </div>
+                </div>
+                {i < arr.length - 1 && <div style={{ ...DSL_DIVIDER, margin: "0 18px" }} />}
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · RTSS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Reach trucks underutilized during Shift B.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ CARD 4 — Inspection Compliance ═══════════════════════════════════ */}
+      <div className="col-span-12 md:col-span-6 xl:col-span-3">
+        <div style={{ ...DSL_CARD }}>
+
+          {/* Header */}
+          <div style={{ padding: "16px 18px 13px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Inspection Compliance</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Inspection execution and operational readiness</p>
+          </div>
+          <div style={{ ...DSL_DIVIDER }} />
+
+          {/* MHE compliance rows */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 0" }}>
+            {([
+              { mheId: "MHE-002", type: "Electric Forklift", completed: 20, overdue: "01", badge: "warning"  as DarkBadgeVariant },
+              { mheId: "MHE-014", type: "Reach Truck",       completed: 18, overdue: "00", badge: "healthy"  as DarkBadgeVariant },
+              { mheId: "MHE-007", type: "Pallet Jack",       completed: 9,  overdue: "04", badge: "critical" as DarkBadgeVariant },
+            ]).map((row, i, arr) => (
+              <div key={row.mheId} style={{ flex: 1 }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 18px", cursor: "default", transition: "background 0.12s" }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#f8fafc"}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                >
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, color: "#1b59f8", textAlign: "center" as const, lineHeight: 1.2 }}>{row.mheId.replace("MHE-", "")}</span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "14px" }}>{row.mheId}</p>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Completed <span style={{ color: "#64748b", fontWeight: 600 }}>{row.completed}</span></span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Overdue <span style={{ color: row.overdue !== "00" ? "#dc2626" : "#16a34a", fontWeight: 600 }}>{row.overdue}</span></span>
+                    </div>
+                  </div>
+                  <DarkStatusBadge variant={row.badge} />
+                </div>
+                {i < arr.length - 1 && <div style={{ ...DSL_DIVIDER, margin: "0 18px" }} />}
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>MEPS · IMDS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Forklift inspections show highest skip rate this week.</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 export function FMSDashboard() {
   const [expandedKpi, setExpandedKpi] = useState<string | null>(null);
@@ -1540,6 +1795,9 @@ export function FMSDashboard() {
             }
             return <InspByTypeWidget />;
           })()}
+
+          {/* ── Operational Status Layer ── */}
+          <OperationalStatusLayer />
 
           {/* Warranty / License Expiry Table */}
           <div className="col-span-12">
