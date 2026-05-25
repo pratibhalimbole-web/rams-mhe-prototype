@@ -1361,8 +1361,8 @@ function OperationalStatusInboxLayer() {
                         <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.time}</span>
                         {item.live && (
                           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#94a3b8", display: "inline-block" }} />
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#94a3b8" }}>LIVE</span>
+                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#dc2626" }}>LIVE</span>
                           </span>
                         )}
                       </div>
