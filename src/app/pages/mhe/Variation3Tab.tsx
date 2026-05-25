@@ -768,12 +768,6 @@ const SHIFT_FILTER_STYLE: React.CSSProperties = {
 
 function ShiftStackedTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
-  const d = payload[0]?.payload;
-  const rawMap: Record<string, number> = {
-    productivity: d?.rawProductivity,
-    safety:       d?.rawSafety,
-    compliance:   d?.rawCompliance,
-  };
   return (
     <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "180px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", paddingBottom: "6px", borderBottom: "0.64px solid #e2e8f0" }}>
@@ -786,7 +780,7 @@ function ShiftStackedTooltip({ active, payload, label }: any) {
             <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{entry.name}</span>
           </div>
           <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>
-            {rawMap[entry.dataKey] !== undefined ? `${rawMap[entry.dataKey]}%` : `${entry.value}%`}
+            {entry.value}%
           </span>
         </div>
       ))}
@@ -845,7 +839,7 @@ function ShiftPerformanceWidget() {
         <div style={{ position: "absolute", top: "20px", right: "14px", bottom: 0, left: "14px", overflowX: "hidden", overflowY: "hidden" }}>
           <div style={{ width: "100%", height: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={SHIFT_PERFORMANCE_NORM} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} barCategoryGap="45%">
+              <BarChart data={SHIFT_PERFORMANCE} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} barCategoryGap="45%">
                 <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
                 <XAxis
                   dataKey="shift"
@@ -860,8 +854,9 @@ function ShiftPerformanceWidget() {
                   axisLine={false}
                   tickLine={false}
                   dx={-4}
-                  domain={[0, 100]}
-                  ticks={[0, 25, 50, 75, 100]}
+                  domain={[0, 300]}
+                  ticks={[0, 100, 200, 300]}
+                  tickFormatter={(v) => v === 0 ? "0" : `${v}`}
                 />
                 <ReTooltip content={<ShiftStackedTooltip />} cursor={{ fill: "#f8fafc" }} />
                 {visible("productivity") && (
