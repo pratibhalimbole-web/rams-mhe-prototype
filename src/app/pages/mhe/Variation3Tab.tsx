@@ -1220,10 +1220,10 @@ function OperationalStatusInboxLayer() {
 
   // ── Card 3: Safety — specific warehouse-manager metrics + alert detail ──
   const safetyCounts = [
-    { label: "Impact Events Today",      count: 3, color: "#dc2626" as const, sub: "Rack impacts & collisions"       },
-    { label: "Open Red Findings",        count: 1, color: "#dc2626" as const, sub: "MHEs operating with open finding" },
-    { label: "Restricted Zone Entries",  count: 9, color: "#d97706" as const, sub: "This shift — Picking & Storage B" },
-    { label: "Near-Miss Events",         count: 4, color: "#d97706" as const, sub: "Over 3 consecutive shifts"        },
+    { label: "Impact Events Today",      count: 3, sub: "Rack impacts & collisions"       },
+    { label: "Open Red Findings",        count: 1, sub: "MHEs operating with open finding" },
+    { label: "Restricted Zone Entries",  count: 9, sub: "This shift — Picking & Storage B" },
+    { label: "Near-Miss Events",         count: 4, sub: "Over 3 consecutive shifts"        },
   ];
 
   // ── Card 4: Utilization — fleet rows + actions ──
@@ -1337,7 +1337,7 @@ function OperationalStatusInboxLayer() {
                     <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", lineHeight: "15px" }}>{row.label}</p>
                     <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8", margin: 0, lineHeight: "13px" }}>{row.sub}</p>
                   </div>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: row.color, flexShrink: 0, lineHeight: 1 }}>{row.count}</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#475569", flexShrink: 0, lineHeight: 1 }}>{row.count}</span>
                 </div>
                 {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
               </div>
@@ -1348,14 +1348,12 @@ function OperationalStatusInboxLayer() {
 
             {/* ── Active alert rows — full title, no truncation ── */}
             {INBOX_ITEMS.filter(item => item.tab === "safety").map((item, i, arr) => {
-              const sv = INBOX_SEVERITY_STYLE[item.severity];
               return (
                 <div key={item.id}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                    {/* Severity bar — top-aligned */}
-                    <div style={{ width: 3, minHeight: 36, borderRadius: 2, background: sv.dot, flexShrink: 0, marginTop: 2 }} />
+                    {/* Severity bar — gray */}
+                    <div style={{ width: 3, minHeight: 36, borderRadius: 2, background: "#cbd5e1", flexShrink: 0, marginTop: 2 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Full title — wraps naturally */}
                       <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "15px" }}>{item.title}</p>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>
                         <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.zone}</span>
@@ -1363,8 +1361,8 @@ function OperationalStatusInboxLayer() {
                         <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.time}</span>
                         {item.live && (
                           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#16a34a" }}>LIVE</span>
+                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#94a3b8", display: "inline-block" }} />
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#94a3b8" }}>LIVE</span>
                           </span>
                         )}
                       </div>
