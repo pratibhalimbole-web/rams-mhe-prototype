@@ -13,12 +13,14 @@ import { MonitoringSplitCardV3 } from "../../components/widgets/v3/MonitoringSpl
 import { LicenseRenewDrawer, OperatorLicenseExpiryDrawer } from "./FMSDashboard";
 import { Variation1Tab } from "./Variation1Tab";
 import { Variation3Tab } from "./Variation3Tab";
+import { Variation4Tab } from "./Variation4Tab";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
 
 const TABS = [
   { id: "variation1", label: "Variation 1" },
   { id: "variation2", label: "Variation 2" },
   { id: "variation3", label: "Variation 3" },
+  { id: "variation4", label: "Variation 4" },
 ];
 
 export function CommandDashboard() {
@@ -61,7 +63,11 @@ export function CommandDashboard() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === "variation3" ? (
+      {activeTab === "variation4" ? (
+        <div className="flex-1 overflow-y-auto">
+          <Variation4Tab />
+        </div>
+      ) : activeTab === "variation3" ? (
         <div className="flex-1 overflow-y-auto">
           <Variation3Tab />
         </div>
