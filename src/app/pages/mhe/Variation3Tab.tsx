@@ -1197,12 +1197,12 @@ const CARD_DIVIDER = { height: 1, background: "#f1f5f9" } as const;
 function OperationalStatusInboxLayer() {
   const [hoveredAction, setHoveredAction] = useState<string | null>(null);
 
-  // ── Card 1: Operators — person rows, 3-metric grid per operator ──
+  // ── Card 1: Operators — per-operator safety breakdown ──
   const operatorRows = [
-    { id: "OP-014", initials: "014", score: 72, issues: 5,  issueLabel: "Violations", incidents: 2 },
-    { id: "OP-007", initials: "007", score: 61, issues: 1,  issueLabel: "Findings",   incidents: 0 },
-    { id: "OP-022", initials: "022", score: 84, issues: 2,  issueLabel: "Skipped",    incidents: 0 },
-    { id: "Shift C", initials: "SC", score: 67, issues: 3,  issueLabel: "Issues",     incidents: 1 },
+    { id: "OP-014", score: 72, violations: 5, nearMiss: 2, compliance: 68 },
+    { id: "OP-007", score: 61, violations: 1, nearMiss: 0, compliance: 74 },
+    { id: "OP-022", score: 84, violations: 2, nearMiss: 0, compliance: 91 },
+    { id: "Shift C", score: 67, violations: 3, nearMiss: 1, compliance: 79 },
   ];
 
   // ── Card 2: Efficiency — 3-stat strip + single-colour progress bars ──
@@ -1254,35 +1254,49 @@ function OperationalStatusInboxLayer() {
         <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
           <OslCardHeader label="Operators" subtitle="Operator-wise safety breakdown" />
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
-            {operatorRows.map((op, i, arr) => (
-              <div key={op.id}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                  {/* Profile icon + Operator ID inline */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <User style={{ width: 13, height: 13, color: "#475569" }} />
+            {operatorRows.map((op, i, arr) => {
+              // score band purely in grays
+              const scoreGray = op.score >= 80 ? "#475569" : op.score >= 70 ? "#64748b" : "#94a3b8";
+              const barGray   = op.score >= 80 ? "#94a3b8" : op.score >= 70 ? "#b0bec5" : "#cbd5e1";
+              return (
+                <div key={op.id}>
+                  <div style={{ padding: "13px 18px 12px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                    {/* Row 1: avatar + ID + score pill */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <User style={{ width: 12, height: 12, color: "#94a3b8" }} />
+                      </div>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", flex: 1 }}>{op.id}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, color: scoreGray }}>{op.score}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#cbd5e1", fontWeight: 500 }}>/ 100</span>
                     </div>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a" }}>{op.id}</span>
-                  </div>
-                  {/* 3-metric grid */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    {/* Row 2: score bar */}
+                    <div style={{ height: 3, background: "#f1f5f9", borderRadius: 2, overflow: "hidden", marginBottom: 9 }}>
+                      <div style={{ width: `${op.score}%`, height: "100%", background: barGray, borderRadius: 2, transition: "width 0.3s" }} />
+                    </div>
+                    {/* Row 3: 3 safety metrics in gray */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
                       {[
-                        { val: op.score,     lbl: "Score",         bad: op.score < 70 },
-                        { val: op.issues,    lbl: op.issueLabel,   bad: op.issues > 0 },
-                        { val: op.incidents, lbl: "Incidents",     bad: op.incidents > 0 },
-                      ].map(m => (
-                        <div key={m.lbl} style={{ textAlign: "right" as const }}>
-                          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{m.val}</p>
-                          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#94a3b8", margin: "3px 0 0", letterSpacing: "0.02em" }}>{m.lbl}</p>
-                        </div>
+                        { val: op.violations, lbl: "Violations" },
+                        { val: op.nearMiss,   lbl: "Near-Miss"  },
+                        { val: `${op.compliance}%`, lbl: "Compliance" },
+                      ].map((m, mi, ma) => (
+                        <React.Fragment key={m.lbl}>
+                          <div style={{ flex: 1, textAlign: "center" as const }}>
+                            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: "#475569", margin: 0, lineHeight: 1 }}>{m.val}</p>
+                            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#b0bec5", margin: "3px 0 0", letterSpacing: "0.03em" }}>{m.lbl}</p>
+                          </div>
+                          {mi < ma.length - 1 && <div style={{ width: 1, height: 28, background: "#f1f5f9", flexShrink: 0 }} />}
+                        </React.Fragment>
                       ))}
+                    </div>
                   </div>
+                  {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
                 </div>
-                {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <OslCardFooter modules="RTSS · MEPS · IMDS" insight="1 operator running MHE with open red finding — immediate review needed." />
+          <OslCardFooter modules="RTSS · MEPS · IMDS" insight="OP-007 lowest safety score (61) — 1 open finding, review needed." />
         </div>
       </div>
 
@@ -1290,11 +1304,11 @@ function OperationalStatusInboxLayer() {
       <div className="col-span-12 md:col-span-6 xl:col-span-3">
         <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
           <OslCardHeader label="Efficiency" subtitle="Fleet & operational performance signals" />
-          {/* 3-stat strip — only problem values in red, rest dark */}
+          {/* 3-stat strip — all in gray shades, no color coding */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", padding: "16px 0 14px", flexShrink: 0 }}>
             {effStats.flatMap((m, i, arr) => [
               <div key={m.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "0 4px" }}>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{m.value}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#475569", margin: 0, lineHeight: 1 }}>{m.value}</p>
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#94a3b8", margin: "2px 0 0", letterSpacing: "0.06em", textAlign: "center" as const }}>{m.label}</p>
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#cbd5e1", margin: 0, textAlign: "center" as const }}>{m.sub}</p>
               </div>,
@@ -1302,17 +1316,17 @@ function OperationalStatusInboxLayer() {
             ])}
           </div>
           <div style={{ ...CARD_DIVIDER, margin: "0 18px", flexShrink: 0 }} />
-          {/* Progress bars — single blue bar, only % value colored */}
+          {/* Progress bars — all gray, no red/blue distinction */}
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent", paddingTop: 2 }}>
             {effBars.map((bar, i, arr) => (
               <div key={bar.label}>
                 <div style={{ padding: "10px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b" }}>{bar.label}</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{bar.pct}%</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: "#475569" }}>{bar.pct}%</span>
                   </div>
                   <div style={{ height: 4, background: "#f1f5f9", borderRadius: 3, overflow: "hidden" }}>
-                    <div style={{ width: `${bar.pct}%`, height: "100%", background: bar.belowTarget ? "#dc2626" : "#1b59f8", borderRadius: 3 }} />
+                    <div style={{ width: `${bar.pct}%`, height: "100%", background: "#b0bec5", borderRadius: 3, transition: "width 0.3s" }} />
                   </div>
                 </div>
                 {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
