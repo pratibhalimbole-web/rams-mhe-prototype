@@ -27,7 +27,7 @@ import {
 import {
   ShieldCheck, AlertTriangle, Activity, Zap, TrendingDown, TrendingUp,
   Minus, Clock, Truck, Eye, Users, BarChart2, Shield, Gauge,
-  ChevronRight, Circle, User,
+  ChevronRight, Circle, User, Download,
 } from "lucide-react";
 import { CriticalIssuesBanner } from "../../components/widgets/CriticalIssuesBanner";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
@@ -1463,6 +1463,37 @@ export function Variation3Tab() {
 
   return (
     <div className="space-y-6 p-8">
+
+      {/* ══ Dashboard header bar ══════════════════════════════════════════ */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: -8 }}>
+        <div>
+          <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: "22px" }}>
+            MHE Operations Intelligence Center
+          </h1>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#94a3b8", margin: "2px 0 0" }}>
+            FMS · MEPS · RTSS · IMDS · Command Center — Health = Productivity + Efficiency + Safety
+          </p>
+        </div>
+        <a
+          href="/MHE_DASHBOARD_DOCUMENTATION.md"
+          download="MHE_Dashboard_Documentation.md"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            padding: "8px 14px", borderRadius: 8,
+            border: "1px solid #e2e8f0", background: "#ffffff",
+            fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600,
+            color: "#475569", textDecoration: "none",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            transition: "background 0.12s, border-color 0.12s",
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; (e.currentTarget as HTMLElement).style.borderColor = "#cbd5e1"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#ffffff"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
+        >
+          <Download size={13} />
+          Documentation
+        </a>
+      </div>
+
       {/* ══ Row 1: Cross-System Intelligence KPIs ════════════════════════
           Each card is a composite score derived from multiple systems.       */}
       <div className="grid grid-cols-12 gap-4">
