@@ -1347,7 +1347,7 @@ function OperationalStatusInboxLayer() {
             <div style={{ height: 1, background: "#e2e8f0", margin: "4px 18px" }} />
 
             {/* ── Active alert rows — full title, no truncation ── */}
-            {INBOX_ITEMS.filter(item => item.tab === "safety").map((item, i, arr) => {
+            {INBOX_ITEMS.filter(item => item.tab === "safety").sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0)).map((item, i, arr) => {
               return (
                 <div key={item.id}>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
