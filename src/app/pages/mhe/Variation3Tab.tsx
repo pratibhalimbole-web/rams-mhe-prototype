@@ -1465,15 +1465,7 @@ export function Variation3Tab() {
     <div className="space-y-6 p-8">
 
       {/* ══ Dashboard header bar ══════════════════════════════════════════ */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: -8 }}>
-        <div>
-          <h1 style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: "22px" }}>
-            MHE Operations Intelligence Center
-          </h1>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#94a3b8", margin: "2px 0 0" }}>
-            FMS · MEPS · RTSS · IMDS · Command Center — Health = Productivity + Efficiency + Safety
-          </p>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: -8 }}>
         <a
           href="/MHE_DASHBOARD_DOCUMENTATION.md"
           download="MHE_Dashboard_Documentation.md"
