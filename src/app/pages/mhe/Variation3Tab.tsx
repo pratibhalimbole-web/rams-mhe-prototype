@@ -27,7 +27,7 @@ import {
 import {
   ShieldCheck, AlertTriangle, Activity, Zap, TrendingDown, TrendingUp,
   Minus, Clock, Truck, Eye, Users, BarChart2, Shield, Gauge,
-  ChevronRight, Circle,
+  ChevronRight, Circle, User,
 } from "lucide-react";
 import { CriticalIssuesBanner } from "../../components/widgets/CriticalIssuesBanner";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
@@ -522,7 +522,7 @@ function ActiveSafetyAlertsWidget() {
       </div>
 
       {/* Alert list */}
-      <div style={{ flex: 1, overflowY: "auto" as const, minHeight: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8, scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
+      <div style={{ flex: 1, overflowY: "auto" as const, minHeight: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 14, scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
         {filtered.map((alert) => {
           const rb = RISK_BAND[alert.severity];
           return (
@@ -531,21 +531,22 @@ function ActiveSafetyAlertsWidget() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "#f1f5f9"; }}
             >
-              {/* Title */}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: ALERT_ACCENT[alert.severity], flexShrink: 0, marginTop: 5 }} />
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", flex: 1, lineHeight: "17px" }}>{alert.title}</span>
+              {/* Title + severity badge on same row */}
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", lineHeight: "17px", flex: 1 }}>{alert.title}</span>
+                <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}`, flexShrink: 0 }}>{rb.label}</span>
               </div>
+              {/* Divider */}
+              <div style={{ height: 1, background: "#f1f5f9", margin: "6px 0" }} />
               {/* Description */}
-              <div style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: "15px", marginLeft: 14, marginBottom: 8 }}>{alert.description}</div>
+              <div style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: "15px", marginBottom: 8 }}>{alert.description}</div>
               {/* Meta */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 14 }}>
-                <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, color: "hsl(217, 98%, 54%)", background: "#eff6ff", padding: "2px 6px", borderRadius: 4 }}>{alert.mheId}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{alert.mheId}</span>
                 <span style={{ fontSize: 9, color: "#cbd5e1" }}>·</span>
                 <span style={{ fontSize: 9, color: "#64748b" }}>{alert.zone}</span>
                 <span style={{ fontSize: 9, color: "#cbd5e1" }}>·</span>
                 <span style={{ fontSize: 9, color: "#94a3b8" }}>{alert.time}</span>
-                <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}` }}>{rb.label}</span>
               </div>
             </div>
           );
@@ -1072,26 +1073,26 @@ function OperationalStatusInboxLayer() {
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
             {operatorRows.map((op, i, arr) => (
               <div key={op.id}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                  {/* Neutral avatar */}
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#475569" }}>{op.initials}</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                  {/* Profile icon + Operator ID inline */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <User style={{ width: 13, height: 13, color: "#475569" }} />
+                    </div>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a" }}>{op.id}</span>
                   </div>
-                  {/* Operator ID + 3-metric grid */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 7px" }}>{op.id}</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+                  {/* 3-metric grid */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       {[
                         { val: op.score,     lbl: "Score",         bad: op.score < 70 },
                         { val: op.issues,    lbl: op.issueLabel,   bad: op.issues > 0 },
                         { val: op.incidents, lbl: "Incidents",     bad: op.incidents > 0 },
                       ].map(m => (
-                        <div key={m.lbl} style={{ textAlign: "center" as const }}>
-                          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, color: m.bad ? "#dc2626" : "#0f172a", margin: 0, lineHeight: 1 }}>{m.val}</p>
+                        <div key={m.lbl} style={{ textAlign: "right" as const }}>
+                          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{m.val}</p>
                           <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#94a3b8", margin: "3px 0 0", letterSpacing: "0.02em" }}>{m.lbl}</p>
                         </div>
                       ))}
-                    </div>
                   </div>
                 </div>
                 {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
@@ -1110,7 +1111,7 @@ function OperationalStatusInboxLayer() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", padding: "16px 0 14px", flexShrink: 0 }}>
             {effStats.flatMap((m, i, arr) => [
               <div key={m.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "0 4px" }}>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: m.problem ? "#dc2626" : "#0f172a", margin: 0, lineHeight: 1 }}>{m.value}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{m.value}</p>
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#94a3b8", margin: "2px 0 0", letterSpacing: "0.06em", textAlign: "center" as const }}>{m.label}</p>
                 <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#cbd5e1", margin: 0, textAlign: "center" as const }}>{m.sub}</p>
               </div>,
@@ -1125,7 +1126,7 @@ function OperationalStatusInboxLayer() {
                 <div style={{ padding: "10px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b" }}>{bar.label}</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: bar.belowTarget ? "#dc2626" : "#16a34a" }}>{bar.pct}%</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{bar.pct}%</span>
                   </div>
                   <div style={{ height: 4, background: "#f1f5f9", borderRadius: 3, overflow: "hidden" }}>
                     <div style={{ width: `${bar.pct}%`, height: "100%", background: bar.belowTarget ? "#dc2626" : "#1b59f8", borderRadius: 3 }} />
