@@ -945,9 +945,9 @@ const INBOX_ITEMS: InboxItem[] = [
   { id: "S003", tab: "safety", severity: "high",     live: true,  title: "Pedestrian zone violations up 40% this shift — zone enforcement needed", summary: "9 restricted zone entries across Picking and Storage B. Camera feed shows inadequate barrier coverage.", source: "RTSS", mheId: undefined, zone: "Picking",   time: "30 min ago",  action: "Alert Supervisors", actionVariant: "warning" },
   { id: "S004", tab: "safety", severity: "medium",   live: false, title: "Near-miss pattern identified in Storage B — 4 events over 3 shifts", summary: "Same pedestrian crossing point (B-Gate 3) involved in all 4 near-miss events. Physical intervention recommended.", source: "RTSS", mheId: undefined, zone: "Storage B", time: "Recurring",   action: "Create Work Order", actionVariant: "primary" },
   // Utilization tab
-  { id: "U001", tab: "utilization", severity: "high",   live: true,  title: "Reach Truck fleet at 41% utilization — 4 units below threshold", summary: "Demand forecast shows high pick volume in 2 hours. Pre-position idle units to Zones C and D now.", source: "FMS",  mheId: "Fleet",   zone: "Zones C,D", time: "Now",         action: "Pre-Position",      actionVariant: "warning" },
-  { id: "U002", tab: "utilization", severity: "medium", live: false, title: "MHE-009 charging schedule conflicts with peak demand window", summary: "Unit scheduled for 4-hour charge during highest pick volume. Shift charge window to 2:00–4:00 AM.", source: "FMS",  mheId: "MHE-009", zone: "Storage A", time: "This shift",  action: "Reschedule Charge", actionVariant: "primary" },
-  { id: "U003", tab: "utilization", severity: "info",   live: false, title: "Electric Forklift fleet averaging 76% utilization — above target", summary: "Strong utilization performance this week. Fleet sizing appears optimal for current workload.", source: "FMS",  mheId: "Fleet",   zone: "All Zones", time: "This week",  action: "View Details",      actionVariant: "primary" },
+  { id: "U001", tab: "utilization", severity: "high",   live: true,  title: "Reach Truck fleet at 41% utilization — 4 units below threshold", summary: "Demand forecast shows high pick volume in 2 hours. Move idle units to Zones C and D now.", source: "FMS",  mheId: "Fleet",   zone: "Zones C,D", time: "Now",         action: "Move to Zone",      actionVariant: "warning" },
+  { id: "U002", tab: "utilization", severity: "medium", live: false, title: "MHE-009 charge window overlaps with peak demand — unit unavailable", summary: "Unit scheduled for 4-hour charge during highest pick volume. Shift charge window to 2:00–4:00 AM.", source: "FMS",  mheId: "MHE-009", zone: "Storage A", time: "This shift",  action: "Adjust Schedule",   actionVariant: "primary" },
+  { id: "U003", tab: "utilization", severity: "info",   live: false, title: "Electric Forklift fleet at 76% utilization — above weekly target", summary: "Strong utilization performance this week. Fleet sizing appears optimal for current workload.", source: "FMS",  mheId: "Fleet",   zone: "All Zones", time: "This week",  action: "View Report",       actionVariant: "primary" },
 ];
 
 const INBOX_SEVERITY_STYLE: Record<InboxSeverity, { dot: string; chip: string; chipText: string; chipBorder: string; label: string }> = {
@@ -1409,26 +1409,40 @@ function OperationalStatusInboxLayer() {
               const isHov = hoveredAction === item.id;
               return (
                 <div key={item.id}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                    <div style={{ width: 3, height: 32, borderRadius: 2, background: sv.dot, flexShrink: 0 }} />
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                    <div style={{ width: 3, borderRadius: 2, background: sv.dot, flexShrink: 0, alignSelf: "stretch", minHeight: 36 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{item.title}</p>
-                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8", margin: 0 }}>{item.zone} · {item.time}</p>
+                      {/* Title — wraps freely, no truncation */}
+                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "#0f172a", margin: "0 0 4px", lineHeight: "15px" }}>{item.title}</p>
+                      {/* Meta + action on same line */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" as const }}>
+                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.zone}</span>
+                          <span style={{ fontSize: 9, color: "#e2e8f0" }}>·</span>
+                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.time}</span>
+                          {item.live && (
+                            <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#dc2626" }}>LIVE</span>
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onMouseEnter={() => setHoveredAction(item.id)}
+                          onMouseLeave={() => setHoveredAction(null)}
+                          style={{ display: "flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 5, border: `1px solid ${av.border}`, background: isHov ? av.hoverBg : av.bg, color: av.color, cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 600, transition: "background 0.12s", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+                        >
+                          {item.action}<ChevronRight size={9} />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onMouseEnter={() => setHoveredAction(item.id)}
-                      onMouseLeave={() => setHoveredAction(null)}
-                      style={{ display: "flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 5, border: `1px solid ${av.border}`, background: isHov ? av.hoverBg : av.bg, color: av.color, cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 600, transition: "background 0.12s", whiteSpace: "nowrap" as const, flexShrink: 0 }}
-                    >
-                      {item.action}<ChevronRight size={9} />
-                    </button>
                   </div>
                   {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
                 </div>
               );
             })}
           </div>
-          <OslCardFooter modules="FMS · RTSS" insight="Reach Truck fleet at 41% — pre-position idle units to Zones C & D now." />
+          <OslCardFooter modules="FMS · RTSS" insight="Reach Truck fleet at 41% — move 4 idle units to Zones C & D before peak." />
         </div>
       </div>
     </>
