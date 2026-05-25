@@ -27,7 +27,7 @@ import {
 import {
   ShieldCheck, AlertTriangle, Activity, Zap, TrendingDown, TrendingUp,
   Minus, Clock, Truck, Eye, Users, BarChart2, Shield, Gauge,
-  ChevronRight, Circle, User, Download,
+  ChevronRight, Circle, User, Download, RefreshCw,
 } from "lucide-react";
 import { CriticalIssuesBanner } from "../../components/widgets/CriticalIssuesBanner";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
@@ -61,6 +61,15 @@ const SHIFT_PERFORMANCE_NORM = SHIFT_PERFORMANCE.map(d => {
     rawCompliance:   d.compliance,
   };
 });
+
+// Operator Cycle-Time Utilization (FMS — time breakdown per operator)
+const OPERATOR_UTILIZATION = [
+  { name: "Amit Sharma",    utilized: 58.0,  nonUtilized: 26.0,  idle: 16.0  },
+  { name: "Karan Jadhav",   utilized: 38.0,  nonUtilized: 49.0,  idle: 13.0  },
+  { name: "Rahul Patil",    utilized: 18.0,  nonUtilized: 74.0,  idle: 8.0   },
+  { name: "Vivek Deshmukh", utilized: 10.16, nonUtilized: 75.38, idle: 14.46 },
+  { name: "Suresh Pawar",   utilized: 12.0,  nonUtilized: 72.0,  idle: 16.0  },
+];
 
 // Inspection Failures vs Safety Impact Correlation (MEPS + RTSS)
 const INSP_IMPACT_CORR = [
@@ -752,6 +761,99 @@ function ActiveSafetyAlertsWidget() {
 }
 
 // ─── Widget: Shift Performance Stacked Bar ───────────────────────────────────
+
+// ─── Widget: Operator Utilization ────────────────────────────────────────────
+
+const OP_UTIL_COLORS = {
+  idle:        { fill: "#bfdbfe", label: "Idle"         },
+  nonUtilized: { fill: "#60a5fa", label: "Non-Utilized" },
+  utilized:    { fill: "#1e40af", label: "Utilized"     },
+};
+
+function OperatorUtilizationTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null;
+  // Show in order: Utilized → Non-Utilized → Idle
+  const order = ["utilized", "nonUtilized", "idle"] as const;
+  const entries = order
+    .map(key => payload.find((p: any) => p.dataKey === key))
+    .filter(Boolean);
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 14px", boxShadow: "0 4px 14px rgba(0,0,0,0.1)", minWidth: 190, fontFamily: "Inter, sans-serif" }}>
+      {entries.map((entry: any) => (
+        <div key={entry.dataKey} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20, marginBottom: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: entry.fill, display: "inline-block", flexShrink: 0 }} />
+            <span style={{ fontSize: 10, color: "#64748b" }}>{OP_UTIL_COLORS[entry.dataKey as keyof typeof OP_UTIL_COLORS]?.label}</span>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#0f172a" }}>{Number(entry.value).toFixed(2)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function OperatorUtilizationWidget() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  return (
+    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "100%" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 18px 10px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: "#0f172a" }}>Operator Utilization</span>
+          <button
+            onClick={() => setRefreshKey(k => k + 1)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, color: "#94a3b8", display: "flex", alignItems: "center" }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#475569"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#94a3b8"; }}
+          >
+            <RefreshCw size={14} />
+          </button>
+        </div>
+        {/* Cycle time legend */}
+        <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" as const }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", marginRight: 4 }}>Cycle Time:</span>
+          {(["utilized", "nonUtilized", "idle"] as const).map(key => (
+            <span key={key} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginRight: 10 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: OP_UTIL_COLORS[key].fill, display: "inline-block", border: key === "idle" ? "1px solid #93c5fd" : "none" }} />
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b" }}>{OP_UTIL_COLORS[key].label}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div style={{ flex: 1, minHeight: 0, padding: "12px 8px 8px 0" }}>
+        <ResponsiveContainer width="100%" height="100%" key={refreshKey}>
+          <BarChart data={OPERATOR_UTILIZATION} margin={{ top: 4, right: 16, left: 8, bottom: 4 }} barCategoryGap="40%">
+            <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
+            <XAxis
+              dataKey="name"
+              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+              axisLine={false}
+              tickLine={false}
+              dy={6}
+              label={{ value: "OPERATOR", position: "insideBottom", offset: -2, style: { fontFamily: "Inter, sans-serif", fontSize: 9, fill: "#94a3b8", letterSpacing: "0.08em" } }}
+            />
+            <YAxis
+              domain={[0, 100]}
+              ticks={[0, 20, 40, 60, 80, 100]}
+              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+              axisLine={false}
+              tickLine={false}
+              dx={-4}
+              label={{ value: "UTILIZATION DISTRIBUTION", angle: -90, position: "insideLeft", offset: 14, style: { fontFamily: "Inter, sans-serif", fontSize: 8, fill: "#94a3b8", letterSpacing: "0.07em" } }}
+            />
+            <ReTooltip content={<OperatorUtilizationTooltip />} cursor={{ fill: "#f8fafc" }} />
+            <Bar dataKey="idle"        stackId="a" fill={OP_UTIL_COLORS.idle.fill}        name="Idle"          radius={[0, 0, 0, 0]} />
+            <Bar dataKey="nonUtilized" stackId="a" fill={OP_UTIL_COLORS.nonUtilized.fill} name="Non-Utilized"  radius={[0, 0, 0, 0]} />
+            <Bar dataKey="utilized"    stackId="a" fill={OP_UTIL_COLORS.utilized.fill}    name="Utilized"      radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
 
 const SHIFT_FILTER_STYLE: React.CSSProperties = {
   height: "32px",
@@ -1553,13 +1655,18 @@ export function Variation3Tab() {
       <div className="grid grid-cols-12 gap-6">
         <SL>ALL MODULES — Shift Intelligence · MEPS + RTSS — Inspection × Impact Correlation</SL>
 
+        {/* Widget: Operator Utilization — Cycle time breakdown per operator */}
+        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "360px" }}>
+          <OperatorUtilizationWidget />
+        </div>
+
         {/* Widget: Shift Performance vs Operational Risk */}
-        <div className="col-span-12 xl:col-span-6 flex">
+        <div className="col-span-12 xl:col-span-4 flex">
           <ShiftPerformanceWidget />
         </div>
 
         {/* Widget: Repeated Inspection Failures vs Safety Impact Frequency */}
-        <Card className="col-span-12 xl:col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ minHeight: "520px" }}>
+        <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ minHeight: "360px" }}>
 
           {/* Header — matches ShiftPerformanceWidget */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
