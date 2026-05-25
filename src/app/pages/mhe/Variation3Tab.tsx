@@ -3,7 +3,7 @@
  * Combines FMS · MEPS · RTSS · IMDS · Command Center into cross-system intelligence.
  * Every widget correlates data from ≥2 systems — no single-module widgets.
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "../../components/ui/card";
@@ -158,6 +158,22 @@ const ACTIVE_ALERTS: AlertCard[] = [
   { id: "A006", severity: "medium",   title: "Fleet Utilization Drop Detected",      description: "Pallet Jack fleet at 54% — 3 MHEs idle, no scheduled task",   mheId: "Fleet",   zone: "Loading",   time: "This shift", module: "FMS",       category: "Utilization"        },
   { id: "A007", severity: "low",      title: "Near-Miss Pattern — Same Zone",        description: "4 pedestrian near-misses over 3 consecutive shifts in zone",   mheId: "—",       zone: "Storage B", time: "Recurring",  module: "RTSS",      category: "Near Miss"          },
 ];
+
+const ALERT_RECOMMENDED: Record<string, string[]> = {
+  "Impact Event":       ["Inspect rack & structure for damage", "Restrict MHE from zone until cleared", "Review operator training records"],
+  "Red Finding":        ["Immediate equipment lockout", "Schedule emergency repair", "Notify fleet manager within 1 hour"],
+  "Overspeed":          ["Issue formal operator warning", "Review geofence speed-limit config", "Add to operator risk watchlist"],
+  "Zone Violation":     ["Review operator access permissions", "Verify pedestrian zone markers on-site", "Schedule mandatory re-training"],
+  "Skipped Inspection": ["Reschedule MEPS inspection today", "Apply temporary utilisation restriction", "Notify maintenance team"],
+  "Utilization":        ["Review shift scheduling efficiency", "Verify task assignment pipeline", "Check for unplanned MHE downtime"],
+  "Near Miss":          ["Conduct immediate zone safety audit", "Review pedestrian routing plan", "Install additional zone barriers"],
+};
+
+const MODULE_COLOR: Record<string, { bg: string; color: string }> = {
+  RTSS: { bg: "#eff6ff", color: "#1e40af" },
+  MEPS: { bg: "#fef3c7", color: "#92400e" },
+  FMS:  { bg: "#f0fdf4", color: "#166534" },
+};
 
 // ─── Chart configs ─────────────────────────────────────────────────────────────
 
@@ -476,8 +492,169 @@ const ALERT_ACCENT: Record<RiskBand, string> = {
   low:      "#94a3b8",
 };
 
+// ─── Alert Detail Popup ───────────────────────────────────────────────────────
+
+function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () => void }) {
+  const rb   = RISK_BAND[alert.severity];
+  const mod  = MODULE_COLOR[alert.module] ?? { bg: "#f1f5f9", color: "#475569" };
+  const recs = ALERT_RECOMMENDED[alert.category] ?? ["Review alert details with fleet manager", "Document findings in system", "Follow standard escalation procedure"];
+
+  // Close on Escape key
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const SEVERITY_ACCENT: Record<RiskBand, string> = {
+    critical: "#dc2626",
+    high:     "#d97706",
+    medium:   "#2563eb",
+    low:      "#16a34a",
+  };
+  const accent = SEVERITY_ACCENT[alert.severity];
+
+  return (
+    /* Backdrop */
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(3px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        animation: "fadeIn 0.15s ease",
+      }}
+    >
+      {/* Modal card — stop propagation so clicking inside doesn't close */}
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "#ffffff",
+          borderRadius: 16,
+          width: 480,
+          maxWidth: "calc(100vw - 32px)",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08)",
+          overflow: "hidden",
+          animation: "slideUp 0.18s ease",
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
+        {/* Coloured top accent bar */}
+        <div style={{ height: 4, background: accent, borderRadius: "16px 16px 0 0" }} />
+
+        {/* Header */}
+        <div style={{ padding: "18px 20px 14px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Badges row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}` }}>{rb.label}</span>
+              <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 4, background: mod.bg, color: mod.color }}>{alert.module}</span>
+              <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 4, background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" }}>{alert.category}</span>
+            </div>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0f172a", lineHeight: "20px" }}>{alert.title}</h2>
+          </div>
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            style={{
+              width: 28, height: 28, borderRadius: 8, border: "1px solid #e2e8f0",
+              background: "#f8fafc", cursor: "pointer", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#64748b", fontSize: 14, fontWeight: 700, lineHeight: 1,
+              transition: "background 0.1s, border-color 0.1s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f1f5f9"; (e.currentTarget as HTMLElement).style.borderColor = "#cbd5e1"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
+          >×</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Description */}
+          <div>
+            <p style={{ margin: "0 0 5px", fontSize: 10, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" }}>Description</p>
+            <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: "18px" }}>{alert.description}</p>
+          </div>
+
+          {/* Details grid */}
+          <div>
+            <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" }}>Alert Details</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
+              {[
+                { label: "MHE Unit",    value: alert.mheId   },
+                { label: "Zone",        value: alert.zone    },
+                { label: "Source",      value: alert.module  },
+                { label: "Reported",    value: alert.time    },
+                { label: "Alert ID",    value: `#${alert.id}`},
+                { label: "Category",    value: alert.category},
+              ].map(({ label, value }) => (
+                <div key={label} style={{ background: "#f8fafc", borderRadius: 8, padding: "8px 10px", border: "1px solid #f1f5f9" }}>
+                  <p style={{ margin: "0 0 2px", fontSize: 9, color: "#94a3b8", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</p>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: "#0f172a" }}>{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommended actions */}
+          <div>
+            <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" }}>Recommended Actions</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {recs.map((rec, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                    background: rb.bg, border: `1px solid ${rb.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 9, fontWeight: 700, color: rb.color, marginTop: 1,
+                  }}>{i + 1}</div>
+                  <p style={{ margin: 0, fontSize: 11, color: "#334155", lineHeight: "17px" }}>{rec}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div style={{ padding: "12px 20px 16px", borderTop: "1px solid #f1f5f9", display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: "8px 16px", borderRadius: 8, border: "1px solid #e2e8f0",
+              background: "#ffffff", cursor: "pointer", fontSize: 11, fontWeight: 600,
+              color: "#475569", transition: "background 0.1s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#ffffff"; }}
+          >Dismiss</button>
+          <button
+            style={{
+              padding: "8px 16px", borderRadius: 8, border: "none",
+              background: accent, cursor: "pointer", fontSize: 11, fontWeight: 600,
+              color: "#ffffff", transition: "opacity 0.1s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.88"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+          >Acknowledge Alert</button>
+        </div>
+      </div>
+
+      {/* Keyframe styles injected once */}
+      <style>{`
+        @keyframes fadeIn  { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes slideUp { from { transform: translateY(12px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Widget: Active Safety Alerts ────────────────────────────────────────────
+
 function ActiveSafetyAlertsWidget() {
-  const [tab, setTab] = useState<string>("all");
+  const [tab, setTab]             = useState<string>("all");
+  const [selected, setSelected]   = useState<AlertCard | null>(null);
 
   const allCount      = ACTIVE_ALERTS.length;
   const criticalCount = ACTIVE_ALERTS.filter(a => a.severity === "critical").length;
@@ -494,6 +671,7 @@ function ActiveSafetyAlertsWidget() {
   ];
 
   return (
+    <>
     <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
       {/* Header */}
@@ -527,7 +705,8 @@ function ActiveSafetyAlertsWidget() {
           const rb = RISK_BAND[alert.severity];
           return (
             <div key={alert.id}
-              style={{ background: "#ffffff", border: "1px solid #f1f5f9", borderRadius: 10, padding: "11px 13px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", transition: "box-shadow 0.15s, border-color 0.15s", cursor: "default" }}
+              onClick={() => setSelected(alert)}
+              style={{ background: "#ffffff", border: "1px solid #f1f5f9", borderRadius: 10, padding: "11px 13px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", transition: "box-shadow 0.15s, border-color 0.15s", cursor: "pointer" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "#f1f5f9"; }}
             >
@@ -565,6 +744,10 @@ function ActiveSafetyAlertsWidget() {
         </div>
       </div>
     </div>
+
+    {/* Detail popup — rendered outside card flow so it can float above everything */}
+    {selected && <AlertDetailPopup alert={selected} onClose={() => setSelected(null)} />}
+    </>
   );
 }
 
