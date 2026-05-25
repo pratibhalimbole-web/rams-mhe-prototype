@@ -5,6 +5,9 @@
  */
 import React, { useState, useEffect, useRef } from "react";
 import {
+  Card, CardContent, CardHeader, CardTitle, CardDescription,
+} from "../../components/ui/card";
+import {
   AreaChart, Area, LineChart, Line, ScatterChart, Scatter, ZAxis,
   XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   Tooltip as ReTooltip, ReferenceLine,
@@ -180,6 +183,51 @@ function RadialScore({ value, max = 100, size = 148, stroke = 10 }: { value: num
   );
 }
 
+// ─── Semi-circle Gauge ───────────────────────────────────────────────────────
+function SemiGauge({ value, max = 100 }: { value: number; max?: number }) {
+  const R = 66, cx = 100, cy = 80, W = 200, H = 96, SW = 12;
+
+  const pt = (pct: number) => {
+    const a = Math.PI * (1 - pct);
+    return { x: +(cx + R * Math.cos(a)).toFixed(2), y: +(cy - R * Math.sin(a)).toFixed(2) };
+  };
+
+  const arc = (p0: number, p1: number) => {
+    const s = pt(p0), e = pt(p1);
+    const span = (p1 - p0) * 180;
+    return `M${s.x} ${s.y} A${R} ${R} 0 ${span >= 180 ? 1 : 0} 0 ${e.x} ${e.y}`;
+  };
+
+  const pct = value / max;
+  const tip = pt(pct);
+
+  const zones: [number, number, string][] = [
+    [0,    0.5,  "#fca5a5"],
+    [0.5,  0.75, "#fde68a"],
+    [0.75, 1,    "#86efac"],
+  ];
+
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block", maxWidth: 210 }}>
+      {/* Background track */}
+      <path d={arc(0, 1)} fill="none" stroke="#f1f5f9" strokeWidth={SW} strokeLinecap="round" />
+      {/* Zone colour bands */}
+      {zones.map(([a, b, c], i) => (
+        <path key={i} d={arc(a, b)} fill="none" stroke={c} strokeWidth={SW - 2} strokeLinecap="butt" opacity={0.6} />
+      ))}
+      {/* Progress arc */}
+      <path d={arc(0, pct)} fill="none" stroke="#1b59f8" strokeWidth={SW} strokeLinecap="round" />
+      {/* Needle dot */}
+      <circle cx={tip.x} cy={tip.y} r={5} fill="#fff" stroke="#1b59f8" strokeWidth={2.5} />
+      {/* Score */}
+      <text x={cx} y={cy - 4} textAnchor="middle"
+        style={{ fontFamily: FF, fontSize: "30px", fontWeight: 700, fill: "#0f172a" }}>{value}</text>
+      <text x={cx} y={cy + 14} textAnchor="middle"
+        style={{ fontFamily: FF, fontSize: "9px", fill: "#94a3b8", letterSpacing: "0.05em" }}>OUT OF {max}</text>
+    </svg>
+  );
+}
+
 // ─── Mini Sparkline ───────────────────────────────────────────────────────────
 function Spark({ data, color }: { data: { v: number }[]; color: string }) {
   return (
@@ -333,12 +381,12 @@ function QuadrantTooltip({ active, payload }: any) {
 // ─── Widget: Three Pillars Trend ──────────────────────────────────────────────
 function ThreePillarTrendWidget() {
   return (
-    <div style={{ ...CARD, flex: 1 }}>
-      <div style={{ padding: "16px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
+    <div style={{ ...CARD }}>
+      <div style={{ padding: "16px 20px 12px", borderBottom: HDR_BORDER }}>
         <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>The Three Pillars · 30-Day Trend</p>
         <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Operational balance between safety, efficiency, and compliance</p>
       </div>
-      <div style={{ flex: 1, minHeight: 0, padding: "16px 12px 8px 4px" }}>
+      <div style={{ height: 260, padding: "16px 12px 8px 4px" }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={TREND_30D} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
@@ -668,100 +716,102 @@ export function Variation4Tab() {
   return (
     <div className="space-y-6 p-8">
 
-      {/* ── Dashboard header ────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: -4 }}>
-        <div>
-          <h1 style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#0f172a", margin: "0 0 4px", lineHeight: "24px" }}>Warehouse Performance</h1>
-          <p style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8", margin: 0, maxWidth: 560, lineHeight: "17px" }}>
-            Real-time operational intelligence across fleet, operators, inspections, safety, maintenance, and deployment readiness.
-          </p>
-        </div>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 20, background: "#f0fdf4", border: "1px solid #bbf7d0", fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#16a34a", flexShrink: 0, marginTop: 2 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} /> Live
-        </span>
-      </div>
 
-      {/* ══ SECTION 1 — Operational Health ══════════════════════════════════ */}
+      {/* ══ SECTION 1 — Operational Health + Three Pillar Trend (side by side) */}
       <div className="grid grid-cols-12 gap-4">
-        <SL>Operational Health — FMS · MEPS · RTSS · IMDS</SL>
+        <SL>Operational Health & Trend Intelligence — FMS · MEPS · RTSS · IMDS</SL>
 
-        {/* Widget 1: Composite score */}
-        <div className="col-span-12 xl:col-span-3">
-          <div style={{ ...CARD, flex: 1, height: "100%" }}>
-            <div style={{ padding: "16px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
-              <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Operational Health</p>
-              <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Weighted blend — safety · efficiency · compliance · maintenance · readiness</p>
+        {/* Left: Operational Health — Utilization-card style */}
+        <div className="col-span-12 xl:col-span-4">
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column" }}>
+
+            {/* Header */}
+            <div style={{ padding: "16px 18px 11px", borderBottom: "1px solid #f1f5f9" }}>
+              <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", lineHeight: "18px" }}>Operational Health</p>
+              <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Weighted blend — safety · efficiency · compliance · maintenance · readiness</p>
             </div>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 16px 8px" }}>
-              <RadialScore value={71} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 20px", marginTop: 16, width: "100%" }}>
-                {[
-                  { label: "Safety",     val: 64, color: "#ef4444" },
-                  { label: "Efficiency", val: 71, color: "#1b59f8" },
-                  { label: "Compliance", val: 78, color: "#7c3aed" },
-                  { label: "Readiness",  val: 71, color: "#475569" },
-                ].map(p => (
-                  <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: p.color, flexShrink: 0 }} />
-                    <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b" }}>{p.label}</span>
-                    <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#475569", marginLeft: "auto" }}>{p.val}</span>
-                  </div>
-                ))}
+
+            {/* Body */}
+            <div>
+
+              {/* Composite score row */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#475569" }}>71</span>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" }}>Composite Score</p>
+                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>FMS · MEPS · RTSS · IMDS</p>
+                </div>
+                <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                  <p style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: "#d97706", margin: 0, lineHeight: 1 }}>71 / 100</p>
+                  <p style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", margin: "2px 0 0" }}>MODERATE</p>
+                </div>
               </div>
+
+              <div style={{ height: 1, background: "#e2e8f0", margin: "0 18px" }} />
+
+              {/* 4 pillar rows */}
+              {([
+                { initials: "SA", label: "Safety",     sources: "RTSS · MEPS", val: 64, delta: -5.4, status: "Declining",  statusColor: "#dc2626" as const, spark: SAFETY_SPARK,     sparkColor: "#ef4444" },
+                { initials: "EF", label: "Efficiency", sources: "FMS · RTSS",  val: 71, delta: -1.2, status: "Stable",     statusColor: "#d97706" as const, spark: EFFICIENCY_SPARK, sparkColor: "#1b59f8" },
+                { initials: "CO", label: "Compliance", sources: "MEPS · IMDS", val: 78, delta: +0.4, status: "Improving",  statusColor: "#16a34a" as const, spark: COMPLIANCE_SPARK, sparkColor: "#7c3aed" },
+                { initials: "RE", label: "Readiness",  sources: "FMS · IMDS",  val: 71, delta: +1.2, status: "On Track",   statusColor: "#475569" as const, spark: SAFETY_SPARK,     sparkColor: "#475569" },
+              ]).map((row, i, arr) => {
+                const up = row.delta >= 0;
+                return (
+                  <div key={row.label}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                      {/* Avatar */}
+                      <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#475569" }}>{row.initials}</span>
+                      </div>
+                      {/* Label + sources */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" }}>{row.label}</p>
+                        <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>{row.sources}</p>
+                      </div>
+                      {/* Delta badge */}
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 2,
+                        padding: "2px 6px", borderRadius: 6, flexShrink: 0,
+                        fontFamily: FF, fontSize: 9, fontWeight: 700,
+                        background: up ? "#f0fdf4" : "#fef2f2",
+                        color: up ? "#16a34a" : "#dc2626",
+                        border: `1px solid ${up ? "#bbf7d0" : "#fecaca"}`,
+                      }}>
+                        {up ? "↗" : "↘"} {Math.abs(row.delta).toFixed(1)}
+                      </span>
+                      {/* Score + status */}
+                      <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                        <p style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: row.statusColor, margin: 0, lineHeight: 1 }}>{row.val}</p>
+                        <p style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", margin: "2px 0 0" }}>{row.status}</p>
+                      </div>
+                    </div>
+                    {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
+                  </div>
+                );
+              })}
+
+
             </div>
-            <CF insight="Warehouse stable but safety degradation affecting overall balance." modules="FMS · MEPS · RTSS · IMDS" />
+
+            {/* Footer */}
+            <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 18px 0 18px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+              <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · MEPS · RTSS · IMDS</p>
+              <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>
+                Warehouse stable but safety degradation affecting overall balance.
+              </p>
+            </div>
+
           </div>
         </div>
 
-        {/* Widget 2: Safety */}
-        <div className="col-span-12 md:col-span-4 xl:col-span-3 flex">
-          <PillarCard
-            title="Safety"
-            value={64}
-            trend={-5.4}
-            spark={SAFETY_SPARK}
-            sparkColor="#ef4444"
-            sources="RTSS · MEPS"
-            insight="Safety score declining due to repeated impact and inspection events."
-            tooltipItems={["RED findings open", "Impact events", "Near misses", "Unsafe operator behaviour", "Fatigue events"]}
-          />
-        </div>
-
-        {/* Widget 3: Efficiency */}
-        <div className="col-span-12 md:col-span-4 xl:col-span-3 flex">
-          <PillarCard
-            title="Efficiency"
-            value={71}
-            trend={-1.2}
-            spark={EFFICIENCY_SPARK}
-            sparkColor="#1b59f8"
-            sources="FMS · RTSS"
-            insight="Efficiency stable, but deadhead movement remains high across zones."
-            tooltipItems={["Idle with load", "Deadhead trips", "Congestion delays", "Trip productivity", "Zone bottlenecks"]}
-          />
-        </div>
-
-        {/* Widget 4: Compliance */}
-        <div className="col-span-12 md:col-span-4 xl:col-span-3 flex">
-          <PillarCard
-            title="Compliance"
-            value={78}
-            trend={+0.4}
-            spark={COMPLIANCE_SPARK}
-            sparkColor="#7c3aed"
-            sources="MEPS · IMDS"
-            insight="Compliance improving due to timely inspection closures this week."
-            tooltipItems={["License validity", "Inspection completion", "Service due", "PPE compliance", "Operator compliance"]}
-          />
-        </div>
-      </div>
-
-      {/* ══ SECTION 2 — Three Pillar Trend ══════════════════════════════════ */}
-      <div className="grid grid-cols-12 gap-4">
-        <SL>Trend Intelligence — 30-Day Operational Balance</SL>
-        <div className="col-span-12 flex" style={{ minHeight: 260 }}>
+        {/* Right: Three Pillar Trend */}
+        <div className="col-span-12 xl:col-span-8">
           <ThreePillarTrendWidget />
         </div>
+
       </div>
 
       {/* ══ SECTION 3 — Critical Issues Strip ═══════════════════════════════ */}
