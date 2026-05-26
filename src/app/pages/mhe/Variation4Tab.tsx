@@ -319,26 +319,38 @@ function PillarCard({
   );
 }
 
-// ─── Three Pillar Trend Tooltip ───────────────────────────────────────────────
+// ─── Three Pillar Trend Tooltip (matches V3 SafetyTrendTooltip style) ────────
 function TrendTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const items = [
-    { key: "safety",     label: "Safety",     color: "#1e3a8a" },
-    { key: "efficiency", label: "Efficiency", color: "#1b59f8" },
+    { key: "safety",     label: "Safety",     color: "#3b82f6" },
+    { key: "efficiency", label: "Efficiency", color: "#60a5fa" },
     { key: "compliance", label: "Compliance", color: "#93c5fd" },
   ];
   return (
-    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 14px", boxShadow: "0 4px 14px rgba(0,0,0,0.10)", minWidth: 160, fontFamily: FF }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: "#64748b", margin: "0 0 7px" }}>Day {label}</p>
+    <div style={{
+      background: "#fff",
+      border: "1px solid #e8e8e8",
+      borderRadius: 8,
+      padding: "12px 14px",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+      minWidth: 200,
+      maxWidth: 240,
+      pointerEvents: "none",
+      fontFamily: FF,
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 8, borderBottom: "0.64px solid #e2e8f0" }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#0f172a" }}>Day {label}</span>
+      </div>
+      {/* Metric rows */}
       {items.map(({ key, label: l, color }) => {
         const entry = payload.find((p: any) => p.dataKey === key);
         return entry ? (
-          <div key={key} style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 3 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block" }} />
-              <span style={{ fontSize: 10, color: "#64748b" }}>{l}</span>
-            </div>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#0f172a" }}>{entry.value}</span>
+          <div key={key} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>{l}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color }}>{entry.value}</span>
           </div>
         ) : null;
       })}
@@ -392,8 +404,8 @@ function QuadrantTooltip({ active, payload }: any) {
 
 // ─── Widget: Three Pillars Trend ──────────────────────────────────────────────
 const PILLAR_LINES: [string, string, string][] = [
-  ["safety",     "Safety (RTSS · MEPS)",     "#1e3a8a"],
-  ["efficiency", "Efficiency (FMS · RTSS)",  "#1b59f8"],
+  ["safety",     "Safety (RTSS · MEPS)",     "#3b82f6"],
+  ["efficiency", "Efficiency (FMS · RTSS)",  "#60a5fa"],
   ["compliance", "Compliance (MEPS · IMDS)", "#93c5fd"],
 ];
 
@@ -440,16 +452,16 @@ function ThreePillarTrendWidget() {
               <YAxis domain={[50, 90]} ticks={[50,60,70,80,90]} tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} dx={-4} />
               <ReTooltip content={<TrendTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1, strokeDasharray: "4 2" }} />
               <Area type="monotone" dataKey="safety"
-                stroke="#1e3a8a" strokeWidth={lineWidth("safety")} strokeOpacity={lineOpacity("safety")}
-                strokeDasharray="6 3" fill="none"
-                dot={false} activeDot={{ r: 5, fill: "#1e3a8a", stroke: "#fff", strokeWidth: 2 }} />
+                stroke="#3b82f6" strokeWidth={lineWidth("safety")} strokeOpacity={lineOpacity("safety")}
+                fill="none"
+                dot={false} activeDot={{ r: 5, fill: "#3b82f6", stroke: "#fff", strokeWidth: 2 }} />
               <Area type="monotone" dataKey="efficiency"
-                stroke="#1b59f8" strokeWidth={lineWidth("efficiency")} strokeOpacity={lineOpacity("efficiency")}
-                strokeDasharray="6 3" fill="none"
-                dot={false} activeDot={{ r: 5, fill: "#1b59f8", stroke: "#fff", strokeWidth: 2 }} />
+                stroke="#60a5fa" strokeWidth={lineWidth("efficiency")} strokeOpacity={lineOpacity("efficiency")}
+                fill="none"
+                dot={false} activeDot={{ r: 5, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }} />
               <Area type="monotone" dataKey="compliance"
                 stroke="#93c5fd" strokeWidth={lineWidth("compliance")} strokeOpacity={lineOpacity("compliance")}
-                strokeDasharray="6 3" fill="none"
+                fill="none"
                 dot={false} activeDot={{ r: 5, fill: "#93c5fd", stroke: "#fff", strokeWidth: 2 }} />
             </AreaChart>
           </ResponsiveContainer>
@@ -474,87 +486,167 @@ function ThreePillarTrendWidget() {
   );
 }
 
-// ─── Widget: Critical Issues Strip ───────────────────────────────────────────
-function CriticalIssuesStrip() {
-  const items = [
+// ─── Widget: Critical Issues + Live Event Wire (combined) ────────────────────
+function CriticalAndLiveWidget() {
+  const criticalItems = [
     { label: "RED Findings",     count: 5, color: "#dc2626" },
     { label: "Licenses Expired", count: 2, color: "#dc2626" },
     { label: "Service Due",      count: 3, color: "#d97706" },
     { label: "Open High-Sev",    count: 2, color: "#d97706" },
   ];
-  return (
-    <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: "12px 18px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-        <AlertTriangle size={15} color="#dc2626" />
-        <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#dc2626", letterSpacing: "0.02em" }}>CRITICAL ISSUES</span>
-        <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#dc2626", lineHeight: 1 }}>12</span>
-      </div>
-      <div style={{ width: 1, height: 28, background: "#fecaca", flexShrink: 0 }} />
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: 1 }}>
-        {items.map(item => (
-          <span key={item.label} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 6, background: "#fff", border: "1px solid #fecaca", fontFamily: FF, fontSize: 10, fontWeight: 500, color: item.color }}>
-            <span style={{ fontWeight: 700 }}>{item.count}</span> {item.label}
-          </span>
-        ))}
-      </div>
-      <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "7px 14px", borderRadius: 8, background: "#dc2626", border: "none", cursor: "pointer", fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, transition: "opacity 0.12s" }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.88"; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}>
-        Triage <ChevronRight size={12} />
-      </button>
-    </div>
-  );
-}
 
-// ─── Widget: Live Event Wire ──────────────────────────────────────────────────
-function LiveEventWire() {
-  const trackRef = useRef<HTMLDivElement>(null);
+  // Auto-scroll ticker
+  const tickerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = tickerRef.current;
+    if (!el) return;
+    let raf: number;
+    let paused = false;
+    const step = () => {
+      if (!paused) {
+        el.scrollLeft += 0.6;
+        // Seamless loop — content is duplicated so reset at halfway point
+        if (el.scrollLeft >= el.scrollWidth / 2) el.scrollLeft = 0;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    const pause  = () => { paused = true;  };
+    const resume = () => { paused = false; };
+    el.addEventListener("mouseenter", pause);
+    el.addEventListener("mouseleave", resume);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("mouseenter", pause);
+      el.removeEventListener("mouseleave", resume);
+    };
+  }, []);
+
+  // Duplicate for seamless loop
+  const tickerEvents = [...LIVE_EVENTS, ...LIVE_EVENTS];
+
   return (
     <div style={{ ...CARD }}>
-      <div style={{ padding: "12px 18px 10px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+
+      {/* ── Shared header ── */}
+      <div style={{ padding: "14px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>Live Event Wire</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>Operational Intelligence</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "#fef2f2", border: "1px solid #fecaca", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />LIVE
             </span>
           </div>
-          <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>Real-time event stream — RTSS · MEPS · FMS</span>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>Active critical issues and real-time event stream — RTSS · MEPS · FMS</span>
         </div>
-        <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{LIVE_EVENTS.length} events</span>
       </div>
 
-      {/* Scrollable event track */}
-      <div style={{ overflowX: "auto", overflowY: "hidden", padding: "12px 18px 14px", scrollbarWidth: "none" } as React.CSSProperties}>
-        <div style={{ display: "flex", gap: 10, width: "max-content" }}>
-          {LIVE_EVENTS.map(ev => {
-            const chip = EVENT_CHIP[ev.severity];
-            return (
-              <div key={ev.id} style={{
-                background: "#fff", border: "1px solid #f1f5f9", borderRadius: 10,
-                padding: "10px 13px", minWidth: 210, flexShrink: 0,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-              }}>
-                {/* Type chip + time */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontFamily: FF, fontSize: 8, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: chip.bg, color: chip.color, border: `1px solid ${chip.border}`, letterSpacing: "0.04em" }}>
-                    {ev.type}
-                  </span>
-                  <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{ev.time}</span>
-                </div>
-                {/* Context */}
-                <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#0f172a", margin: "0 0 5px", lineHeight: "14px" }}>{ev.context}</p>
-                {/* Meta */}
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
-                  {[ev.zone, ev.mhe, ev.operator].filter(v => v && v !== "—").map(v => (
-                    <span key={v} style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", background: "#f8fafc", padding: "1px 5px", borderRadius: 3 }}>{v}</span>
-                  ))}
-                </div>
+      {/* ── Section: Critical Issues ── */}
+      <div style={{ borderBottom: "1px solid #f1f5f9", padding: "12px 20px 14px", flexShrink: 0 }}>
+        {/* Section heading */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <AlertTriangle size={14} color="#475569" />
+          </div>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>Critical Issues</span>
+        </div>
+        {/* Stat tiles */}
+        <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+          {/* Total */}
+          <div style={{ paddingRight: 20, marginRight: 20, borderRight: "1px solid #e2e8f0", flexShrink: 0 }}>
+            <p style={{ fontFamily: FF, fontSize: 28, fontWeight: 800, color: "#0f172a", margin: 0, lineHeight: 1 }}>12</p>
+            <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "3px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total</p>
+          </div>
+          {/* Individual stat tiles */}
+          <div style={{ display: "flex", gap: 0, flex: 1 }}>
+            {criticalItems.map((item, i) => (
+              <div key={item.label} style={{ flex: 1, paddingLeft: 16, borderLeft: i > 0 ? "1px solid #f1f5f9" : "none" }}>
+                <p style={{ fontFamily: FF, fontSize: 20, fontWeight: 700, color: "#334155", margin: 0, lineHeight: 1 }}>{item.count}</p>
+                <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "4px 0 0", lineHeight: "12px" }}>{item.label}</p>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* ── Section: Live Event Wire ── */}
+      <div style={{ flexShrink: 0 }}>
+        {/* Section heading */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 20px 8px" }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Activity size={14} color="#475569" />
+          </div>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>Live Event Wire</span>
+        </div>
+        {/* Auto-scrolling ticker + manual scrollbar */}
+        <style>{`.live-ticker::-webkit-scrollbar{height:2px}.live-ticker::-webkit-scrollbar-track{background:#f8fafc;border-radius:2px}.live-ticker::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}`}</style>
+        <div ref={tickerRef} className="live-ticker" style={{ overflowX: "auto", overflowY: "hidden", padding: "0 20px 14px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 #f8fafc" } as React.CSSProperties}>
+          <div style={{ display: "flex", gap: 10, width: "max-content", alignItems: "stretch" }}>
+            {tickerEvents.map((ev, idx) => {
+              // Severity palette
+              const palette = ev.severity === "critical"
+                ? { top: "#ef4444", iconBg: "#fef2f2", iconColor: "#dc2626", label: "#dc2626" }
+                : ev.severity === "high"
+                ? { top: "#f59e0b", iconBg: "#fef3c7", iconColor: "#92400e", label: "#92400e" }
+                : { top: "#3b82f6", iconBg: "#eff6ff", iconColor: "#1e40af", label: "#1e40af" };
+
+              // Icon per event type
+              const TypeIcon =
+                ev.type === "IMPACT"          ? Zap          :
+                ev.type === "SPEED VIOLATION" ? Gauge         :
+                ev.type === "HARSH-BRAKE"     ? Activity      :
+                ev.type === "FATIGUE ALERT"   ? Clock         :
+                ev.type === "RED INSPECTION"  ? ShieldCheck   :
+                AlertTriangle;
+
+              const meta = [ev.zone, ev.mhe, ev.operator !== "—" ? ev.operator : null].filter(Boolean) as string[];
+
+              return (
+                <div key={`${ev.id}-${idx}`} style={{
+                  background: "#fff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 10,
+                  minWidth: 230,
+                  maxWidth: 230,
+                  flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                }}>
+                  {/* Card body */}
+                  <div style={{ padding: "11px 13px 12px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+
+                    {/* Row 1: icon box + type + time */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 7, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <TypeIcon size={13} color="#475569" />
+                      </div>
+                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#475569", letterSpacing: "0.05em", textTransform: "uppercase" as const, flex: 1 }}>{ev.type}</span>
+                      <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", flexShrink: 0 }}>{ev.time}</span>
+                    </div>
+
+                    {/* Row 2: context — main info */}
+                    <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: 0, lineHeight: "15px" }}>{ev.context}</p>
+
+                    {/* Row 3: meta — zone · mhe · operator */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 0, borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
+                      {meta.map((v, i) => (
+                        <React.Fragment key={v}>
+                          {i > 0 && <span style={{ color: "#e2e8f0", margin: "0 5px", fontSize: 10 }}>|</span>}
+                          <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b" }}>{v}</span>
+                        </React.Fragment>
+                      ))}
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -848,8 +940,15 @@ export function Variation4Tab() {
   return (
     <div className="space-y-6 p-8">
 
+      {/* ══ SECTION 1 — Operational Intelligence (Critical Issues + Live Event Wire) */}
+      <div className="grid grid-cols-12 gap-4">
+        <SL>Operational Intelligence — Critical Issues · Live Event Wire</SL>
+        <div className="col-span-12">
+          <CriticalAndLiveWidget />
+        </div>
+      </div>
 
-      {/* ══ SECTION 1 — Operational Health + Three Pillar Trend (side by side) */}
+      {/* ══ SECTION 2 — Operational Health + Three Pillar Trend (side by side) */}
       <div className="grid grid-cols-12 gap-4">
         <SL>Operational Health & Trend Intelligence — FMS · MEPS · RTSS · IMDS</SL>
 
@@ -891,7 +990,7 @@ export function Variation4Tab() {
                   <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: "0 0 8px" }}>Warehouse is operational but safety risks require immediate attention</p>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>71 / 100</span>
-                    <span style={{ display: "inline-flex", padding: "2px 9px", borderRadius: 20, background: "#fef3c7", border: "1px solid #fde68a", fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#92400e", letterSpacing: "0.04em" }}>
+                    <span style={{ display: "inline-flex", padding: "2px 9px", borderRadius: 20, background: "#fffbeb", border: "1px solid #fef3c7", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#d97706", letterSpacing: "0.04em" }}>
                       MODERATE
                     </span>
                   </div>
@@ -954,22 +1053,6 @@ export function Variation4Tab() {
           <NotificationsWidget />
         </div>
 
-      </div>
-
-      {/* ══ SECTION 3 — Critical Issues Strip ═══════════════════════════════ */}
-      <div className="grid grid-cols-12 gap-4">
-        <SL>Critical Issues — Immediate Operational Prioritization</SL>
-        <div className="col-span-12">
-          <CriticalIssuesStrip />
-        </div>
-      </div>
-
-      {/* ══ SECTION 4 — Live Event Wire ══════════════════════════════════════ */}
-      <div className="grid grid-cols-12 gap-4">
-        <SL>Live Event Wire — RTSS · MEPS · FMS</SL>
-        <div className="col-span-12">
-          <LiveEventWire />
-        </div>
       </div>
 
       {/* ══ SECTION 5 — Effective Capacity ══════════════════════════════════ */}
