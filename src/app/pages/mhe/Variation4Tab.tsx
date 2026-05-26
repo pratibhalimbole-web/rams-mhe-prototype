@@ -8,6 +8,9 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "../../components/ui/card";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "../../components/ui/select";
+import {
   AreaChart, Area, LineChart, Line, ScatterChart, Scatter, ZAxis,
   XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   Tooltip as ReTooltip, ReferenceLine,
@@ -18,6 +21,14 @@ import {
   Shield, BarChart2, AlertCircle, CheckCircle, XCircle,
   Gauge, Eye, RefreshCw,
 } from "lucide-react";
+
+// ─── Filter dropdown style (matches V3) ──────────────────────────────────────
+const FILTER_STYLE: React.CSSProperties = {
+  height: "28px", width: "auto", background: "#ffffff",
+  border: "1px solid #e2e8f0", borderRadius: "6px",
+  padding: "0 10px", fontSize: "10px", color: "#0f172a",
+  fontFamily: "Inter, sans-serif", fontWeight: 400,
+};
 
 // ─── Design tokens (exact match to Variation 3) ───────────────────────────────
 const FF = "Inter, sans-serif";
@@ -44,15 +55,6 @@ function SL({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Card Footer — same 59.5px spec as V3 ────────────────────────────────────
-function CF({ insight, modules }: { insight: string; modules: string }) {
-  return (
-    <div style={{ borderTop: DIV_LIGHT, padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
-      <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", lineHeight: "18px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{insight}</p>
-      <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 400, color: "#1b59f8", margin: 0, lineHeight: "16.5px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{modules}</p>
-    </div>
-  );
-}
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -63,6 +65,17 @@ const TREND_30D = Array.from({ length: 30 }, (_, i) => ({
   efficiency: +(68 + Math.sin(i * 0.42) * 4.5 + Math.cos(i * 0.65) * 2).toFixed(1),
   compliance: +(Math.min(84, 66 + i * 0.38 + Math.sin(i * 0.55) * 1.8)).toFixed(1),
 }));
+
+// 7-day pillar trend — day names on X-axis
+const TREND_7D = [
+  { day: "Mon", safety: 74, efficiency: 70, compliance: 72 },
+  { day: "Tue", safety: 71, efficiency: 73, compliance: 74 },
+  { day: "Wed", safety: 68, efficiency: 71, compliance: 75 },
+  { day: "Thu", safety: 65, efficiency: 74, compliance: 76 },
+  { day: "Fri", safety: 63, efficiency: 69, compliance: 77 },
+  { day: "Sat", safety: 66, efficiency: 72, compliance: 76 },
+  { day: "Sun", safety: 64, efficiency: 71, compliance: 78 },
+];
 
 const SAFETY_SPARK     = [78,75,74,72,71,69,68,67,66,65,64].map((v, i) => ({ v }));
 const EFFICIENCY_SPARK = [70,72,69,71,73,70,72,68,71,72,71].map((v, i) => ({ v }));
@@ -302,7 +315,6 @@ function PillarCard({
           <Spark data={spark} color={sparkColor} />
         </div>
       </div>
-      <CF insight={insight} modules={sources} />
     </div>
   );
 }
@@ -311,9 +323,9 @@ function PillarCard({
 function TrendTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const items = [
-    { key: "safety",     label: "Safety",     color: "#ef4444" },
+    { key: "safety",     label: "Safety",     color: "#1e3a8a" },
     { key: "efficiency", label: "Efficiency", color: "#1b59f8" },
-    { key: "compliance", label: "Compliance", color: "#7c3aed" },
+    { key: "compliance", label: "Compliance", color: "#93c5fd" },
   ];
   return (
     <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 14px", boxShadow: "0 4px 14px rgba(0,0,0,0.10)", minWidth: 160, fontFamily: FF }}>
@@ -379,35 +391,85 @@ function QuadrantTooltip({ active, payload }: any) {
 }
 
 // ─── Widget: Three Pillars Trend ──────────────────────────────────────────────
+const PILLAR_LINES: [string, string, string][] = [
+  ["safety",     "Safety (RTSS · MEPS)",     "#1e3a8a"],
+  ["efficiency", "Efficiency (FMS · RTSS)",  "#1b59f8"],
+  ["compliance", "Compliance (MEPS · IMDS)", "#93c5fd"],
+];
+
 function ThreePillarTrendWidget() {
+  const [timeRange,    setTimeRange]    = useState("30d");
+  const [hoveredLine,  setHoveredLine]  = useState<string | null>(null);
+
+  const data     = timeRange === "7d" ? TREND_7D : TREND_30D;
+  const xInterval = timeRange === "7d" ? 0 : 4;
+
+  const lineOpacity = (key: string) => hoveredLine === null ? 1 : hoveredLine === key ? 1 : 0.15;
+  const lineWidth   = (key: string) => hoveredLine === key ? 2.2 : 1.6;
+
   return (
-    <div style={{ ...CARD }}>
-      <div style={{ padding: "16px 20px 12px", borderBottom: HDR_BORDER }}>
-        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>The Three Pillars · 30-Day Trend</p>
-        <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Operational balance between safety, efficiency, and compliance</p>
+    <div style={{ ...CARD, height: "100%" }}>
+
+      {/* Header */}
+      <div style={{ padding: "16px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
+          <div>
+            <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Health Trend</p>
+            <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Safety · Efficiency · Compliance</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger style={FILTER_STYLE}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {([["7d","Last 7 Days"],["30d","Last 30 Days"]] as [string,string][]).map(([v,l]) => (
+                  <SelectItem key={v} value={v}>{l}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
-      <div style={{ height: 260, padding: "16px 12px 8px 4px" }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={TREND_30D} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="day" tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={4} dy={5} />
-            <YAxis domain={[50, 90]} ticks={[50,60,70,80,90]} tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} dx={-4} />
-            <ReTooltip content={<TrendTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }} />
-            <Line type="monotone" dataKey="safety"     stroke="#ef4444" strokeWidth={1.8} dot={false} name="Safety" />
-            <Line type="monotone" dataKey="efficiency" stroke="#1b59f8" strokeWidth={1.8} dot={false} name="Efficiency" />
-            <Line type="monotone" dataKey="compliance" stroke="#7c3aed" strokeWidth={1.8} dot={false} strokeDasharray="4 2" name="Compliance" />
-          </LineChart>
-        </ResponsiveContainer>
+
+      {/* Chart */}
+      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <div style={{ position: "absolute", inset: "16px 12px 8px 4px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="day" tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={xInterval} dy={5} />
+              <YAxis domain={[50, 90]} ticks={[50,60,70,80,90]} tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} dx={-4} />
+              <ReTooltip content={<TrendTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1, strokeDasharray: "4 2" }} />
+              <Area type="monotone" dataKey="safety"
+                stroke="#1e3a8a" strokeWidth={lineWidth("safety")} strokeOpacity={lineOpacity("safety")}
+                strokeDasharray="6 3" fill="none"
+                dot={false} activeDot={{ r: 5, fill: "#1e3a8a", stroke: "#fff", strokeWidth: 2 }} />
+              <Area type="monotone" dataKey="efficiency"
+                stroke="#1b59f8" strokeWidth={lineWidth("efficiency")} strokeOpacity={lineOpacity("efficiency")}
+                strokeDasharray="6 3" fill="none"
+                dot={false} activeDot={{ r: 5, fill: "#1b59f8", stroke: "#fff", strokeWidth: 2 }} />
+              <Area type="monotone" dataKey="compliance"
+                stroke="#93c5fd" strokeWidth={lineWidth("compliance")} strokeOpacity={lineOpacity("compliance")}
+                strokeDasharray="6 3" fill="none"
+                dot={false} activeDot={{ r: 5, fill: "#93c5fd", stroke: "#fff", strokeWidth: 2 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
-      {/* Legend */}
-      <div style={{ display: "flex", gap: 16, padding: "6px 20px 10px", flexShrink: 0, flexWrap: "wrap" }}>
-        {[["Safety","#ef4444"],["Efficiency","#1b59f8"],["Compliance","#7c3aed"]].map(([l,c]) => (
-          <span key={l} style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: FF, fontSize: 11, color: "#64748b" }}>
-            <span style={{ width: 20, height: 2, background: c, display: "inline-block", borderRadius: 1 }} />{l}
+
+      {/* Legend — hover to dim other lines */}
+      <div style={{ display: "flex", gap: 16, padding: "10px 20px 20px", flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "center" }}>
+        {PILLAR_LINES.map(([key, label, color]) => (
+          <span key={key}
+            style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: FF, fontSize: 11, color: hoveredLine === null || hoveredLine === key ? "#64748b" : "#cbd5e1", cursor: "default", transition: "color 0.15s" }}
+            onMouseEnter={() => setHoveredLine(key)}
+            onMouseLeave={() => setHoveredLine(null)}
+          >
+            <span style={{ width: 8, height: 8, background: color, display: "inline-block", borderRadius: 2, opacity: hoveredLine === null || hoveredLine === key ? 1 : 0.25, transition: "opacity 0.15s", flexShrink: 0 }} />
+            {label}
           </span>
         ))}
       </div>
-      <CF insight="Safety is sliding while compliance climbs — investigate operational imbalance before risk increases." modules="RTSS · MEPS · FMS · IMDS" />
+
     </div>
   );
 }
@@ -526,7 +588,6 @@ function CapacityCard({
           <SegmentBar segments={segments} />
         </div>
       </div>
-      <CF insight={insight} modules={modules} />
     </div>
   );
 }
@@ -568,7 +629,6 @@ function OperatorQuadrantWidget() {
           </ScatterChart>
         </ResponsiveContainer>
       </div>
-      <CF insight="High productivity with low safety requires intervention before escalation." modules="RTSS · FMS · MEPS" />
     </div>
   );
 }
@@ -586,7 +646,7 @@ function NotificationsWidget() {
         <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Notifications</p>
         <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Operators · License · Warranty · RED Findings</p>
       </div>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent", paddingBottom: 20 } as React.CSSProperties}>
         {NOTIFICATIONS.map((n, i, arr) => {
           const s = SMAP[n.severity];
           const Icon = n.icon;
@@ -607,112 +667,184 @@ function NotificationsWidget() {
           );
         })}
       </div>
-      <CF insight="5 critical items require action today — RED findings and expired licenses." modules="MEPS · IMDS · RTSS" />
     </div>
   );
 }
 
-// ─── Widget: Equipment Roll-Call ──────────────────────────────────────────────
-function EquipmentRollCallWidget() {
+// ─── Widget: Combined Roll-Call ───────────────────────────────────────────────
+function RollCallWidget() {
+  const [tab, setTab] = useState<"equipment" | "operators">("equipment");
+
   return (
-    <div style={{ ...CARD, flex: 1 }}>
-      <div style={{ padding: "14px 18px 10px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Equipment Roll-Call</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Weighted score from incidents, RED findings, idle time, downtime</p>
+    <div style={{ ...CARD }}>
+
+      {/* Header */}
+      <div style={{ padding: "14px 18px 0", borderBottom: HDR_BORDER, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+          <div>
+            <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Roll-Call</p>
+            <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Reliability scores — incidents, safety, utilization & compliance</p>
+          </div>
+          <button style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#1b59f8", background: "none", border: "none", cursor: "pointer", padding: 0, marginTop: 2 }}>
+            View All <ChevronRight size={11} />
+          </button>
         </div>
-        <button style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#1b59f8", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-          View All <ChevronRight size={11} />
-        </button>
+
+        {/* Tab strip */}
+        <div style={{ display: "flex" }}>
+          {([
+            { id: "equipment" as const, label: "Equipment", count: EQUIP_ROLLCALL.length },
+            { id: "operators" as const, label: "Operators", count: OPR_ROLLCALL.length },
+          ]).map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                fontFamily: FF, fontSize: 11, fontWeight: tab === t.id ? 700 : 500,
+                color: tab === t.id ? "#1b59f8" : "#94a3b8",
+                background: "none", border: "none", cursor: "pointer",
+                padding: "6px 14px",
+                borderBottom: tab === t.id ? "2px solid #1b59f8" : "2px solid transparent",
+                marginBottom: -1, transition: "all 0.15s",
+                display: "flex", alignItems: "center", gap: 5,
+              }}
+            >
+              {t.label}
+              <span style={{
+                fontFamily: FF, fontSize: 9, fontWeight: 700,
+                padding: "1px 6px", borderRadius: 10,
+                background: tab === t.id ? "#eff6ff" : "#f1f5f9",
+                color: tab === t.id ? "#1b59f8" : "#94a3b8",
+              }}>{t.count}</span>
+            </button>
+          ))}
+        </div>
       </div>
-      {/* Table header */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 72px 64px 80px 80px", padding: "7px 18px", borderBottom: "1px solid #f1f5f9", gap: 8 }}>
-        {["MHE", "Util.", "Incidents", "RED Find.", "Score"].map(h => (
-          <span key={h} style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.05em", textTransform: "uppercase" }}>{h}</span>
-        ))}
-      </div>
+
+      {/* Rows */}
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
-        {EQUIP_ROLLCALL.map((row, i, arr) => {
+
+        {tab === "equipment" && EQUIP_ROLLCALL.map((row, i, arr) => {
           const bs = scoreBandStyle(row.band);
           return (
             <div key={row.id}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 72px 64px 80px 80px", padding: "10px 18px", gap: 8, alignItems: "center", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                <div>
-                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 1px" }}>{row.id}</p>
-                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>{row.type}</p>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 18px", cursor: "default", transition: "background 0.12s" }}
+                onMouseEnter={hoverIn} onMouseLeave={hoverOut}
+              >
+                {/* Score circle */}
+                <div style={{
+                  width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
+                  background: bs.bg, border: `2px solid ${bs.border}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 800, color: bs.color }}>{row.score}</span>
                 </div>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#475569" }}>{row.util}%</span>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: row.incidents > 3 ? "#dc2626" : "#475569" }}>{row.incidents}</span>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: row.redFindings > 0 ? "#dc2626" : "#94a3b8" }}>{row.redFindings}</span>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: bs.bg, color: bs.color, border: `1px solid ${bs.border}`, textAlign: "center", display: "inline-block" }}>{row.score}</span>
+
+                {/* Identity + chips */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 5px" }}>{row.id}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b", background: "#f1f5f9", padding: "2px 7px", borderRadius: 5 }}>{row.type}</span>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "#475569", background: "#f8fafc", padding: "2px 7px", borderRadius: 5 }}>Util {row.util}%</span>
+                    <span style={{
+                      fontFamily: FF, fontSize: 9, padding: "2px 7px", borderRadius: 5,
+                      color: row.incidents > 3 ? "#dc2626" : "#475569",
+                      background: row.incidents > 3 ? "#fef2f2" : "#f8fafc",
+                      border: row.incidents > 3 ? "1px solid #fecaca" : "1px solid transparent",
+                    }}>{row.incidents} incidents</span>
+                    {row.redFindings > 0 && (
+                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 5, color: "#dc2626", background: "#fef2f2", border: "1px solid #fecaca" }}>
+                        {row.redFindings} RED
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Band pill */}
+                <span style={{
+                  fontFamily: FF, fontSize: 9, fontWeight: 700, letterSpacing: "0.05em",
+                  textTransform: "uppercase", padding: "4px 10px", borderRadius: 20, flexShrink: 0,
+                  background: bs.bg, color: bs.color, border: `1px solid ${bs.border}`,
+                }}>{row.band}</span>
               </div>
               {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
             </div>
           );
         })}
-      </div>
-      <CF insight="3 units require operational review due to repeated RED findings and low scores." modules="MEPS · RTSS · FMS" />
-    </div>
-  );
-}
 
-// ─── Widget: Operator Roll-Call ───────────────────────────────────────────────
-function OperatorRollCallWidget() {
-  return (
-    <div style={{ ...CARD, flex: 1 }}>
-      <div style={{ padding: "14px 18px 10px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Operator Roll-Call</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Weighted from fatigue, incidents, productivity, safety, compliance</p>
-        </div>
-        <button style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#1b59f8", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-          View All <ChevronRight size={11} />
-        </button>
-      </div>
-      {/* Table header */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 72px 80px 80px", padding: "7px 18px", borderBottom: "1px solid #f1f5f9", gap: 8 }}>
-        {["Operator", "Util.", "Incidents", "Safety", "Score"].map(h => (
-          <span key={h} style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.05em", textTransform: "uppercase" }}>{h}</span>
-        ))}
-      </div>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
-        {OPR_ROLLCALL.map((row, i, arr) => {
+        {tab === "operators" && OPR_ROLLCALL.map((row, i, arr) => {
           const band = scoreToBand(row.score);
           const bs   = scoreBandStyle(band);
           const TI   = row.trend === "up" ? TrendingUp : row.trend === "down" ? TrendingDown : Minus;
           const tc   = row.trend === "up" ? "#16a34a" : row.trend === "down" ? "#dc2626" : "#94a3b8";
           return (
             <div key={row.id}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 72px 80px 80px", padding: "10px 18px", gap: 8, alignItems: "center", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: 0 }}>{row.name}</p>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 18px", cursor: "default", transition: "background 0.12s" }}
+                onMouseEnter={hoverIn} onMouseLeave={hoverOut}
+              >
+                {/* Score circle */}
+                <div style={{
+                  width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
+                  background: bs.bg, border: `2px solid ${bs.border}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 800, color: bs.color }}>{row.score}</span>
+                </div>
+
+                {/* Identity + chips */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                    <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: 0 }}>{row.name}</p>
                     {row.fatigue && (
-                      <span style={{ fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a" }}>FATIGUE</span>
+                      <span style={{ fontFamily: FF, fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a" }}>FATIGUE</span>
                     )}
                   </div>
-                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "1px 0 0" }}>{row.id} · {row.exp}yr exp</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b", background: "#f1f5f9", padding: "2px 7px", borderRadius: 5 }}>{row.id} · {row.exp}yr exp</span>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "#475569", background: "#f8fafc", padding: "2px 7px", borderRadius: 5 }}>Util {row.util}%</span>
+                    <span style={{
+                      fontFamily: FF, fontSize: 9, padding: "2px 7px", borderRadius: 5,
+                      color: row.incidents > 2 ? "#dc2626" : "#475569",
+                      background: row.incidents > 2 ? "#fef2f2" : "#f8fafc",
+                      border: row.incidents > 2 ? "1px solid #fecaca" : "1px solid transparent",
+                    }}>{row.incidents} incidents</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: FF, fontSize: 9, color: "#475569", background: "#f8fafc", padding: "2px 7px", borderRadius: 5 }}>
+                      <TI size={9} color={tc} /> Safety {row.safetyRating}
+                    </span>
+                  </div>
                 </div>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#475569" }}>{row.util}%</span>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: row.incidents > 2 ? "#dc2626" : "#475569" }}>{row.incidents}</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                  <TI size={10} color={tc} />
-                  <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#475569" }}>{row.safetyRating}</span>
-                </div>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: bs.bg, color: bs.color, border: `1px solid ${bs.border}`, textAlign: "center", display: "inline-block" }}>{row.score}</span>
+
+                {/* Band pill */}
+                <span style={{
+                  fontFamily: FF, fontSize: 9, fontWeight: 700, letterSpacing: "0.05em",
+                  textTransform: "uppercase", padding: "4px 10px", borderRadius: 20, flexShrink: 0,
+                  background: bs.bg, color: bs.color, border: `1px solid ${bs.border}`,
+                }}>{band}</span>
               </div>
               {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
             </div>
           );
         })}
+
       </div>
-      <CF insight="2 operators crossed fatigue threshold during consecutive shifts — review scheduling." modules="RTSS · IMDS · FMS" />
     </div>
   );
 }
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export function Variation4Tab() {
+  const ohRef  = useRef<HTMLDivElement>(null);
+  const [ohH, setOhH] = useState<number | undefined>();
+
+  useEffect(() => {
+    if (!ohRef.current) return;
+    const obs = new ResizeObserver(entries => setOhH(entries[0].contentRect.height));
+    obs.observe(ohRef.current);
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <div className="space-y-6 p-8">
 
@@ -721,9 +853,9 @@ export function Variation4Tab() {
       <div className="grid grid-cols-12 gap-4">
         <SL>Operational Health & Trend Intelligence — FMS · MEPS · RTSS · IMDS</SL>
 
-        {/* Left: Operational Health — Utilization-card style */}
-        <div className="col-span-12 xl:col-span-4">
-          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column" }}>
+        {/* Left: Operational Health — hugs content, sets row height */}
+        <div className="col-span-12 xl:col-span-4" style={{ alignSelf: "start" }}>
+          <div ref={ohRef} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column" }}>
 
             {/* Header */}
             <div style={{ padding: "16px 18px 11px", borderBottom: "1px solid #f1f5f9" }}>
@@ -734,18 +866,35 @@ export function Variation4Tab() {
             {/* Body */}
             <div>
 
-              {/* Composite score row */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#475569" }}>71</span>
-                </div>
+              {/* Composite Score — card with border */}
+              <div style={{ margin: "14px 18px", border: "1px solid #e2e8f0", borderRadius: 10, display: "flex", alignItems: "center", gap: 16, padding: "14px 16px" }}>
+                {/* Donut ring */}
+                <svg width={64} height={64} viewBox="0 0 64 64" style={{ flexShrink: 0 }}>
+                  {/* Track */}
+                  <circle cx={32} cy={32} r={25} fill="none" stroke="#e2e8f0" strokeWidth={6} />
+                  {/* Progress arc — 71% */}
+                  <circle
+                    cx={32} cy={32} r={25} fill="none"
+                    stroke="#1b59f8" strokeWidth={6}
+                    strokeDasharray="111.53 45.55"
+                    strokeLinecap="butt"
+                    transform="rotate(-90 32 32)"
+                  />
+                  {/* Centre label */}
+                  <text x={32} y={36} textAnchor="middle"
+                    style={{ fontFamily: FF, fontSize: "14px", fontWeight: 700, fill: "#0f172a" }}>71</text>
+                </svg>
+
+                {/* Text block */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" }}>Composite Score</p>
-                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>FMS · MEPS · RTSS · IMDS</p>
-                </div>
-                <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                  <p style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: "#d97706", margin: 0, lineHeight: 1 }}>71 / 100</p>
-                  <p style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", margin: "2px 0 0" }}>MODERATE</p>
+                  <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Composite Score</p>
+                  <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: "0 0 8px" }}>Warehouse is operational but safety risks require immediate attention</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>71 / 100</span>
+                    <span style={{ display: "inline-flex", padding: "2px 9px", borderRadius: 20, background: "#fef3c7", border: "1px solid #fde68a", fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#92400e", letterSpacing: "0.04em" }}>
+                      MODERATE
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -753,39 +902,33 @@ export function Variation4Tab() {
 
               {/* 4 pillar rows */}
               {([
-                { initials: "SA", label: "Safety",     sources: "RTSS · MEPS", val: 64, delta: -5.4, status: "Declining",  statusColor: "#dc2626" as const, spark: SAFETY_SPARK,     sparkColor: "#ef4444" },
-                { initials: "EF", label: "Efficiency", sources: "FMS · RTSS",  val: 71, delta: -1.2, status: "Stable",     statusColor: "#d97706" as const, spark: EFFICIENCY_SPARK, sparkColor: "#1b59f8" },
-                { initials: "CO", label: "Compliance", sources: "MEPS · IMDS", val: 78, delta: +0.4, status: "Improving",  statusColor: "#16a34a" as const, spark: COMPLIANCE_SPARK, sparkColor: "#7c3aed" },
-                { initials: "RE", label: "Readiness",  sources: "FMS · IMDS",  val: 71, delta: +1.2, status: "On Track",   statusColor: "#475569" as const, spark: SAFETY_SPARK,     sparkColor: "#475569" },
+                { icon: Shield,      label: "Safety",     sources: "RTSS · MEPS", val: 64, delta: -5.4, status: "Declining",  statusColor: "#dc2626" as const, spark: SAFETY_SPARK,     sparkColor: "#ef4444" },
+                { icon: Zap,         label: "Efficiency", sources: "FMS · RTSS",  val: 71, delta: -1.2, status: "Stable",     statusColor: "#d97706" as const, spark: EFFICIENCY_SPARK, sparkColor: "#1b59f8" },
+                { icon: CheckCircle, label: "Compliance", sources: "MEPS · IMDS", val: 78, delta: +0.4, status: "Improving",  statusColor: "#16a34a" as const, spark: COMPLIANCE_SPARK, sparkColor: "#7c3aed" },
+                { icon: Gauge,       label: "Readiness",  sources: "FMS · IMDS",  val: 71, delta: +1.2, status: "On Track",   statusColor: "#475569" as const, spark: SAFETY_SPARK,     sparkColor: "#475569" },
               ]).map((row, i, arr) => {
                 const up = row.delta >= 0;
+                const Icon = row.icon;
                 return (
                   <div key={row.label}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                       {/* Avatar */}
                       <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#475569" }}>{row.initials}</span>
+                        <Icon size={16} color="#475569" />
                       </div>
-                      {/* Label + sources */}
+                      {/* Label + status */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" }}>{row.label}</p>
-                        <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>{row.sources}</p>
+                        <p style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", margin: 0 }}>{row.status}</p>
                       </div>
                       {/* Delta badge */}
-                      <span style={{
-                        display: "inline-flex", alignItems: "center", gap: 2,
-                        padding: "2px 6px", borderRadius: 6, flexShrink: 0,
-                        fontFamily: FF, fontSize: 9, fontWeight: 700,
-                        background: up ? "#f0fdf4" : "#fef2f2",
-                        color: up ? "#16a34a" : "#dc2626",
-                        border: `1px solid ${up ? "#bbf7d0" : "#fecaca"}`,
-                      }}>
-                        {up ? "↗" : "↘"} {Math.abs(row.delta).toFixed(1)}
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, fontFamily: FF, fontSize: 10, fontWeight: 700, color: up ? "#16a34a" : "#dc2626" }}>
+                        {up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                        {Math.abs(row.delta).toFixed(1)}
                       </span>
-                      {/* Score + status */}
+                      {/* Score */}
                       <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                        <p style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: row.statusColor, margin: 0, lineHeight: 1 }}>{row.val}</p>
-                        <p style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", margin: "2px 0 0" }}>{row.status}</p>
+                        <p style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: "#475569", margin: 0, lineHeight: 1 }}>{row.val}</p>
                       </div>
                     </div>
                     {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
@@ -793,23 +936,22 @@ export function Variation4Tab() {
                 );
               })}
 
-
             </div>
 
-            {/* Footer */}
-            <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 18px 0 18px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
-              <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · MEPS · RTSS · IMDS</p>
-              <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>
-                Warehouse stable but safety degradation affecting overall balance.
-              </p>
-            </div>
+            {/* Bottom padding */}
+            <div style={{ height: 20, flexShrink: 0 }} />
 
           </div>
         </div>
 
-        {/* Right: Three Pillar Trend */}
-        <div className="col-span-12 xl:col-span-8">
+        {/* Centre: Three Pillar Trend — matches OH height */}
+        <div className="col-span-12 xl:col-span-4 flex" style={{ height: ohH }}>
           <ThreePillarTrendWidget />
+        </div>
+
+        {/* Right: Notifications — matches OH height, scrolls overflow */}
+        <div className="col-span-12 xl:col-span-4 flex" style={{ height: ohH }}>
+          <NotificationsWidget />
         </div>
 
       </div>
@@ -872,12 +1014,8 @@ export function Variation4Tab() {
       <div className="grid grid-cols-12 gap-4">
         <SL>Risk × Performance — Operator Intelligence</SL>
 
-        <div className="col-span-12 xl:col-span-6 flex" style={{ minHeight: 380 }}>
+        <div className="col-span-12 flex" style={{ minHeight: 380 }}>
           <OperatorQuadrantWidget />
-        </div>
-
-        <div className="col-span-12 xl:col-span-6 flex" style={{ minHeight: 380 }}>
-          <NotificationsWidget />
         </div>
       </div>
 
@@ -885,12 +1023,8 @@ export function Variation4Tab() {
       <div className="grid grid-cols-12 gap-4">
         <SL>Roll-Call — Equipment & Operator Reliability Scores</SL>
 
-        <div className="col-span-12 xl:col-span-6 flex" style={{ minHeight: 360 }}>
-          <EquipmentRollCallWidget />
-        </div>
-
-        <div className="col-span-12 xl:col-span-6 flex" style={{ minHeight: 360 }}>
-          <OperatorRollCallWidget />
+        <div className="col-span-12" style={{ minHeight: 360 }}>
+          <RollCallWidget />
         </div>
       </div>
 
