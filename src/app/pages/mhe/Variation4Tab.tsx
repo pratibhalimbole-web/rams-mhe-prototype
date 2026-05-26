@@ -131,14 +131,42 @@ const QUADRANT_DATA = [
 ];
 
 const NOTIFICATIONS = [
-  { id: "N1", category: "RED Finding",      title: "MHE-004 brake failure open 72h — operational breach",             time: "3 days",  severity: "critical", icon: XCircle   },
-  { id: "N2", category: "Warranty",         title: "MHE-009 warranty expires in 4 days — service not scheduled",      time: "4d left", severity: "high",     icon: AlertCircle },
-  { id: "N3", category: "Fatigue",          title: "OP-019 exceeded 6h continuous operation threshold",               time: "14m ago", severity: "high",     icon: AlertTriangle },
-  { id: "N4", category: "Speed Cluster",    title: "4 speed violations in Storage A — same zone, same shift",         time: "1h ago",  severity: "high",     icon: AlertTriangle },
-  { id: "N5", category: "License Expired",  title: "OP-023 and OP-031 licenses expired — restricted from operation",  time: "Today",   severity: "critical", icon: XCircle   },
-  { id: "N6", category: "Service Due",      title: "MHE-003, MHE-014 service overdue by 3+ days",                    time: "3d ago",  severity: "high",     icon: AlertCircle },
-  { id: "N7", category: "Compliance",       title: "MEPS inspection completion dropped to 61% this week",             time: "This wk", severity: "medium",   icon: AlertCircle },
-  { id: "N8", category: "RED Finding",      title: "MHE-031 mast misalignment finding unresolved — 2nd occurrence",   time: "6h ago",  severity: "high",     icon: AlertCircle },
+  {
+    id: "N1", category: "OPERATOR", time: "14:08", icon: Users, unread: true, badge: "6",
+    title: "Sunil P. · 6 high-sev events today",
+    stats: [{ value: "6", label: "High Sev" }, { value: "3", label: "Zones Hit" }, { value: "2", label: "MHEs" }],
+    footerLeft: "Top Zone: Aisle B-3", footerRight: "Latest: 14:08",
+  },
+  {
+    id: "N2", category: "LICENSE", time: "08:00", icon: AlertCircle, unread: true, badge: "2",
+    title: "License expired · Joe Pillai (JP-003)",
+    stats: [{ value: "2", label: "Expired" }, { value: "3", label: "At Risk" }, { value: "5", label: "Total" }],
+    footerLeft: "Operator: JP-003", footerRight: "Status: Blocked",
+  },
+  {
+    id: "N3", category: "SERVICE", time: "11:42", icon: RefreshCw, unread: true, badge: "1",
+    title: "Service due · MHE-22",
+    stats: [{ value: "1", label: "Overdue" }, { value: "4", label: "Due Soon" }, { value: "71k", label: "Cycles" }],
+    footerLeft: "Asset: MHE-22", footerRight: "Risk: Breakdown",
+  },
+  {
+    id: "N4", category: "INSPECTION", time: "Yday 16:20", icon: ShieldCheck, unread: true, badge: "3",
+    title: "RED finding open >24h · MHE-27",
+    stats: [{ value: "3", label: "RED Open" }, { value: "1", label: "Reported" }, { value: "24h", label: "Open" }],
+    footerLeft: "System: Hydraulic", footerRight: "By: Imran S.",
+  },
+  {
+    id: "N5", category: "WARRANTY", time: "—", icon: Clock, unread: true, badge: "2",
+    title: "Warranty expires <7 days · 2 assets",
+    stats: [{ value: "2", label: "Expiring" }, { value: "7", label: "Days Left" }, { value: "0", label: "Renewed" }],
+    footerLeft: "MHE-04 · MHE-19", footerRight: "Window Closing",
+  },
+  {
+    id: "N6", category: "INSPECTION", time: "W to date", icon: ShieldCheck, unread: false, badge: "3",
+    title: "MHE-27 · most RED findings this week",
+    stats: [{ value: "3", label: "RED Found" }, { value: "2", label: "Prev Week" }, { value: "1", label: "Resolved" }],
+    footerLeft: "Asset: MHE-27", footerRight: "Action: Reinspect",
+  },
 ];
 
 const EQUIP_ROLLCALL = [
@@ -583,13 +611,6 @@ function CriticalAndLiveWidget() {
         <div ref={tickerRef} className="live-ticker" style={{ overflowX: "auto", overflowY: "hidden", padding: "0 20px 14px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 #f8fafc" } as React.CSSProperties}>
           <div style={{ display: "flex", gap: 10, width: "max-content", alignItems: "stretch" }}>
             {tickerEvents.map((ev, idx) => {
-              // Severity palette
-              const palette = ev.severity === "critical"
-                ? { top: "#ef4444", iconBg: "#fef2f2", iconColor: "#dc2626", label: "#dc2626" }
-                : ev.severity === "high"
-                ? { top: "#f59e0b", iconBg: "#fef3c7", iconColor: "#92400e", label: "#92400e" }
-                : { top: "#3b82f6", iconBg: "#eff6ff", iconColor: "#1e40af", label: "#1e40af" };
-
               // Icon per event type
               const TypeIcon =
                 ev.type === "IMPACT"          ? Zap          :
@@ -614,9 +635,7 @@ function CriticalAndLiveWidget() {
                   overflow: "hidden",
                   boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
                 }}>
-                  {/* Card body */}
                   <div style={{ padding: "11px 13px 12px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
-
                     {/* Row 1: icon box + type + time */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ width: 28, height: 28, borderRadius: 7, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -625,11 +644,9 @@ function CriticalAndLiveWidget() {
                       <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#475569", letterSpacing: "0.05em", textTransform: "uppercase" as const, flex: 1 }}>{ev.type}</span>
                       <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", flexShrink: 0 }}>{ev.time}</span>
                     </div>
-
-                    {/* Row 2: context — main info */}
+                    {/* Row 2: context */}
                     <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: 0, lineHeight: "15px" }}>{ev.context}</p>
-
-                    {/* Row 3: meta — zone · mhe · operator */}
+                    {/* Row 3: meta */}
                     <div style={{ display: "flex", alignItems: "center", gap: 0, borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
                       {meta.map((v, i) => (
                         <React.Fragment key={v}>
@@ -638,7 +655,6 @@ function CriticalAndLiveWidget() {
                         </React.Fragment>
                       ))}
                     </div>
-
                   </div>
                 </div>
               );
@@ -727,38 +743,59 @@ function OperatorQuadrantWidget() {
 
 // ─── Widget: Notifications ────────────────────────────────────────────────────
 function NotificationsWidget() {
-  const SMAP: Record<string, { bg: string; color: string; border: string }> = {
-    critical: { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
-    high:     { bg: "#fef3c7", color: "#92400e", border: "#fde68a" },
-    medium:   { bg: "#eff6ff", color: "#1e40af", border: "#bfdbfe" },
-  };
+  const unreadCount = NOTIFICATIONS.filter(n => n.unread).length;
+  const DOT_COLORS = ["#475569", "#94a3b8", "#cbd5e1"];
   return (
     <div style={{ ...CARD, flex: 1 }}>
-      <div style={{ padding: "16px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
-        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Notifications</p>
-        <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Operators · License · Warranty · RED Findings</p>
+
+      {/* Header */}
+      <div style={{ padding: "16px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Notifications</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Operator events · license · warranty · service due · RED findings</p>
+        </div>
+        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const }}>
+          {unreadCount} unread
+        </span>
       </div>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent", paddingBottom: 20 } as React.CSSProperties}>
-        {NOTIFICATIONS.map((n, i, arr) => {
-          const s = SMAP[n.severity];
+
+      {/* Notification cards */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent", padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 8 } as React.CSSProperties}>
+        {NOTIFICATIONS.map(n => {
           const Icon = n.icon;
           return (
-            <div key={n.id}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                <Icon size={13} color={s.color} style={{ flexShrink: 0, marginTop: 1 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                    <span style={{ fontFamily: FF, fontSize: 8, fontWeight: 700, padding: "1px 6px", borderRadius: 4, background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>{n.category}</span>
+            <div key={n.id}
+              style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: "11px 13px", background: "#fff", display: "flex", alignItems: "flex-start", gap: 11, cursor: "default", transition: "background 0.12s", position: "relative" as const }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
+              onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+            >
+              {/* Icon box */}
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Icon size={14} color="#64748b" />
+              </div>
+
+              {/* Content */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Category + time */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.07em", textTransform: "uppercase" as const }}>{n.category}</span>
+                    <span style={{ color: "#e2e8f0", fontSize: 9 }}>·</span>
                     <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{n.time}</span>
                   </div>
-                  <p style={{ fontFamily: FF, fontSize: 10, color: "#0f172a", margin: 0, lineHeight: "14px", fontWeight: 500 }}>{n.title}</p>
+                  {/* Badge */}
+                  <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>{n.badge}</span>
                 </div>
+                {/* Title */}
+                <p style={{ fontFamily: FF, fontSize: 11, fontWeight: n.unread ? 600 : 500, color: "#0f172a", margin: "0 0 5px", lineHeight: "15px" }}>{n.title}</p>
+                {/* Footer detail */}
+                <p style={{ fontFamily: FF, fontSize: 9.5, color: "#94a3b8", margin: 0, lineHeight: "13px" }}>{n.footerLeft} · {n.footerRight}</p>
               </div>
-              {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
             </div>
           );
         })}
       </div>
+
     </div>
   );
 }
@@ -1059,37 +1096,54 @@ export function Variation4Tab() {
       <div className="grid grid-cols-12 gap-4">
         <SL>Effective Capacity — Deployable Right Now</SL>
 
-        <div className="col-span-12 md:col-span-6 xl:col-span-4 flex">
-          <CapacityCard
-            title="Fleet · Effective Available"
-            subtitle="Operational readiness by fleet status"
-            available={59} total={76}
-            segments={FLEET_SEGMENTS}
-            insight="77% of fleet is active across warehouse zones right now."
-            modules="FMS · MEPS"
-          />
-        </div>
+        <div className="col-span-12">
+          <div style={{ ...CARD }}>
 
-        <div className="col-span-12 md:col-span-6 xl:col-span-4 flex">
-          <CapacityCard
-            title="Operators · Effective Available"
-            subtitle="Deployable workforce by availability status"
-            available={29} total={42}
-            segments={OPERATOR_SEGMENTS}
-            insight="Fatigue and expired licenses reduced deployable workforce by 31%."
-            modules="IMDS · RTSS · FMS"
-          />
-        </div>
+            {/* Shared header */}
+            <div style={{ padding: "14px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Effective Capacity</p>
+                <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Fleet · Operators · Live Activity — deployable right now</p>
+              </div>
+              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", letterSpacing: "0.04em" }}>FMS · MEPS · RTSS · IMDS</span>
+            </div>
 
-        <div className="col-span-12 xl:col-span-4 flex">
-          <CapacityCard
-            title="Live Activity · Productive Mix"
-            subtitle="Current movement productivity breakdown"
-            available={32} total={59}
-            segments={PRODUCTIVE_SEGMENTS}
-            insight="Deadhead movement increasing across receiving and loading zones."
-            modules="FMS · RTSS"
-          />
+            {/* Three columns */}
+            <div style={{ display: "flex", flexDirection: "row" }}>
+              {[
+                { title: "Fleet",       subtitle: "Operational readiness",           available: 59, total: 76,  segments: FLEET_SEGMENTS,      label: "AVAILABILITY" },
+                { title: "Operators",   subtitle: "Deployable workforce",            available: 29, total: 42,  segments: OPERATOR_SEGMENTS,   label: "AVAILABILITY" },
+                { title: "Live Activity", subtitle: "Current movement productivity", available: 32, total: 59,  segments: PRODUCTIVE_SEGMENTS, label: "PRODUCTIVE MIX" },
+              ].map((col, i) => (
+                <div key={col.title} style={{ flex: 1, padding: "18px 24px 20px", borderLeft: i > 0 ? "1px solid #f1f5f9" : "none", display: "flex", flexDirection: "column", gap: 14 }}>
+
+                  {/* Column title */}
+                  <div>
+                    <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>{col.title}</p>
+                    <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{col.subtitle}</p>
+                  </div>
+
+                  {/* Big number */}
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <span style={{ fontFamily: FF, fontSize: 36, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{col.available}</span>
+                    <span style={{ fontFamily: FF, fontSize: 14, color: "#94a3b8" }}>/ {col.total}</span>
+                    <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b", marginLeft: 2 }}>available</span>
+                  </div>
+
+                  {/* % + segment bar */}
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+                      <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>{col.label}</span>
+                      <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#475569" }}>{Math.round(col.available / col.total * 100)}%</span>
+                    </div>
+                    <SegmentBar segments={col.segments} />
+                  </div>
+
+                </div>
+              ))}
+            </div>
+
+          </div>
         </div>
       </div>
 
