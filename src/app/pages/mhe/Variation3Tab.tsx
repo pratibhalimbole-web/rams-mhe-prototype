@@ -27,7 +27,7 @@ import {
 import {
   ShieldCheck, AlertTriangle, Activity, Zap, TrendingDown, TrendingUp,
   Minus, Clock, Truck, Eye, Users, BarChart2, Shield, Gauge,
-  ChevronRight, Circle, User, Download, RefreshCw,
+  ChevronRight, Circle, User, Download, RefreshCw, CheckCircle,
 } from "lucide-react";
 import { CriticalIssuesBanner } from "../../components/widgets/CriticalIssuesBanner";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
@@ -156,16 +156,23 @@ type AlertCard = {
   time: string;
   module: string;
   category: string;
+  type: "mhe" | "operator";
 };
 
 const ACTIVE_ALERTS: AlertCard[] = [
-  { id: "A001", severity: "critical", title: "Multiple Impact Events Detected",      description: "3 rack impacts in 2 hours — compound risk pattern forming",  mheId: "MHE-025", zone: "Storage B", time: "14 min ago",  module: "RTSS",      category: "Impact Event"       },
-  { id: "A002", severity: "critical", title: "Red Finding Unresolved — 3+ Days",     description: "Critical brake failure still open, MHE operating with active finding", mheId: "MHE-004", zone: "Loading",   time: "3 days ago", module: "MEPS",      category: "Red Finding"        },
-  { id: "A003", severity: "high",     title: "Overspeed Violations Spike",           description: "9 events in Shift B — 3× the daily average for this zone",   mheId: "MHE-007", zone: "Storage B", time: "2 hrs ago",  module: "RTSS",      category: "Overspeed"          },
-  { id: "A004", severity: "high",     title: "Restricted Zone Entry Repeat",         description: "3 pedestrian zone entries in 1 hour — operator review needed", mheId: "MHE-022", zone: "Picking",   time: "1 hr ago",   module: "RTSS",      category: "Zone Violation"     },
-  { id: "A005", severity: "medium",   title: "Inspection Skipped — Warranty Risk",   description: "2 consecutive MEPS checks missed while under expiry warning",  mheId: "MHE-001", zone: "Storage A", time: "Today",      module: "MEPS",      category: "Skipped Inspection" },
-  { id: "A006", severity: "medium",   title: "Fleet Utilization Drop Detected",      description: "Pallet Jack fleet at 54% — 3 MHEs idle, no scheduled task",   mheId: "Fleet",   zone: "Loading",   time: "This shift", module: "FMS",       category: "Utilization"        },
-  { id: "A007", severity: "low",      title: "Near-Miss Pattern — Same Zone",        description: "4 pedestrian near-misses over 3 consecutive shifts in zone",   mheId: "—",       zone: "Storage B", time: "Recurring",  module: "RTSS",      category: "Near Miss"          },
+  // ── MHE alerts ───────────────────────────────────────────────────────────────
+  { id: "A001", type: "mhe",      severity: "critical", title: "Multiple Impact Events Detected",      description: "3 rack impacts in 2 hours — compound risk pattern forming",            mheId: "MHE-025", zone: "Storage B", time: "14 min ago",  module: "RTSS", category: "Impact Event"       },
+  { id: "A002", type: "mhe",      severity: "critical", title: "Red Finding Unresolved — 3+ Days",     description: "Critical brake failure still open, MHE operating with active finding",  mheId: "MHE-004", zone: "Loading",   time: "3 days ago", module: "MEPS", category: "Red Finding"        },
+  { id: "A005", type: "mhe",      severity: "medium",   title: "Inspection Skipped — Warranty Risk",   description: "2 consecutive MEPS checks missed while under expiry warning",            mheId: "MHE-001", zone: "Storage A", time: "Today",      module: "MEPS", category: "Skipped Inspection" },
+  { id: "A006", type: "mhe",      severity: "medium",   title: "Fleet Utilization Drop Detected",      description: "Pallet Jack fleet at 54% — 3 MHEs idle, no scheduled task",             mheId: "Fleet",   zone: "Loading",   time: "This shift", module: "FMS",  category: "Utilization"        },
+  { id: "A008", type: "mhe",      severity: "high",     title: "Sensor Malfunction — MHE-031",         description: "Load sensor reporting erratic values; auto-braking may be compromised",  mheId: "MHE-031", zone: "Receiving", time: "45 min ago", module: "FMS",  category: "Sensor Fault"       },
+  { id: "A009", type: "mhe",      severity: "low",      title: "Battery Health Degraded",              description: "MHE-019 reporting 62% battery capacity — schedule replacement soon",   mheId: "MHE-019", zone: "Charging",  time: "Today",      module: "FMS",  category: "Battery"            },
+  // ── Operator alerts ──────────────────────────────────────────────────────────
+  { id: "A003", type: "operator", severity: "high",     title: "Overspeed Violations Spike",           description: "9 events in Shift B — 3× the daily average for this zone",             mheId: "MHE-007", zone: "Storage B", time: "2 hrs ago",  module: "RTSS", category: "Overspeed"          },
+  { id: "A004", type: "operator", severity: "high",     title: "Restricted Zone Entry Repeat",         description: "3 pedestrian zone entries in 1 hour — operator review needed",           mheId: "MHE-022", zone: "Picking",   time: "1 hr ago",   module: "RTSS", category: "Zone Violation"     },
+  { id: "A007", type: "operator", severity: "low",      title: "Near-Miss Pattern — Same Zone",        description: "4 pedestrian near-misses over 3 consecutive shifts in zone",             mheId: "OP-014",  zone: "Storage B", time: "Recurring",  module: "RTSS", category: "Near Miss"          },
+  { id: "A010", type: "operator", severity: "critical", title: "Fatigue Risk — Shift Overrun",         description: "Operator logged 11h continuous operation without mandatory break",        mheId: "OP-009",  zone: "Storage A", time: "22 min ago", module: "RTSS", category: "Fatigue"            },
+  { id: "A011", type: "operator", severity: "medium",   title: "Compliance Score Drop",                description: "Operator OP-021 compliance fell from 84 → 61 over last 5 shifts",       mheId: "OP-021",  zone: "Loading",   time: "Today",      module: "MEPS", category: "Compliance"         },
 ];
 
 const ALERT_RECOMMENDED: Record<string, string[]> = {
@@ -176,6 +183,10 @@ const ALERT_RECOMMENDED: Record<string, string[]> = {
   "Skipped Inspection": ["Reschedule MEPS inspection today", "Apply temporary utilisation restriction", "Notify maintenance team"],
   "Utilization":        ["Review shift scheduling efficiency", "Verify task assignment pipeline", "Check for unplanned MHE downtime"],
   "Near Miss":          ["Conduct immediate zone safety audit", "Review pedestrian routing plan", "Install additional zone barriers"],
+  "Sensor Fault":       ["Ground MHE until sensor replaced", "Run diagnostic check via FMS", "Flag for priority maintenance"],
+  "Battery":            ["Schedule battery swap within 48 hours", "Monitor charge cycles until replaced", "Add to maintenance queue"],
+  "Fatigue":            ["Mandatory rest break — operator off-floor", "Log incident in operator record", "Review shift scheduling policy"],
+  "Compliance":         ["Schedule remedial safety training", "Issue formal compliance notice", "Place on 30-day monitoring plan"],
 };
 
 const MODULE_COLOR: Record<string, { bg: string; color: string }> = {
@@ -662,22 +673,26 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
 // ─── Widget: Active Safety Alerts ────────────────────────────────────────────
 
 function ActiveSafetyAlertsWidget() {
-  const [tab, setTab]             = useState<string>("all");
-  const [selected, setSelected]   = useState<AlertCard | null>(null);
+  const [tab, setTab]           = useState<"mhe" | "operator">("mhe");
+  const [selected, setSelected] = useState<AlertCard | null>(null);
 
-  const allCount      = ACTIVE_ALERTS.length;
-  const criticalCount = ACTIVE_ALERTS.filter(a => a.severity === "critical").length;
-  const highCount     = ACTIVE_ALERTS.filter(a => a.severity === "high").length;
-  const mediumCount   = ACTIVE_ALERTS.filter(a => a.severity === "medium").length;
+  const mheAlerts = ACTIVE_ALERTS.filter(a => a.type === "mhe");
+  const oprAlerts = ACTIVE_ALERTS.filter(a => a.type === "operator");
+  const filtered  = tab === "mhe" ? mheAlerts : oprAlerts;
 
-  const filtered = tab === "all" ? ACTIVE_ALERTS : ACTIVE_ALERTS.filter(a => a.severity === tab);
+  const mheCritical = mheAlerts.filter(a => a.severity === "critical").length;
+  const oprCritical = oprAlerts.filter(a => a.severity === "critical").length;
 
-  const tabs: { val: string; label: string; count: number; activeColor: string }[] = [
-    { val: "all",      label: "All",      count: allCount,      activeColor: "#475569" },
-    { val: "critical", label: "Critical", count: criticalCount, activeColor: "#dc2626" },
-    { val: "high",     label: "High",     count: highCount,     activeColor: "#b45309" },
-    { val: "medium",   label: "Medium",   count: mediumCount,   activeColor: "#1e40af" },
+  const tabs: { val: "mhe" | "operator"; label: string; count: number; critical: number }[] = [
+    { val: "mhe",      label: "MHE",      count: mheAlerts.length, critical: mheCritical },
+    { val: "operator", label: "Operator", count: oprAlerts.length, critical: oprCritical },
   ];
+
+  // Footer summary
+  const totalCritical = ACTIVE_ALERTS.filter(a => a.severity === "critical").length;
+  const footerMain = totalCritical > 0
+    ? `${totalCritical} critical alert${totalCritical > 1 ? "s" : ""} need immediate action across MHE & operators`
+    : "All alerts are within acceptable severity thresholds";
 
   return (
     <>
@@ -689,27 +704,33 @@ function ActiveSafetyAlertsWidget() {
         <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>Live cross-system feed — RTSS · MEPS · FMS</span>
       </div>
 
-      {/* Tab strip — inside body */}
+      {/* MHE / Operator tab strip */}
       <div style={{ padding: "10px 12px 0", flexShrink: 0 }}>
         <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: "3px", gap: 2 }}>
-          {tabs.map(({ val, label, count, activeColor }) => (
-            <button key={val} onClick={() => setTab(val)} style={{
-              flex: 1, padding: "6px 4px", borderRadius: 6,
-              border: tab === val ? "1px solid #e2e8f0" : "1px solid transparent",
-              background: tab === val ? "#ffffff" : "transparent",
-              cursor: "pointer", transition: "all 0.12s",
-              boxShadow: tab === val ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
-              display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4,
-            }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: tab === val ? activeColor : "#94a3b8", lineHeight: 1 }}>{count}</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: tab === val ? 600 : 400, color: tab === val ? activeColor : "#94a3b8" }}>{label}</span>
-            </button>
-          ))}
+          {tabs.map(({ val, label, count, critical }) => {
+            const active = tab === val;
+            return (
+              <button key={val} onClick={() => setTab(val)} style={{
+                flex: 1, padding: "6px 4px", borderRadius: 6,
+                border: active ? "1px solid #e2e8f0" : "1px solid transparent",
+                background: active ? "#ffffff" : "transparent",
+                cursor: "pointer", transition: "all 0.12s",
+                boxShadow: active ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
+                display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4,
+              }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: active ? "#475569" : "#94a3b8", lineHeight: 1 }}>{count}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: active ? 600 : 400, color: active ? "#475569" : "#94a3b8" }}>{label}</span>
+                {critical > 0 && (
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: active ? "#fef2f2" : "#f8fafc", color: active ? "#dc2626" : "#94a3b8", border: `1px solid ${active ? "#fecaca" : "transparent"}` }}>{critical} crit</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Alert list */}
-      <div style={{ flex: 1, overflowY: "auto" as const, minHeight: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 14, scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
+      <div style={{ flex: 1, overflowY: "auto" as const, minHeight: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 10, scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
         {filtered.map((alert) => {
           const rb = RISK_BAND[alert.severity];
           return (
@@ -719,7 +740,7 @@ function ActiveSafetyAlertsWidget() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "#f1f5f9"; }}
             >
-              {/* Title + severity badge on same row */}
+              {/* Title + severity badge */}
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
                 <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", lineHeight: "17px", flex: 1 }}>{alert.title}</span>
                 <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}`, flexShrink: 0 }}>{rb.label}</span>
@@ -745,7 +766,7 @@ function ActiveSafetyAlertsWidget() {
       <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            2 critical alerts need immediate action — MHE-025 impact events and MHE-004 red finding
+            {footerMain}
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             Cross-system alert feed — RTSS violations · MEPS findings · FMS fleet status
@@ -754,7 +775,7 @@ function ActiveSafetyAlertsWidget() {
       </div>
     </div>
 
-    {/* Detail popup — rendered outside card flow so it can float above everything */}
+    {/* Detail popup */}
     {selected && <AlertDetailPopup alert={selected} onClose={() => setSelected(null)} />}
     </>
   );
@@ -1546,6 +1567,83 @@ function OperationalStatusInboxLayer() {
   );
 }
 
+// ─── Widget: Operational Health ───────────────────────────────────────────────
+const FF3 = "Inter, sans-serif";
+const hoverIn3  = (e: React.MouseEvent<HTMLElement>) => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; };
+const hoverOut3 = (e: React.MouseEvent<HTMLElement>) => { (e.currentTarget as HTMLElement).style.background = "transparent"; };
+
+function OperationalHealthWidget() {
+  const pillars = [
+    { icon: Shield,       label: "Safety",     sources: "RTSS · MEPS", val: 64, delta: -5.4, status: "Declining",  statusColor: "#dc2626" as const },
+    { icon: Zap,          label: "Efficiency", sources: "FMS · RTSS",  val: 71, delta: -1.2, status: "Stable",     statusColor: "#d97706" as const },
+    { icon: CheckCircle,  label: "Compliance", sources: "MEPS · IMDS", val: 78, delta: +0.4, status: "Improving",  statusColor: "#16a34a" as const },
+    { icon: Gauge,        label: "Readiness",  sources: "FMS · IMDS",  val: 71, delta: +1.2, status: "On Track",   statusColor: "#475569" as const },
+  ];
+
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", height: "100%" }}>
+
+      {/* Header */}
+      <div style={{ padding: "16px 18px 11px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+        <p style={{ fontFamily: FF3, fontSize: 13, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", lineHeight: "18px" }}>Operational Health</p>
+        <p style={{ fontFamily: FF3, fontSize: 10, color: "#94a3b8", margin: 0 }}>Weighted blend — safety · efficiency · compliance · maintenance · readiness</p>
+      </div>
+
+      {/* Composite Score card */}
+      <div style={{ margin: "14px 18px", border: "1px solid #e2e8f0", borderRadius: 10, display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", flexShrink: 0 }}>
+        <svg width={64} height={64} viewBox="0 0 64 64" style={{ flexShrink: 0 }}>
+          <circle cx={32} cy={32} r={25} fill="none" stroke="#e2e8f0" strokeWidth={6} />
+          <circle cx={32} cy={32} r={25} fill="none" stroke="#1b59f8" strokeWidth={6}
+            strokeDasharray="111.53 45.55" strokeLinecap="butt" transform="rotate(-90 32 32)" />
+          <text x={32} y={36} textAnchor="middle"
+            style={{ fontFamily: FF3, fontSize: "14px", fontWeight: 700, fill: "#0f172a" }}>71</text>
+        </svg>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontFamily: FF3, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Composite Score</p>
+          <p style={{ fontFamily: FF3, fontSize: 10, color: "#94a3b8", margin: "0 0 8px" }}>Warehouse is operational but safety risks require immediate attention</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontFamily: FF3, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>71 / 100</span>
+            <span style={{ display: "inline-flex", padding: "2px 9px", borderRadius: 20, background: "#fffbeb", border: "1px solid #fef3c7", fontFamily: FF3, fontSize: 9, fontWeight: 600, color: "#d97706", letterSpacing: "0.04em" }}>MODERATE</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: "#e2e8f0", margin: "0 18px", flexShrink: 0 }} />
+
+      {/* Pillar rows */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        {pillars.map((row, i, arr) => {
+          const up = row.delta >= 0;
+          const Icon = row.icon;
+          return (
+            <div key={row.label} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "0 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn3} onMouseLeave={hoverOut3}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon size={16} color="#475569" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: FF3, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" }}>{row.label}</p>
+                  <p style={{ fontFamily: FF3, fontSize: 8, color: "#94a3b8", margin: 0 }}>{row.status}</p>
+                </div>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, fontFamily: FF3, fontSize: 10, fontWeight: 700, color: up ? "#16a34a" : "#dc2626" }}>
+                  {up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                  {Math.abs(row.delta).toFixed(1)}
+                </span>
+                <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
+                  <p style={{ fontFamily: FF3, fontSize: 14, fontWeight: 700, color: "#475569", margin: 0, lineHeight: 1 }}>{row.val}</p>
+                </div>
+              </div>
+              {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ height: 20, flexShrink: 0 }} />
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 type CorrTooltip = { row: typeof INSP_IMPACT_CORR[0]; x: number; y: number } | null;
@@ -1628,18 +1726,23 @@ export function Variation3Tab() {
         </div>
       </div>
 
-      {/* ══ Row 2: Safety Violation Trend Intelligence + Active Safety Alerts ═
-          Trend chart (8-col) + live alert feed (4-col) — RTSS+MEPS+FMS+CC   */}
+      {/* ══ Row 2: Operational Health + Safety Trend + Active Safety Alerts ═══
+          Operational Health (4) · Safety Trend (5) · Alerts (3)              */}
       <div className="grid grid-cols-12 gap-6">
-        <SL>RTSS · MEPS · FMS · COMMAND CENTER — Operational Safety Trend Intelligence</SL>
+        <SL>RTSS · MEPS · FMS · COMMAND CENTER — Operational Health · Safety Trend Intelligence</SL>
 
-        {/* Safety Violation Trend — matches Shift Performance height */}
-        <div className="col-span-12 xl:col-span-8 flex" style={{ minHeight: "520px" }}>
+        {/* Operational Health */}
+        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "520px" }}>
+          <OperationalHealthWidget />
+        </div>
+
+        {/* Safety Violation Trend */}
+        <div className="col-span-12 xl:col-span-5 flex" style={{ minHeight: "520px" }}>
           <SafetyViolationTrendWidget />
         </div>
 
         {/* Active Safety Alerts — fixed height, internal scroll */}
-        <div className="col-span-12 xl:col-span-4 flex" style={{ height: "520px", overflow: "hidden" }}>
+        <div className="col-span-12 xl:col-span-3 flex" style={{ height: "520px", overflow: "hidden" }}>
           <ActiveSafetyAlertsWidget />
         </div>
       </div>
