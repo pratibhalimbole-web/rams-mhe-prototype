@@ -554,7 +554,7 @@ function CriticalAndLiveWidget() {
   const tickerEvents = [...LIVE_EVENTS, ...LIVE_EVENTS];
 
   return (
-    <div style={{ ...CARD }}>
+    <div style={{ ...CARD, flex: 1 }}>
 
       {/* ── Shared header ── */}
       <div style={{ padding: "14px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -689,39 +689,22 @@ function EffectiveCapacityWidget() {
   ];
 
   return (
-    <div style={{ ...CARD }}>
+    <div style={{ ...CARD, flex: 1 }}>
       {/* ── Card header ── */}
-      <div style={{
-        padding: "14px 20px 12px", borderBottom: HDR_BORDER,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
+      <div style={{ padding: "14px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
-            <Gauge size={14} color="#1b59f8" />
-            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>
-              Effective Capacity
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>Effective Capacity</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "#fef2f2", border: "1px solid #fecaca", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />LIVE
             </span>
           </div>
-          <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
-            Fleet · Operators · Live Activity — deployable right now
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", letterSpacing: "0.04em" }}>
-            FMS · MEPS · RTSS · IMDS
-          </span>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 5,
-            background: "#f0fdf4", border: "1px solid #bbf7d0",
-            borderRadius: 20, padding: "3px 9px",
-          }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
-            <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#16a34a" }}>Live</span>
-          </div>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>Fleet · Operators · Live Activity — deployable right now · FMS · MEPS · RTSS</span>
         </div>
       </div>
 
       {/* ── Three dimension rows ── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       {ROWS.map((row, i) => {
         const pct       = Math.round((row.available / row.total) * 100);
         const pctColor  = pct >= 75 ? "#16a34a"  : pct >= 60 ? "#d97706"  : "#dc2626";
@@ -731,24 +714,25 @@ function EffectiveCapacityWidget() {
 
         return (
           <div key={row.name} style={{
+            flex: 1, display: "flex", flexDirection: "column", justifyContent: "center",
             borderBottom: i < ROWS.length - 1 ? DIV_LIGHT : "none",
           }}>
             <div style={{
               display: "flex", alignItems: "center",
-              padding: "18px 20px", gap: 0,
+              padding: "0 20px", gap: 0,
             }}>
 
-              {/* ① Icon + name — fixed 188px */}
-              <div style={{ width: 188, flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
+              {/* ① Icon + name — fixed 170px */}
+              <div style={{ width: 170, flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  width: 28, height: 28, borderRadius: 8, flexShrink: 0,
                   background: "#f1f5f9",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <Icon size={16} color="#475569" />
+                  <Icon size={14} color="#475569" />
                 </div>
                 <div>
-                  <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 3px" }}>
+                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>
                     {row.name}
                   </p>
                   <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>
@@ -758,23 +742,23 @@ function EffectiveCapacityWidget() {
               </div>
 
               {/* thin divider */}
-              <div style={{ width: 1, height: 36, background: "#f1f5f9", flexShrink: 0, margin: "0 20px" }} />
+              <div style={{ width: 1, height: 28, background: "#f1f5f9", flexShrink: 0, margin: "0 16px" }} />
 
-              {/* ② Count — fixed 120px */}
-              <div style={{ width: 120, flexShrink: 0, display: "flex", alignItems: "baseline", gap: 5 }}>
-                <span style={{ fontFamily: FF, fontSize: 34, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>
+              {/* ② Count — fixed 90px */}
+              <div style={{ width: 90, flexShrink: 0, display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span style={{ fontFamily: FF, fontSize: 20, fontWeight: 700, color: "#334155", lineHeight: 1 }}>
                   {row.available}
                 </span>
-                <span style={{ fontFamily: FF, fontSize: 13, color: "#94a3b8" }}>/ {row.total}</span>
+                <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8" }}>/ {row.total}</span>
                 <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>avail.</span>
               </div>
 
-              {/* ③ Pct badge — fixed 64px */}
-              <div style={{ width: 64, flexShrink: 0, display: "flex", alignItems: "center" }}>
+              {/* ③ Pct badge — fixed 52px */}
+              <div style={{ width: 52, flexShrink: 0, display: "flex", alignItems: "center" }}>
                 <div style={{
-                  fontFamily: FF, fontSize: 13, fontWeight: 700, color: pctColor,
+                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: pctColor,
                   background: pctBg, border: `1px solid ${pctBorder}`,
-                  borderRadius: 7, padding: "4px 10px", textAlign: "center" as const,
+                  borderRadius: 6, padding: "3px 8px", textAlign: "center" as const,
                   lineHeight: 1.3,
                 }}>
                   {pct}%
@@ -782,23 +766,23 @@ function EffectiveCapacityWidget() {
               </div>
 
               {/* thin divider */}
-              <div style={{ width: 1, height: 36, background: "#f1f5f9", flexShrink: 0, margin: "0 20px" }} />
+              <div style={{ width: 1, height: 28, background: "#f1f5f9", flexShrink: 0, margin: "0 16px" }} />
 
               {/* ④ Bar + legend — flex grow */}
               <div style={{ flex: 1 }}>
                 <div style={{
-                  display: "flex", height: 10, borderRadius: 6,
+                  display: "flex", height: 8, borderRadius: 6,
                   overflow: "hidden", gap: 1.5, marginBottom: 9,
                 }}>
                   {row.segments.map(s => (
                     <div key={s.label} style={{ width: `${s.pct}%`, background: s.color, borderRadius: 2 }} />
                   ))}
                 </div>
-                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "4px 16px" }}>
+                <div style={{ display: "flex", flexWrap: "nowrap", gap: "0 12px", overflow: "hidden" }}>
                   {row.segments.map(s => (
-                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: 2, background: s.color, flexShrink: 0 }} />
-                      <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
+                      <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b", whiteSpace: "nowrap" }}>
                         {s.label}{" "}
                         <span style={{ fontWeight: 600, color: "#475569" }}>{s.count}</span>
                       </span>
@@ -811,6 +795,7 @@ function EffectiveCapacityWidget() {
           </div>
         );
       })}
+      </div>{/* end flex column rows */}
     </div>
   );
 }
@@ -1092,11 +1077,16 @@ export function Variation4Tab() {
   return (
     <div className="space-y-6 p-8">
 
-      {/* ══ SECTION 1 — Operational Intelligence (Critical Issues + Live Event Wire) */}
+      {/* ══ SECTION 1 + 5 — Operational Intelligence & Effective Capacity (50/50 row) */}
       <div className="grid grid-cols-12 gap-4">
-        <SL>Operational Intelligence — Critical Issues · Live Event Wire</SL>
-        <div className="col-span-12">
-          <CriticalAndLiveWidget />
+        <SL>Operational Intelligence · Effective Capacity — Deployable Right Now</SL>
+        <div className="col-span-12" style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
+          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
+            <CriticalAndLiveWidget />
+          </div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
+            <EffectiveCapacityWidget />
+          </div>
         </div>
       </div>
 
@@ -1205,14 +1195,6 @@ export function Variation4Tab() {
           <NotificationsWidget />
         </div>
 
-      </div>
-
-      {/* ══ SECTION 5 — Effective Capacity ══════════════════════════════════ */}
-      <div className="grid grid-cols-12 gap-4">
-        <SL>Effective Capacity — Deployable Right Now</SL>
-        <div className="col-span-12">
-          <EffectiveCapacityWidget />
-        </div>
       </div>
 
       {/* ══ SECTION 6 — Risk × Performance ══════════════════════════════════ */}
