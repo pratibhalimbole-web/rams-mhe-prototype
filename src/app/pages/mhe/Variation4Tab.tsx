@@ -99,22 +99,22 @@ const EVENT_CHIP: Record<string, { bg: string; color: string; border: string }> 
 };
 
 const FLEET_SEGMENTS = [
-  { label: "Available",       pct: 77.6, count: 59, color: "#475569" },
-  { label: "Maintenance",     pct: 9.2,  count: 7,  color: "#94a3b8" },
-  { label: "Service Due",     pct: 6.6,  count: 5,  color: "#cbd5e1" },
-  { label: "RED Inspection",  pct: 6.6,  count: 5,  color: "#fca5a5" },
+  { label: "Available",       pct: 77.6, count: 59, color: "#1b59f8" },
+  { label: "Maintenance",     pct: 9.2,  count: 7,  color: "#60a5fa" },
+  { label: "Service Due",     pct: 6.6,  count: 5,  color: "#93c5fd" },
+  { label: "RED Inspection",  pct: 6.6,  count: 5,  color: "#bfdbfe" },
 ];
 const OPERATOR_SEGMENTS = [
-  { label: "Available",        pct: 69.0, count: 29, color: "#475569" },
-  { label: "License Expired",  pct: 11.9, count: 5,  color: "#fca5a5" },
-  { label: "On Break",         pct: 11.9, count: 5,  color: "#cbd5e1" },
-  { label: "Fatigue Threshold",pct: 7.1,  count: 3,  color: "#fde68a" },
+  { label: "Available",        pct: 69.0, count: 29, color: "#1b59f8" },
+  { label: "License Expired",  pct: 11.9, count: 5,  color: "#60a5fa" },
+  { label: "On Break",         pct: 11.9, count: 5,  color: "#93c5fd" },
+  { label: "Fatigue Threshold",pct: 7.1,  count: 3,  color: "#bfdbfe" },
 ];
 const PRODUCTIVE_SEGMENTS = [
-  { label: "Productive Loaded", pct: 54.2, count: 32, color: "#475569" },
-  { label: "Deadhead",          pct: 20.3, count: 12, color: "#94a3b8" },
-  { label: "Idle w/ Load",      pct: 15.3, count: 9,  color: "#cbd5e1" },
-  { label: "Idle Empty",        pct: 10.2, count: 6,  color: "#e2e8f0" },
+  { label: "Productive Loaded", pct: 54.2, count: 32, color: "#1b59f8" },
+  { label: "Deadhead",          pct: 20.3, count: 12, color: "#60a5fa" },
+  { label: "Idle w/ Load",      pct: 15.3, count: 9,  color: "#93c5fd" },
+  { label: "Idle Empty",        pct: 10.2, count: 6,  color: "#bfdbfe" },
 ];
 
 const QUADRANT_DATA = [
@@ -668,34 +668,149 @@ function CriticalAndLiveWidget() {
 }
 
 // ─── Widget: Capacity Card ────────────────────────────────────────────────────
-function CapacityCard({
-  title, subtitle, available, total, segments, insight, modules,
-}: {
-  title: string; subtitle: string; available: number; total: number;
-  segments: typeof FLEET_SEGMENTS; insight: string; modules: string;
-}) {
+// ─── Widget: Unified Effective Capacity ──────────────────────────────────────
+function EffectiveCapacityWidget() {
+  const ROWS = [
+    {
+      icon: Truck,    iconColor: "#475569", iconBg: "#f1f5f9",
+      name: "Fleet",         sub: "Operational readiness · FMS",
+      available: 59, total: 76,  segments: FLEET_SEGMENTS,
+    },
+    {
+      icon: Users,    iconColor: "#475569", iconBg: "#f1f5f9",
+      name: "Operators",     sub: "Deployable workforce · MEPS",
+      available: 29, total: 42,  segments: OPERATOR_SEGMENTS,
+    },
+    {
+      icon: Activity, iconColor: "#475569", iconBg: "#f1f5f9",
+      name: "Live Activity", sub: "Productive mix · RTSS",
+      available: 32, total: 59,  segments: PRODUCTIVE_SEGMENTS,
+    },
+  ];
+
   return (
-    <div style={{ ...CARD, flex: 1 }}>
-      <div style={{ padding: "16px 16px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
-        <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>{title}</p>
-        <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>{subtitle}</p>
-      </div>
-      <div style={{ flex: 1, padding: "16px 16px 12px", display: "flex", flexDirection: "column", gap: 12 }}>
-        {/* Main count */}
-        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-          <span style={{ fontFamily: FF, fontSize: 34, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{available}</span>
-          <span style={{ fontFamily: FF, fontSize: 14, color: "#94a3b8" }}>/ {total}</span>
-          <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b", marginLeft: 2 }}>available</span>
-        </div>
-        {/* Availability % */}
+    <div style={{ ...CARD }}>
+      {/* ── Card header ── */}
+      <div style={{
+        padding: "14px 20px 12px", borderBottom: HDR_BORDER,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", letterSpacing: "0.06em" }}>EFFECTIVE AVAILABILITY</span>
-            <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#475569" }}>{Math.round(available / total * 100)}%</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+            <Gauge size={14} color="#1b59f8" />
+            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>
+              Effective Capacity
+            </span>
           </div>
-          <SegmentBar segments={segments} />
+          <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+            Fleet · Operators · Live Activity — deployable right now
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", letterSpacing: "0.04em" }}>
+            FMS · MEPS · RTSS · IMDS
+          </span>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 5,
+            background: "#f0fdf4", border: "1px solid #bbf7d0",
+            borderRadius: 20, padding: "3px 9px",
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
+            <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#16a34a" }}>Live</span>
+          </div>
         </div>
       </div>
+
+      {/* ── Three dimension rows ── */}
+      {ROWS.map((row, i) => {
+        const pct       = Math.round((row.available / row.total) * 100);
+        const pctColor  = pct >= 75 ? "#16a34a"  : pct >= 60 ? "#d97706"  : "#dc2626";
+        const pctBg     = pct >= 75 ? "#f0fdf4"  : pct >= 60 ? "#fffbeb"  : "#fef2f2";
+        const pctBorder = pct >= 75 ? "#bbf7d0"  : pct >= 60 ? "#fde68a"  : "#fecaca";
+        const Icon      = row.icon;
+
+        return (
+          <div key={row.name} style={{
+            borderBottom: i < ROWS.length - 1 ? DIV_LIGHT : "none",
+          }}>
+            <div style={{
+              display: "flex", alignItems: "center",
+              padding: "18px 20px", gap: 0,
+            }}>
+
+              {/* ① Icon + name — fixed 188px */}
+              <div style={{ width: 188, flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: "#f1f5f9",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon size={16} color="#475569" />
+                </div>
+                <div>
+                  <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 3px" }}>
+                    {row.name}
+                  </p>
+                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>
+                    {row.sub}
+                  </p>
+                </div>
+              </div>
+
+              {/* thin divider */}
+              <div style={{ width: 1, height: 36, background: "#f1f5f9", flexShrink: 0, margin: "0 20px" }} />
+
+              {/* ② Count — fixed 120px */}
+              <div style={{ width: 120, flexShrink: 0, display: "flex", alignItems: "baseline", gap: 5 }}>
+                <span style={{ fontFamily: FF, fontSize: 34, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>
+                  {row.available}
+                </span>
+                <span style={{ fontFamily: FF, fontSize: 13, color: "#94a3b8" }}>/ {row.total}</span>
+                <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>avail.</span>
+              </div>
+
+              {/* ③ Pct badge — fixed 64px */}
+              <div style={{ width: 64, flexShrink: 0, display: "flex", alignItems: "center" }}>
+                <div style={{
+                  fontFamily: FF, fontSize: 13, fontWeight: 700, color: pctColor,
+                  background: pctBg, border: `1px solid ${pctBorder}`,
+                  borderRadius: 7, padding: "4px 10px", textAlign: "center" as const,
+                  lineHeight: 1.3,
+                }}>
+                  {pct}%
+                </div>
+              </div>
+
+              {/* thin divider */}
+              <div style={{ width: 1, height: 36, background: "#f1f5f9", flexShrink: 0, margin: "0 20px" }} />
+
+              {/* ④ Bar + legend — flex grow */}
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  display: "flex", height: 10, borderRadius: 6,
+                  overflow: "hidden", gap: 1.5, marginBottom: 9,
+                }}>
+                  {row.segments.map(s => (
+                    <div key={s.label} style={{ width: `${s.pct}%`, background: s.color, borderRadius: 2 }} />
+                  ))}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "4px 16px" }}>
+                  {row.segments.map(s => (
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: s.color, flexShrink: 0 }} />
+                      <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+                        {s.label}{" "}
+                        <span style={{ fontWeight: 600, color: "#475569" }}>{s.count}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1095,55 +1210,8 @@ export function Variation4Tab() {
       {/* ══ SECTION 5 — Effective Capacity ══════════════════════════════════ */}
       <div className="grid grid-cols-12 gap-4">
         <SL>Effective Capacity — Deployable Right Now</SL>
-
         <div className="col-span-12">
-          <div style={{ ...CARD }}>
-
-            {/* Shared header */}
-            <div style={{ padding: "14px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div>
-                <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Effective Capacity</p>
-                <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Fleet · Operators · Live Activity — deployable right now</p>
-              </div>
-              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", letterSpacing: "0.04em" }}>FMS · MEPS · RTSS · IMDS</span>
-            </div>
-
-            {/* Three columns */}
-            <div style={{ display: "flex", flexDirection: "row" }}>
-              {[
-                { title: "Fleet",       subtitle: "Operational readiness",           available: 59, total: 76,  segments: FLEET_SEGMENTS,      label: "AVAILABILITY" },
-                { title: "Operators",   subtitle: "Deployable workforce",            available: 29, total: 42,  segments: OPERATOR_SEGMENTS,   label: "AVAILABILITY" },
-                { title: "Live Activity", subtitle: "Current movement productivity", available: 32, total: 59,  segments: PRODUCTIVE_SEGMENTS, label: "PRODUCTIVE MIX" },
-              ].map((col, i) => (
-                <div key={col.title} style={{ flex: 1, padding: "18px 24px 20px", borderLeft: i > 0 ? "1px solid #f1f5f9" : "none", display: "flex", flexDirection: "column", gap: 14 }}>
-
-                  {/* Column title */}
-                  <div>
-                    <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>{col.title}</p>
-                    <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{col.subtitle}</p>
-                  </div>
-
-                  {/* Big number */}
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-                    <span style={{ fontFamily: FF, fontSize: 36, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{col.available}</span>
-                    <span style={{ fontFamily: FF, fontSize: 14, color: "#94a3b8" }}>/ {col.total}</span>
-                    <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b", marginLeft: 2 }}>available</span>
-                  </div>
-
-                  {/* % + segment bar */}
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
-                      <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>{col.label}</span>
-                      <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#475569" }}>{Math.round(col.available / col.total * 100)}%</span>
-                    </div>
-                    <SegmentBar segments={col.segments} />
-                  </div>
-
-                </div>
-              ))}
-            </div>
-
-          </div>
+          <EffectiveCapacityWidget />
         </div>
       </div>
 
