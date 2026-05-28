@@ -14,6 +14,7 @@ import { LicenseRenewDrawer, OperatorLicenseExpiryDrawer } from "./FMSDashboard"
 import { Variation1Tab } from "./Variation1Tab";
 import { Variation3Tab } from "./Variation3Tab";
 import { Variation4Tab } from "./Variation4Tab";
+import { Variation5Tab } from "./Variation5Tab";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
 
 const TABS = [
@@ -21,6 +22,7 @@ const TABS = [
   { id: "variation2", label: "Variation 2" },
   { id: "variation3", label: "Variation 3" },
   { id: "variation4", label: "Variation 4" },
+  { id: "variation5", label: "Variation 5" },
 ];
 
 export function CommandDashboard() {
@@ -63,7 +65,11 @@ export function CommandDashboard() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === "variation4" ? (
+      {activeTab === "variation5" ? (
+        <div className="flex-1 overflow-y-auto">
+          <Variation5Tab />
+        </div>
+      ) : activeTab === "variation4" ? (
         <div className="flex-1 overflow-y-auto">
           <Variation4Tab />
         </div>

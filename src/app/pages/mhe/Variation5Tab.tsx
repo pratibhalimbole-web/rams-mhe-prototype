@@ -137,37 +137,37 @@ const QUADRANT_DATA = [
 
 const NOTIFICATIONS = [
   {
-    id: "N1", category: "OPERATOR", time: "14:08", icon: Users, unread: true, badge: "6",
+    id: "N1", category: "OPERATOR", time: "14:08", icon: Users, unread: true, badge: "6", severity: "critical",
     title: "Sunil P. · 6 high-sev events today",
     stats: [{ value: "6", label: "High Sev" }, { value: "3", label: "Zones Hit" }, { value: "2", label: "MHEs" }],
     footerLeft: "Top Zone: Aisle B-3", footerRight: "Latest: 14:08",
   },
   {
-    id: "N2", category: "LICENSE", time: "08:00", icon: AlertCircle, unread: true, badge: "2",
+    id: "N2", category: "LICENSE", time: "08:00", icon: AlertCircle, unread: true, badge: "2", severity: "critical",
     title: "License expired · Joe Pillai (JP-003)",
     stats: [{ value: "2", label: "Expired" }, { value: "3", label: "At Risk" }, { value: "5", label: "Total" }],
     footerLeft: "Operator: JP-003", footerRight: "Status: Blocked",
   },
   {
-    id: "N3", category: "SERVICE", time: "11:42", icon: RefreshCw, unread: true, badge: "1",
+    id: "N3", category: "SERVICE", time: "11:42", icon: RefreshCw, unread: true, badge: "1", severity: "high",
     title: "Service due · MHE-22",
     stats: [{ value: "1", label: "Overdue" }, { value: "4", label: "Due Soon" }, { value: "71k", label: "Cycles" }],
     footerLeft: "Asset: MHE-22", footerRight: "Risk: Breakdown",
   },
   {
-    id: "N4", category: "INSPECTION", time: "Yday 16:20", icon: ShieldCheck, unread: true, badge: "3",
+    id: "N4", category: "INSPECTION", time: "Yday 16:20", icon: ShieldCheck, unread: true, badge: "3", severity: "critical",
     title: "RED finding open >24h · MHE-27",
     stats: [{ value: "3", label: "RED Open" }, { value: "1", label: "Reported" }, { value: "24h", label: "Open" }],
     footerLeft: "System: Hydraulic", footerRight: "By: Imran S.",
   },
   {
-    id: "N5", category: "WARRANTY", time: "—", icon: Clock, unread: true, badge: "2",
+    id: "N5", category: "WARRANTY", time: "—", icon: Clock, unread: true, badge: "2", severity: "medium",
     title: "Warranty expires <7 days · 2 assets",
     stats: [{ value: "2", label: "Expiring" }, { value: "7", label: "Days Left" }, { value: "0", label: "Renewed" }],
     footerLeft: "MHE-04 · MHE-19", footerRight: "Window Closing",
   },
   {
-    id: "N6", category: "INSPECTION", time: "W to date", icon: ShieldCheck, unread: false, badge: "3",
+    id: "N6", category: "INSPECTION", time: "W to date", icon: ShieldCheck, unread: false, badge: "3", severity: "medium",
     title: "MHE-27 · most RED findings this week",
     stats: [{ value: "3", label: "RED Found" }, { value: "2", label: "Prev Week" }, { value: "1", label: "Resolved" }],
     footerLeft: "Asset: MHE-27", footerRight: "Action: Reinspect",
@@ -851,7 +851,7 @@ function QuadrantLabels({ xAxisMap, yAxisMap }: any) {
             {c.label}
           </text>
           <text x={c.ax} y={c.ay + 13} textAnchor={c.anchor}
-            style={{ fontFamily: FF, fontSize: 8.5, fontWeight: 400, fill: "#94a3b8" }}>
+            style={{ fontFamily: FF, fontSize: 8.5, fontWeight: 400, fill: c.color, opacity: 0.7 }}>
             {c.sub}
           </text>
         </g>
@@ -943,9 +943,10 @@ function NotificationsWidget() {
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent", padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 8 } as React.CSSProperties}>
         {NOTIFICATIONS.map(n => {
           const Icon = n.icon;
+          const sevColor = (n as any).severity === "critical" ? "#dc2626" : (n as any).severity === "high" ? "#d97706" : "#94a3b8";
           return (
             <div key={n.id}
-              style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: "11px 13px", background: "#fff", display: "flex", alignItems: "flex-start", gap: 11, cursor: "default", transition: "background 0.12s", position: "relative" as const }}
+              style={{ border: "1px solid #e2e8f0", borderLeft: `3px solid ${sevColor}`, borderRadius: 8, padding: "11px 13px", background: "#fff", display: "flex", alignItems: "flex-start", gap: 11, cursor: "default", transition: "background 0.12s", position: "relative" as const }}
               onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
               onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
             >
@@ -1181,10 +1182,10 @@ function WarehousePerformanceBanner() {
   const dateStr = `${weekday}, ${day} ${month} ${year}`;
 
   const kpis = [
-    { title: "Safety",        icon: ShieldCheck, value: "84", description: "/ 100 · RTSS · MEPS"      },
-    { title: "Productivity",  icon: TrendingUp,  value: "34", description: "/ 100 · FMS · RTSS"       },
-    { title: "Efficiency",    icon: Gauge,       value: "22", description: "/ 100 · FMS · RTSS"       },
-    { title: "Pallets Moved", icon: Package,     value: "19", description: "today · active floor ops" },
+    { title: "Safety",        icon: ShieldCheck, value: 84, target: 90, delta: +2, deltaLabel: "vs yesterday", description: "shift score · RTSS · MEPS", unit: "/ 100" },
+    { title: "Productivity",  icon: TrendingUp,  value: 34, target: 70, delta: -5, deltaLabel: "vs yesterday", description: "shift avg · FMS · RTSS",    unit: "/ 100" },
+    { title: "Efficiency",    icon: Gauge,       value: 22, target: 60, delta: -3, deltaLabel: "vs yesterday", description: "shift avg · FMS · RTSS",    unit: "/ 100" },
+    { title: "Pallets Moved", icon: Package,     value: 19, target: 40, delta: +4, deltaLabel: "vs last shift", description: "this shift · active floor ops", unit: "/ 40 target" },
   ];
 
   return (
@@ -1209,23 +1210,41 @@ function WarehousePerformanceBanner() {
         </span>
       </div>
 
-      {/* KPI cards — V3 KPICard style */}
+      {/* KPI cards — V5 enhanced */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
         {kpis.map(k => {
           const Icon = k.icon;
+          const pct = Math.round((k.value / k.target) * 100);
+          const health = pct >= 80 ? { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", bar: "#22c55e" }
+                       : pct >= 55 ? { color: "#d97706", bg: "#fffbeb", border: "#fde68a", bar: "#f59e0b" }
+                       :             { color: "#dc2626", bg: "#fef2f2", border: "#fecaca", bar: "#ef4444" };
+          const isUp = k.delta > 0;
           return (
-            <div key={k.title} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 16px", background: "#fff" }}>
-              {/* Icon + title row */}
+            <div key={k.title} style={{ border: `1px solid ${health.border}`, borderRadius: 10, padding: "14px 16px", background: "#fff", borderLeft: `3px solid ${health.bar}` }}>
+              {/* Icon + title + delta */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Icon size={14} color="#475569" />
                 </div>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#64748b" }}>{k.title}</span>
+                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#64748b", flex: 1 }}>{k.title}</span>
+                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: isUp ? "#16a34a" : "#dc2626", display: "flex", alignItems: "center", gap: 2 }}>
+                  {isUp ? "▲" : "▼"} {Math.abs(k.delta)}
+                </span>
               </div>
-              {/* Value */}
-              <p style={{ fontFamily: FF, fontSize: 26, fontWeight: 700, color: "#0f172a", margin: "0 0 3px", lineHeight: 1 }}>{k.value}</p>
-              {/* Description */}
-              <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{k.description}</p>
+              {/* Value + unit */}
+              <div style={{ display: "flex", alignItems: "baseline", gap: 5, marginBottom: 4 }}>
+                <p style={{ fontFamily: FF, fontSize: 26, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{k.value}</p>
+                <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>{k.unit}</span>
+              </div>
+              {/* Progress bar vs target */}
+              <div style={{ height: 4, borderRadius: 4, background: "#f1f5f9", marginBottom: 6, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${Math.min(pct, 100)}%`, background: health.bar, borderRadius: 4, transition: "width 0.4s" }} />
+              </div>
+              {/* Description + delta label */}
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>{k.description}</p>
+                <p style={{ fontFamily: FF, fontSize: 9, color: "#cbd5e1", margin: 0 }}>{k.deltaLabel}</p>
+              </div>
             </div>
           );
         })}
@@ -1243,9 +1262,9 @@ function WarehousePerformanceBanner() {
           const pctBg     = pct >= 75 ? "#f0fdf4" : pct >= 60 ? "#fffbeb" : "#fef2f2";
           const pctBorder = pct >= 75 ? "#bbf7d0" : pct >= 60 ? "#fde68a" : "#fecaca";
           return (
-            <div key={row.name} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: "20px 20px", minHeight: 90, display: "flex", alignItems: "center", gap: 12 }}>
-              {/* Icon + name */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, width: 160 }}>
+            <div key={row.name} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 18px", display: "flex", alignItems: "center", gap: 0 }}>
+              {/* Icon + name + count + pct */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, paddingRight: 20 }}>
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Icon size={13} color="#475569" />
                 </div>
@@ -1253,33 +1272,22 @@ function WarehousePerformanceBanner() {
                   <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 1px" }}>{row.name}</p>
                   <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0, whiteSpace: "nowrap" }}>{row.sub}</p>
                 </div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginLeft: 4 }}>
+                  <span style={{ fontFamily: FF, fontSize: 22, fontWeight: 700, color: "#334155", lineHeight: 1 }}>{row.available}</span>
+                  <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>/ {row.total}</span>
+                </div>
+                <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: pctColor, background: pctBg, border: `1px solid ${pctBorder}`, borderRadius: 6, padding: "3px 8px" }}>{pct}%</div>
               </div>
-              {/* Count */}
-              <div style={{ display: "flex", alignItems: "baseline", gap: 3, flexShrink: 0 }}>
-                <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#334155", lineHeight: 1 }}>{row.available}</span>
-                <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>/ {row.total}</span>
-              </div>
-              {/* Pct badge */}
-              <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: pctColor, background: pctBg, border: `1px solid ${pctBorder}`, borderRadius: 6, padding: "2px 7px", flexShrink: 0 }}>{pct}%</div>
-
               {/* Vertical divider */}
-              <div style={{ width: 1, height: 36, background: "#e2e8f0", flexShrink: 0 }} />
-
-              {/* Bar + legend */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 1, marginBottom: 9 }}>
-                  {row.segments.map((s: any) => (
-                    <div key={s.label} style={{ width: `${s.pct}%`, background: s.color, borderRadius: 2 }} />
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: "4px 14px", flexWrap: "wrap" }}>
-                  {row.segments.map((s: any) => (
-                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
-                      <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", whiteSpace: "nowrap" }}>{s.label} <span style={{ fontWeight: 700, color: "#334155" }}>{s.count}</span></span>
-                    </div>
-                  ))}
-                </div>
+              <div style={{ width: 1, height: 40, background: "#e2e8f0", flexShrink: 0 }} />
+              {/* Breakdown columns */}
+              <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
+                {row.segments.map((s: any, i: number) => (
+                  <div key={s.label} style={{ flex: 1, paddingLeft: 16, borderLeft: i > 0 ? "1px solid #f1f5f9" : "none" }}>
+                    <p style={{ fontFamily: FF, fontSize: 20, fontWeight: 700, color: s.color, margin: "0 0 2px", lineHeight: 1 }}>{s.count}</p>
+                    <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{s.label}</p>
+                  </div>
+                ))}
               </div>
             </div>
           );
@@ -1289,7 +1297,7 @@ function WarehousePerformanceBanner() {
   );
 }
 
-export function Variation4Tab() {
+export function Variation5Tab() {
 
   return (
     <div className="space-y-6 p-8">
@@ -1302,6 +1310,34 @@ export function Variation4Tab() {
         <SL>Operational Intelligence — Critical Issues · Live Event Wire</SL>
         <div className="col-span-12" style={{ display: "flex" }}>
           <CriticalAndLiveWidget />
+        </div>
+      </div>
+
+      {/* ══ SECTION 1B — Needs Attention (Top Actions) ══════════════════════════ */}
+      <div style={{ border: "1px solid #fecaca", borderRadius: 12, background: "#fff", padding: "14px 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <AlertTriangle size={14} color="#dc2626" />
+          </div>
+          <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>Needs Attention</span>
+          <span style={{ fontFamily: FF, fontSize: 9, color: "#dc2626", fontWeight: 600, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 20, padding: "1px 8px", marginLeft: 4 }}>4 actions</span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+          {[
+            { priority: 1, label: "Ground OP-007",   reason: "5 RED incidents today · Aisle B-3",    action: "Remove from floor",  color: "#dc2626", bg: "#fef2f2", border: "#fecaca" },
+            { priority: 2, label: "Renew JP-003",    reason: "License expired · operator blocked",   action: "Start renewal",       color: "#dc2626", bg: "#fef2f2", border: "#fecaca" },
+            { priority: 3, label: "Service MHE-22",  reason: "71k cycles · overdue maintenance",     action: "Schedule service",    color: "#d97706", bg: "#fffbeb", border: "#fde68a" },
+            { priority: 4, label: "Close RED MHE-27",reason: "Finding open >24h · hydraulic fault",  action: "Assign inspector",   color: "#d97706", bg: "#fffbeb", border: "#fde68a" },
+          ].map(a => (
+            <div key={a.priority} style={{ border: `1px solid ${a.border}`, borderLeft: `3px solid ${a.color}`, borderRadius: 8, padding: "10px 12px", background: a.bg }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#fff", background: a.color, borderRadius: 4, padding: "1px 6px" }}>#{a.priority}</span>
+                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>{a.label}</span>
+              </div>
+              <p style={{ fontFamily: FF, fontSize: 9.5, color: "#64748b", margin: "0 0 8px", lineHeight: "13px" }}>{a.reason}</p>
+              <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: a.color, border: `1px solid ${a.border}`, borderRadius: 6, padding: "2px 8px", background: "#fff" }}>{a.action} →</span>
+            </div>
+          ))}
         </div>
       </div>
 
