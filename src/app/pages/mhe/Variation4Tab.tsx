@@ -599,6 +599,12 @@ function CriticalAndLiveWidget() {
             <Activity size={14} color="#475569" />
           </div>
           <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>Live Event Wire</span>
+          {/* Total pill */}
+          <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>
+            Total = 10
+          </span>
+          {/* Last 30 min */}
+          <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>last 30 min</span>
           <span style={{ marginLeft: "auto", fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#3b82f6", cursor: "pointer", padding: "3px 10px", borderRadius: 6, border: "1px solid #bfdbfe", background: "#eff6ff", whiteSpace: "nowrap" as const }}>Show All</span>
         </div>
         {/* Auto-scrolling ticker + manual scrollbar */}
@@ -1231,60 +1237,6 @@ function WarehousePerformanceBanner() {
         })}
       </div>
 
-      {/* Fleet + Operators — two horizontal capacity cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
-        {([
-          { icon: Truck,  name: "Fleet",     sub: "Operational readiness · FMS",  available: 59, total: 76, segments: FLEET_SEGMENTS    },
-          { icon: Users,  name: "Operators", sub: "Deployable workforce · MEPS",  available: 29, total: 42, segments: OPERATOR_SEGMENTS  },
-        ]).map(row => {
-          const Icon     = row.icon;
-          const pct      = Math.round((row.available / row.total) * 100);
-          const pctColor  = pct >= 75 ? "#16a34a" : pct >= 60 ? "#d97706" : "#dc2626";
-          const pctBg     = pct >= 75 ? "#f0fdf4" : pct >= 60 ? "#fffbeb" : "#fef2f2";
-          const pctBorder = pct >= 75 ? "#bbf7d0" : pct >= 60 ? "#fde68a" : "#fecaca";
-          return (
-            <div key={row.name} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: "20px 20px", minHeight: 90, display: "flex", alignItems: "center", gap: 12 }}>
-              {/* Icon + name */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, width: 160 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Icon size={13} color="#475569" />
-                </div>
-                <div>
-                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 1px" }}>{row.name}</p>
-                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0, whiteSpace: "nowrap" }}>{row.sub}</p>
-                </div>
-              </div>
-              {/* Count */}
-              <div style={{ display: "flex", alignItems: "baseline", gap: 3, flexShrink: 0 }}>
-                <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#334155", lineHeight: 1 }}>{row.available}</span>
-                <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>/ {row.total}</span>
-              </div>
-              {/* Pct badge */}
-              <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: pctColor, background: pctBg, border: `1px solid ${pctBorder}`, borderRadius: 6, padding: "2px 7px", flexShrink: 0 }}>{pct}%</div>
-
-              {/* Vertical divider */}
-              <div style={{ width: 1, height: 36, background: "#e2e8f0", flexShrink: 0 }} />
-
-              {/* Bar + legend */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 1, marginBottom: 9 }}>
-                  {row.segments.map((s: any) => (
-                    <div key={s.label} style={{ width: `${s.pct}%`, background: s.color, borderRadius: 2 }} />
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: "4px 14px", flexWrap: "wrap" }}>
-                  {row.segments.map((s: any) => (
-                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
-                      <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", whiteSpace: "nowrap" }}>{s.label} <span style={{ fontWeight: 700, color: "#334155" }}>{s.count}</span></span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -1303,6 +1255,71 @@ export function Variation4Tab() {
         <div className="col-span-12" style={{ display: "flex" }}>
           <CriticalAndLiveWidget />
         </div>
+      </div>
+
+      {/* ══ SECTION 1b — Fleet + Operators capacity cards ══════════════════════ */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {([
+          {
+            icon: Truck,  name: "Fleet",     sub: "Operational readiness · FMS",  available: 59, total: 76, segments: FLEET_SEGMENTS,
+            chip: { text: "13% capacity locked · 5 units need sign-off" },
+          },
+          {
+            icon: Users,  name: "Operators", sub: "Deployable workforce · MEPS",  available: 29, total: 42, segments: OPERATOR_SEGMENTS,
+            chip: { text: "Rotate 3 off floor · fatigue window closing" },
+          },
+        ]).map(row => {
+          const Icon      = row.icon;
+          const pct       = Math.round((row.available / row.total) * 100);
+          const pctColor  = pct >= 75 ? "#16a34a" : pct >= 60 ? "#d97706" : "#dc2626";
+          const pctBg     = pct >= 75 ? "#f0fdf4" : pct >= 60 ? "#fffbeb" : "#fef2f2";
+          const pctBorder = pct >= 75 ? "#bbf7d0" : pct >= 60 ? "#fde68a" : "#fecaca";
+          return (
+            <div key={row.name} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: 21, display: "flex", flexDirection: "column", gap: 12, background: "#fff" }}>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon size={13} color="#475569" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 1px" }}>{row.name}</p>
+                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0, whiteSpace: "nowrap" }}>{row.sub}</p>
+                </div>
+              </div>
+              {/* Count + badge + insight */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 6, paddingBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#334155", lineHeight: 1 }}>{row.available}</span>
+                  <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>/ {row.total}</span>
+                </div>
+                <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: pctColor, background: pctBg, border: `1px solid ${pctBorder}`, borderRadius: 6, padding: "2px 7px", flexShrink: 0 }}>{pct}%</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto", flexShrink: 0 }}>
+                  <AlertTriangle size={10} color="#94a3b8" />
+                  <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8" }}>{row.chip.text}</span>
+                </div>
+              </div>
+              {/* Distribution */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: 0 }}>Distribution :</p>
+                <div style={{ display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 1 }}>
+                  {row.segments.map((s: any) => (
+                    <div key={s.label} style={{ width: `${s.pct}%`, background: s.color, borderRadius: 2 }} />
+                  ))}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px" }}>
+                  {row.segments.map((s: any) => (
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
+                      <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", whiteSpace: "nowrap" }}>
+                        {s.label} <span style={{ fontWeight: 700, color: "#334155" }}>{s.count}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* ══ SECTION 2 — Three Pillar Trend + Notifications */}

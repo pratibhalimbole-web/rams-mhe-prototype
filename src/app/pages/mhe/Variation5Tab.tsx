@@ -1220,7 +1220,7 @@ function WarehousePerformanceBanner() {
                        :             { color: "#dc2626", bg: "#fef2f2", border: "#fecaca", bar: "#ef4444" };
           const isUp = k.delta > 0;
           return (
-            <div key={k.title} style={{ border: `1px solid ${health.border}`, borderRadius: 10, padding: "14px 16px", background: "#fff", borderLeft: `3px solid ${health.bar}` }}>
+            <div key={k.title} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 16px", background: "#fff" }}>
               {/* Icon + title + delta */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
