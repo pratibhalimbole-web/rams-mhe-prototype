@@ -422,18 +422,20 @@ function SegmentBar({ segments }: { segments: { label: string; pct: number; coun
 function QuadrantTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
+  const cat = qdCategory(d.x, d.y);
+  const color = qdColor(d.x, d.y);
+  const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
   return (
-    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 13px", boxShadow: "0 4px 14px rgba(0,0,0,0.10)", minWidth: 160, fontFamily: FF }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 7px" }}>{d.name}</p>
-      {[
-        ["Productivity", `${d.x}%`],
-        ["Safety Score", `${d.y}`],
-        ["Utilization",  `${d.z}%`],
-        ["Incidents",    `${d.incidents}`],
-      ].map(([k, v]) => (
-        <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 3 }}>
-          <span style={{ fontSize: 10, color: "#64748b" }}>{k}</span>
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a" }}>{v}</span>
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 13px", boxShadow: "0 4px 14px rgba(0,0,0,0.10)", minWidth: 170, fontFamily: FF }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{d.name}</span>
+        <span style={{ fontSize: 10, color: "#94a3b8", marginLeft: 2 }}>{catLabel}</span>
+      </div>
+      {[["Productivity", d.x], ["Safety", d.y]].map(([k, v]) => (
+        <div key={String(k)} style={{ display: "flex", justifyContent: "space-between", gap: 24, marginBottom: 3 }}>
+          <span style={{ fontSize: 11, color: "#64748b" }}>{k}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>{v}</span>
         </div>
       ))}
     </div>
@@ -446,6 +448,11 @@ const PILLAR_LINES: [string, string, string][] = [
   ["efficiency", "Efficiency (FMS · RTSS)",  "#60a5fa"],
   ["compliance", "Compliance (MEPS · IMDS)", "#93c5fd"],
 ];
+const PILLAR_STATS: Record<string, { value: number; delta: number }> = {
+  safety:     { value: 88, delta: -4.19 },
+  efficiency: { value: 47, delta: -0.93 },
+  compliance: { value: 21, delta: +0.1  },
+};
 
 function ThreePillarTrendWidget() {
   const [hoveredLine, setHoveredLine] = useState<string | null>(null);
@@ -491,17 +498,23 @@ function ThreePillarTrendWidget() {
       </div>
 
       {/* Legend — hover to dim other lines */}
-      <div style={{ display: "flex", gap: 16, padding: "10px 20px 20px", flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "center" }}>
-        {PILLAR_LINES.map(([key, label, color]) => (
-          <span key={key}
-            style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: FF, fontSize: 11, color: hoveredLine === null || hoveredLine === key ? "#64748b" : "#cbd5e1", cursor: "default", transition: "color 0.15s" }}
-            onMouseEnter={() => setHoveredLine(key)}
-            onMouseLeave={() => setHoveredLine(null)}
-          >
-            <span style={{ width: 8, height: 8, background: color, display: "inline-block", borderRadius: 2, opacity: hoveredLine === null || hoveredLine === key ? 1 : 0.25, transition: "opacity 0.15s", flexShrink: 0 }} />
-            {label}
-          </span>
-        ))}
+      <div style={{ display: "flex", gap: 20, padding: "10px 20px 20px", flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "center" }}>
+        {PILLAR_LINES.map(([key, label, color]) => {
+          const { value, delta } = PILLAR_STATS[key];
+          const active = hoveredLine === null || hoveredLine === key;
+          return (
+            <span key={key}
+              style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: FF, cursor: "default", transition: "opacity 0.15s", opacity: active ? 1 : 0.3 }}
+              onMouseEnter={() => setHoveredLine(key)}
+              onMouseLeave={() => setHoveredLine(null)}
+            >
+              <span style={{ width: 8, height: 8, background: color, display: "inline-block", borderRadius: 2, flexShrink: 0 }} />
+              <span style={{ fontSize: 11, color: "#64748b" }}>{label}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{value}</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: delta < 0 ? "#ef4444" : "#16a34a" }}>{delta > 0 ? "+" : ""}{delta}</span>
+            </span>
+          );
+        })}
       </div>
 
     </div>
@@ -815,14 +828,244 @@ function qdColor(x: number, y: number) {
 
 // ─── Custom scatter dot ───────────────────────────────────────────────────────
 function QuadrantDot(props: any) {
-  const { cx, cy, payload, hoveredCategory } = props;
+  const { cx, cy, payload, hoveredCategory, hoveredDot, setHoveredDot } = props;
   if (cx === undefined || cy === undefined) return null;
-  const cat   = qdCategory(payload.x, payload.y);
+  const cat = qdCategory(payload.x, payload.y);
   const color = qdColor(payload.x, payload.y);
-  const dim   = hoveredCategory !== null && hoveredCategory !== cat;
+  const isHovered = hoveredDot === payload.name;
+  const catDimmed = hoveredCategory !== null && hoveredCategory !== cat;
+  const dim = catDimmed || (hoveredDot !== null && !isHovered);
+  const r = isHovered ? 6 : 4;
+  const opacity = dim ? 0.12 : 1;
   return (
-    <circle cx={cx} cy={cy} r={4} fill={color} stroke={color} strokeWidth={1.5}
-      fillOpacity={dim ? 0.15 : 1} strokeOpacity={dim ? 0.15 : 1} />
+    <g>
+      {isHovered && (
+        <circle cx={cx} cy={cy} r={13} fill={color} fillOpacity={0.15} style={{ pointerEvents: "none" }} />
+      )}
+      <circle cx={cx} cy={cy} r={r} fill={color} stroke="#fff" strokeWidth={isHovered ? 1.5 : 0}
+        fillOpacity={opacity} strokeOpacity={opacity} style={{ pointerEvents: "none" }} />
+      {/* Invisible hit area for reliable mouse events */}
+      <circle cx={cx} cy={cy} r={14} fill="transparent"
+        onMouseEnter={() => setHoveredDot?.(payload.name)}
+        onMouseLeave={() => setHoveredDot?.(null)}
+        style={{ cursor: "default" }} />
+    </g>
+  );
+}
+
+// ─── Widget: Fleet · Effective Available ─────────────────────────────────────
+const FLEET_UNITS = [
+  { id: "MHE-01", status: "available"   },
+  { id: "MHE-03", status: "available"   },
+  { id: "MHE-07", status: "available"   },
+  { id: "MHE-12", status: "maintenance" },
+  { id: "MHE-15", status: "available"   },
+  { id: "MHE-19", status: "available"   },
+  { id: "MHE-22", status: "available"   },
+];
+
+function FleetEffectiveWidget() {
+  const total       = FLEET_UNITS.length;
+  const available   = FLEET_UNITS.filter(u => u.status === "available").length;
+  const maintenance = FLEET_UNITS.filter(u => u.status === "maintenance").length;
+  const service     = FLEET_UNITS.filter(u => u.status === "service").length;
+  const warranty    = 0;
+  const pct         = Math.round((available / total) * 100);
+  const target      = 85;
+
+  const rows = [
+    { label: "Total fleet",       val: total,        display: `${total}`,        barPct: 100,                        barColor: "#e2e8f0", bold: false },
+    { label: "Under maintenance", val: -maintenance, display: `-${maintenance}`, barPct: (maintenance / total) * 100, barColor: "#cbd5e1", bold: false },
+    { label: "Service overdue",   val: -service,     display: `-${service}`,     barPct: (service / total) * 100,     barColor: "#cbd5e1", bold: false },
+    { label: "Warranty Expiry",   val: warranty,     display: `${warranty}`,     barPct: 0,                           barColor: "#cbd5e1", bold: false },
+    { label: "= Available",       val: available,    display: `${available}`,    barPct: (available / total) * 100,   barColor: "#16a34a", bold: true  },
+  ];
+
+  return (
+    <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
+
+      {/* Header */}
+      <div style={{ padding: "14px 16px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Fleet · Effective Available</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Total → minus maintenance, service, warranty</p>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+
+        {/* Hero + Distribution bar side by side */}
+        <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+
+          {/* KPI */}
+          <div style={{ flexShrink: 0, paddingRight: 14 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 1 }}>
+              <span style={{ fontFamily: FF, fontSize: 48, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{available}</span>
+              <span style={{ fontFamily: FF, fontSize: 13, color: "#94a3b8" }}>/{total}</span>
+            </div>
+            <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>units deployable</span>
+          </div>
+
+          {/* Vertical divider */}
+          <div style={{ width: 1, background: "#e2e8f0", flexShrink: 0, alignSelf: "stretch" }} />
+
+          {/* Distribution bar */}
+          <div style={{ flex: 1, paddingLeft: 14, paddingTop: 4, display: "flex", flexDirection: "column", gap: 0 }}>
+            <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 4px" }}>Readiness :</p>
+
+            {/* Target label above marker */}
+            <div style={{ position: "relative" as const, height: 22, marginBottom: 2 }}>
+              <div style={{ position: "absolute" as const, left: `${target}%`, transform: "translateX(-50%)", background: pct >= target ? "#f0fdf4" : "#f1f5f9", border: `1px solid ${pct >= target ? "#bbf7d0" : "#e2e8f0"}`, borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap" as const, display: "flex", alignItems: "center", gap: 3 }}>
+                {pct >= target && <span style={{ fontFamily: FF, fontSize: 9, color: "#16a34a" }}>✓</span>}
+                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: pct >= target ? "#15803d" : "#334155" }}>{target}%</span>
+                <span style={{ fontFamily: FF, fontSize: 9, color: pct >= target ? "#16a34a" : "#94a3b8" }}>target</span>
+              </div>
+            </div>
+
+            {/* Bar */}
+            <div style={{ position: "relative" as const, height: 7, borderRadius: 4, background: "#f5f3f3" }}>
+              <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pct >= target ? "#16a34a" : "#1b59f8", borderRadius: 2 }} />
+              <div style={{ position: "absolute" as const, left: `${target}%`, top: -3, bottom: -3, width: 4, background: "#fff", borderRadius: 8, transform: "translateX(-50%)", boxShadow: "0 0 0 1px #e2e8f0" }} />
+            </div>
+
+            {/* Current + gap */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 5 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ width: 7, height: 7, borderRadius: 2, background: pct >= target ? "#16a34a" : "#1b59f8", flexShrink: 0 }} />
+                <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#0f172a" }}>{pct}%</span>
+                <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>now</span>
+              </div>
+              <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: pct >= target ? "#16a34a" : "#ef4444" }}>
+                {pct >= target ? `+${pct - target}pp above` : `−${target - pct}pp short`}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Data rows — label gray, value dark */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+          {rows.map((r, i) => (
+            <div key={r.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 0", borderTop: i === 0 ? "none" : "1px solid #f1f5f9" }}>
+              <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8", fontWeight: 400 }}>{r.label}</span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: r.bold ? 800 : 600, color: r.bold ? "#16a34a" : "#0f172a" }}>{r.display}</span>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── Widget: Pallet Waste Index ───────────────────────────────────────────────
+const WASTE_SOURCES = [
+  { label: "Empty movement", minutes: 222, contrib: 0.54, color: "#3b82f6" },
+  { label: "Congestion",     minutes: 162, contrib: 0.39, color: "#f97316" },
+  { label: "Idle w/o load",  minutes: 138, contrib: 0.33, color: "#f59e0b" },
+  { label: "Idle-with-load", minutes: 84,  contrib: 0.20, color: "#ef4444" },
+];
+const WASTE_TOTAL_MIN = 606;
+const WASTE_PALLETS   = 412;
+const WASTE_VALUE     = 1.47;
+
+function PalletWasteWidget() {
+  const norm28 = 1.32, bestDay = 0.91;
+  const vsNorm = +(WASTE_VALUE - norm28).toFixed(2);
+  const vsBest = +(WASTE_VALUE - bestDay).toFixed(2);
+
+  return (
+    <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
+
+      {/* Header */}
+      <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Package size={13} color="#475569" />
+          </div>
+          <div>
+            <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: 0 }}>Pallet Waste Index</p>
+            <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Waste minutes carried per pallet moved · {WASTE_PALLETS} pallets today</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "3px 9px" }}>
+          <TrendingUp size={10} color="#64748b" />
+          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#475569" }}>+0.15 vs yesterday</span>
+        </div>
+      </div>
+
+      {/* Body: two columns */}
+      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+
+        {/* Left — score + benchmarks */}
+        <div style={{ width: 190, flexShrink: 0, borderRight: HDR_BORDER, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 0 }}>
+
+          {/* Score */}
+          <p style={{ fontFamily: FF, fontSize: 50, fontWeight: 800, color: "#0f172a", lineHeight: 1, margin: "0 0 3px" }}>{WASTE_VALUE}</p>
+          <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.09em", textTransform: "uppercase" as const, margin: "0 0 18px" }}>MIN / PALLET</p>
+
+          {/* Benchmark rows */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {[
+              { label: "28-day norm", val: norm28, delta: `+${vsNorm}` },
+              { label: "Best day",    val: bestDay, delta: `+${vsBest}` },
+            ].map((b, i) => (
+              <div key={b.label} style={{ padding: "10px 0", borderTop: i === 0 ? "1px solid #f1f5f9" : "1px solid #f1f5f9" }}>
+                <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#94a3b8", margin: "0 0 4px", letterSpacing: "0.05em" }}>{b.label}</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+                  <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 700, color: "#334155" }}>{b.val}</span>
+                  <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#94a3b8" }}>{b.delta} above</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Formula */}
+          <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid #f1f5f9" }}>
+            <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "0 0 3px" }}>{WASTE_TOTAL_MIN} min waste ÷ {WASTE_PALLETS} pallets</p>
+            <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#475569", margin: 0 }}>= {WASTE_VALUE} min / pallet</p>
+          </div>
+        </div>
+
+        {/* Right — source breakdown */}
+        <div style={{ flex: 1, padding: "16px 18px", display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", textTransform: "uppercase" as const, margin: "0 0 14px" }}>Waste sources · ranked by impact</p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 13, flex: 1 }}>
+            {WASTE_SOURCES.map((s, i) => {
+              const barPct = (s.minutes / WASTE_TOTAL_MIN) * 100;
+              const barColor = i === 0 ? "#475569" : "#cbd5e1";
+              return (
+                <div key={s.label}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                    <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#cbd5e1", width: 16, flexShrink: 0 }}>#{i + 1}</span>
+                    <span style={{ fontFamily: FF, fontSize: 11, color: "#334155", flex: 1 }}>{s.label}</span>
+                    <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{s.contrib}</span>
+                    <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", width: 42, textAlign: "right" as const, flexShrink: 0 }}>{s.minutes} min</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 24, flexShrink: 0 }} />
+                    <div style={{ flex: 1, height: 5, borderRadius: 3, background: "#f1f5f9" }}>
+                      <div style={{ width: `${barPct}%`, height: "100%", background: barColor, borderRadius: 3 }} />
+                    </div>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", width: 28, textAlign: "right" as const, flexShrink: 0 }}>{barPct.toFixed(0)}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, marginTop: 12, borderTop: "1px solid #f1f5f9" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <AlertTriangle size={11} color="#94a3b8" />
+              <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>Normal · waste rising</span>
+            </div>
+            <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", fontStyle: "italic" }}>empty movement is primary driver</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -876,6 +1119,7 @@ const QD_LEGEND = [
 
 function OperatorQuadrantWidget() {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [hoveredDot, setHoveredDot] = useState<string | null>(null);
 
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
@@ -904,7 +1148,7 @@ function OperatorQuadrantWidget() {
             <ReferenceLine x={50} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4 3" />
             <ReferenceLine y={50} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4 3" />
             <ReTooltip content={<QuadrantTooltip />} cursor={false} />
-            <Scatter data={QUADRANT_DATA} shape={(p: any) => <QuadrantDot {...p} hoveredCategory={hoveredCategory} />} />
+            <Scatter data={QUADRANT_DATA} shape={(p: any) => <QuadrantDot {...p} hoveredCategory={hoveredCategory} hoveredDot={hoveredDot} setHoveredDot={setHoveredDot} />} />
             <Customized component={QuadrantLabels} />
           </ScatterChart>
         </ResponsiveContainer>
@@ -1348,6 +1592,19 @@ export function Variation4Tab() {
           </div>
           <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
             <RollCallWidget />
+          </div>
+        </div>
+      </div>
+
+      {/* ══ SECTION 4 — Fleet Intelligence · Pallet Waste ═══════════════════════ */}
+      <div className="grid grid-cols-12 gap-4">
+        <SL>Fleet Intelligence · Operational Efficiency</SL>
+        <div className="col-span-12" style={{ display: "flex", gap: 16, alignItems: "stretch", height: 400 }}>
+          <div style={{ flex: "0 0 36%", display: "flex" }}>
+            <FleetEffectiveWidget />
+          </div>
+          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
+            <PalletWasteWidget />
           </div>
         </div>
       </div>
