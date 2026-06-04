@@ -139,38 +139,72 @@ const NOTIFICATIONS = [
   {
     id: "N1", category: "OPERATOR", time: "14:08", icon: Users, unread: true, badge: "6",
     title: "Sunil P. · 6 high-sev events today",
-    stats: [{ value: "6", label: "High Sev" }, { value: "3", label: "Zones Hit" }, { value: "2", label: "MHEs" }],
     footerLeft: "Top Zone: Aisle B-3", footerRight: "Latest: 14:08",
   },
   {
     id: "N2", category: "LICENSE", time: "08:00", icon: AlertCircle, unread: true, badge: "2",
     title: "License expired · Joe Pillai (JP-003)",
-    stats: [{ value: "2", label: "Expired" }, { value: "3", label: "At Risk" }, { value: "5", label: "Total" }],
     footerLeft: "Operator: JP-003", footerRight: "Status: Blocked",
   },
   {
     id: "N3", category: "SERVICE", time: "11:42", icon: RefreshCw, unread: true, badge: "1",
-    title: "Service due · MHE-22",
-    stats: [{ value: "1", label: "Overdue" }, { value: "4", label: "Due Soon" }, { value: "71k", label: "Cycles" }],
+    title: "Service due · MHE-22 · 71k cycles",
     footerLeft: "Asset: MHE-22", footerRight: "Risk: Breakdown",
   },
   {
     id: "N4", category: "INSPECTION", time: "Yday 16:20", icon: ShieldCheck, unread: true, badge: "3",
     title: "RED finding open >24h · MHE-27",
-    stats: [{ value: "3", label: "RED Open" }, { value: "1", label: "Reported" }, { value: "24h", label: "Open" }],
     footerLeft: "System: Hydraulic", footerRight: "By: Imran S.",
   },
   {
     id: "N5", category: "WARRANTY", time: "—", icon: Clock, unread: true, badge: "2",
-    title: "Warranty expires <7 days · 2 assets",
-    stats: [{ value: "2", label: "Expiring" }, { value: "7", label: "Days Left" }, { value: "0", label: "Renewed" }],
+    title: "Warranty expires <7 days · MHE-04, MHE-19",
     footerLeft: "MHE-04 · MHE-19", footerRight: "Window Closing",
   },
   {
     id: "N6", category: "INSPECTION", time: "W to date", icon: ShieldCheck, unread: false, badge: "3",
     title: "MHE-27 · most RED findings this week",
-    stats: [{ value: "3", label: "RED Found" }, { value: "2", label: "Prev Week" }, { value: "1", label: "Resolved" }],
     footerLeft: "Asset: MHE-27", footerRight: "Action: Reinspect",
+  },
+  {
+    id: "N7", category: "SERVICE", time: "09:15", icon: RefreshCw, unread: false, badge: "1",
+    title: "Scheduled service overdue · MHE-31",
+    footerLeft: "Last service: 42 days ago", footerRight: "Priority: High",
+  },
+  {
+    id: "N8", category: "OPERATOR", time: "13:30", icon: Users, unread: true, badge: "4",
+    title: "Anil K. · fatigue threshold approaching",
+    footerLeft: "Shift: 7.2 hrs active", footerRight: "Zone: C-2",
+  },
+  {
+    id: "N9", category: "LICENSE", time: "07:45", icon: AlertCircle, unread: false, badge: "1",
+    title: "License expiring in 3 days · Ravi M.",
+    footerLeft: "Operator: RM-011", footerRight: "Expires: Jun 07",
+  },
+  {
+    id: "N10", category: "SERVICE", time: "10:00", icon: RefreshCw, unread: false, badge: "2",
+    title: "Hydraulic fluid low · MHE-07",
+    footerLeft: "Asset: MHE-07", footerRight: "Risk: Leak",
+  },
+  {
+    id: "N11", category: "INSPECTION", time: "Yday 09:00", icon: ShieldCheck, unread: false, badge: "1",
+    title: "Safety inspection due · MHE-15",
+    footerLeft: "Last: 28 days ago", footerRight: "By: Ops Team",
+  },
+  {
+    id: "N12", category: "WARRANTY", time: "—", icon: Clock, unread: false, badge: "1",
+    title: "Warranty renewal window open · MHE-08",
+    footerLeft: "Expires: Jun 30", footerRight: "Action: Renew",
+  },
+  {
+    id: "N13", category: "OPERATOR", time: "12:55", icon: Users, unread: false, badge: "2",
+    title: "Geeta N. · 2 near-miss events flagged",
+    footerLeft: "Zone: Aisle D-1", footerRight: "Review required",
+  },
+  {
+    id: "N14", category: "SERVICE", time: "08:30", icon: RefreshCw, unread: false, badge: "1",
+    title: "Battery replacement due · MHE-20",
+    footerLeft: "Cycle count: 1,240", footerRight: "Risk: Downtime",
   },
 ];
 
@@ -1221,7 +1255,7 @@ function NotificationsWidget() {
   const unreadCount = NOTIFICATIONS.filter(n => n.unread).length;
   const DOT_COLORS = ["#475569", "#94a3b8", "#cbd5e1"];
   return (
-    <div style={{ ...CARD, flex: 1 }}>
+    <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
 
       {/* Header */}
       <div style={{ padding: "16px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1230,7 +1264,7 @@ function NotificationsWidget() {
           <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Operator events · license · warranty · service due · RED findings</p>
         </div>
         <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>
-          Total = 06
+          Total = 14
         </span>
       </div>
 
@@ -1240,32 +1274,22 @@ function NotificationsWidget() {
           const Icon = n.icon;
           return (
             <div key={n.id}
-              style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: "11px 13px", background: "#fff", display: "flex", alignItems: "flex-start", gap: 11, cursor: "default", transition: "background 0.12s", position: "relative" as const }}
+              style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: "11px 13px", background: "#fff", display: "flex", flexDirection: "column", gap: 5, cursor: "default", transition: "background 0.12s" }}
               onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
               onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
             >
-              {/* Icon box */}
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Icon size={14} color="#64748b" />
+              {/* Row 1: icon + category + time + badge */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Icon size={11} color="#64748b" style={{ flexShrink: 0 }} />
+                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.07em", textTransform: "uppercase" as const }}>{n.category}</span>
+                <span style={{ color: "#e2e8f0", fontSize: 9 }}>·</span>
+                <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{n.time}</span>
+                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", marginLeft: "auto" }}>{n.badge}</span>
               </div>
-
-              {/* Content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                {/* Category + time */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.07em", textTransform: "uppercase" as const }}>{n.category}</span>
-                    <span style={{ color: "#e2e8f0", fontSize: 9 }}>·</span>
-                    <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{n.time}</span>
-                  </div>
-                  {/* Badge */}
-                  <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>{n.badge}</span>
-                </div>
-                {/* Title */}
-                <p style={{ fontFamily: FF, fontSize: 11, fontWeight: n.unread ? 600 : 500, color: "#0f172a", margin: "0 0 5px", lineHeight: "15px" }}>{n.title}</p>
-                {/* Footer detail */}
-                <p style={{ fontFamily: FF, fontSize: 9.5, color: "#94a3b8", margin: 0, lineHeight: "13px" }}>{n.footerLeft} · {n.footerRight}</p>
-              </div>
+              {/* Row 2: title — aligned to icon left */}
+              <p style={{ fontFamily: FF, fontSize: 11, fontWeight: n.unread ? 600 : 500, color: "#0f172a", margin: 0, lineHeight: "15px" }}>{n.title}</p>
+              {/* Row 3: footer — aligned to icon left */}
+              <p style={{ fontFamily: FF, fontSize: 9.5, color: "#94a3b8", margin: 0, lineHeight: "13px" }}>{n.footerLeft} · {n.footerRight}</p>
             </div>
           );
         })}
