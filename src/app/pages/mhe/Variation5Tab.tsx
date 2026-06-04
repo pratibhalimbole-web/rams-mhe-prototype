@@ -1341,6 +1341,68 @@ export function Variation5Tab() {
         </div>
       </div>
 
+      {/* ══ SECTION 1c — Fleet + Operators capacity cards ══════════════════════ */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        {([
+          {
+            icon: Truck,  name: "Fleet",     sub: "Operational readiness · FMS",  available: 59, total: 76, segments: FLEET_SEGMENTS,
+            chip: { text: "13% capacity locked · 5 units need sign-off" },
+          },
+          {
+            icon: Users,  name: "Operators", sub: "Deployable workforce · MEPS",  available: 29, total: 42, segments: OPERATOR_SEGMENTS,
+            chip: { text: "Rotate 3 off floor · fatigue window closing" },
+          },
+        ]).map(row => {
+          const Icon      = row.icon;
+          const pct       = Math.round((row.available / row.total) * 100);
+          const pctColor  = pct >= 75 ? "#16a34a" : pct >= 60 ? "#d97706" : "#dc2626";
+          const pctBg     = pct >= 75 ? "#f0fdf4" : pct >= 60 ? "#fffbeb" : "#fef2f2";
+          const pctBorder = pct >= 75 ? "#bbf7d0" : pct >= 60 ? "#fde68a" : "#fecaca";
+          return (
+            <div key={row.name} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: 21, display: "flex", flexDirection: "column", gap: 12, background: "#fff" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon size={13} color="#475569" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 1px" }}>{row.name}</p>
+                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0, whiteSpace: "nowrap" }}>{row.sub}</p>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 6, paddingBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#334155", lineHeight: 1 }}>{row.available}</span>
+                  <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>/ {row.total}</span>
+                </div>
+                <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: pctColor, background: pctBg, border: `1px solid ${pctBorder}`, borderRadius: 6, padding: "2px 7px", flexShrink: 0 }}>{pct}%</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto", flexShrink: 0 }}>
+                  <AlertTriangle size={10} color="#94a3b8" />
+                  <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8" }}>{row.chip.text}</span>
+                </div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: 0 }}>Distribution :</p>
+                <div style={{ display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 1 }}>
+                  {row.segments.map((s: any) => (
+                    <div key={s.label} style={{ width: `${s.pct}%`, background: s.color, borderRadius: 2 }} />
+                  ))}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px" }}>
+                  {row.segments.map((s: any) => (
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
+                      <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", whiteSpace: "nowrap" }}>
+                        {s.label} <span style={{ fontWeight: 700, color: "#334155" }}>{s.count}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {/* ══ SECTION 2 — Three Pillar Trend + Notifications */}
       <div className="grid grid-cols-12 gap-4">
         <SL>Trend Intelligence · Notifications — FMS · MEPS · RTSS · IMDS</SL>

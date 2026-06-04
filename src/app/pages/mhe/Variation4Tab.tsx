@@ -901,7 +901,7 @@ function FleetEffectiveWidget() {
           {/* KPI */}
           <div style={{ flexShrink: 0, paddingRight: 14 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 1 }}>
-              <span style={{ fontFamily: FF, fontSize: 48, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{available}</span>
+              <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{available}</span>
               <span style={{ fontFamily: FF, fontSize: 13, color: "#94a3b8" }}>/{total}</span>
             </div>
             <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>units deployable</span>
@@ -960,10 +960,10 @@ function FleetEffectiveWidget() {
 
 // ─── Widget: Pallet Waste Index ───────────────────────────────────────────────
 const WASTE_SOURCES = [
-  { label: "Empty movement", minutes: 222, contrib: 0.54, color: "#3b82f6" },
-  { label: "Congestion",     minutes: 162, contrib: 0.39, color: "#f97316" },
-  { label: "Idle w/o load",  minutes: 138, contrib: 0.33, color: "#f59e0b" },
-  { label: "Idle-with-load", minutes: 84,  contrib: 0.20, color: "#ef4444" },
+  { label: "Empty movement", minutes: 222, contrib: 0.54, color: "#1b59f8" },
+  { label: "Congestion",     minutes: 162, contrib: 0.39, color: "#60a5fa" },
+  { label: "Idle w/o load",  minutes: 138, contrib: 0.33, color: "#93c5fd" },
+  { label: "Idle-with-load", minutes: 84,  contrib: 0.20, color: "#bfdbfe" },
 ];
 const WASTE_TOTAL_MIN = 606;
 const WASTE_PALLETS   = 412;
@@ -973,98 +973,143 @@ function PalletWasteWidget() {
   const norm28 = 1.32, bestDay = 0.91;
   const vsNorm = +(WASTE_VALUE - norm28).toFixed(2);
   const vsBest = +(WASTE_VALUE - bestDay).toFixed(2);
+  const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
 
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
 
       {/* Header */}
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Package size={13} color="#475569" />
-          </div>
-          <div>
-            <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: 0 }}>Pallet Waste Index</p>
-            <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Waste minutes carried per pallet moved · {WASTE_PALLETS} pallets today</p>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "3px 9px" }}>
-          <TrendingUp size={10} color="#64748b" />
-          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#475569" }}>+0.15 vs yesterday</span>
+        <div>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Pallet Waste Index</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Waste minutes carried per pallet moved · {WASTE_PALLETS} pallets today</p>
         </div>
       </div>
 
-      {/* Body: two columns */}
-      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+      {/* Body */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "16px 18px 20px", gap: 14, overflow: "visible" }}>
 
-        {/* Left — score + benchmarks */}
-        <div style={{ width: 190, flexShrink: 0, borderRight: HDR_BORDER, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 0 }}>
+      {/* Score row */}
+      <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexShrink: 0 }}>
+        <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{WASTE_VALUE}</span>
+        <span style={{ fontFamily: FF, fontSize: 12, color: "#94a3b8" }}>/ MIN / PALLET</span>
+        <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#ef4444" }}>↑ +0.15 vs yesterday</span>
+      </div>
 
-          {/* Score */}
-          <p style={{ fontFamily: FF, fontSize: 50, fontWeight: 800, color: "#0f172a", lineHeight: 1, margin: "0 0 3px" }}>{WASTE_VALUE}</p>
-          <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.09em", textTransform: "uppercase" as const, margin: "0 0 18px" }}>MIN / PALLET</p>
+      {/* Waste sources */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, paddingTop: 12, paddingBottom: 12 }}>
+        <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: 0 }}>Waste sources · ranked by impact</p>
 
-          {/* Benchmark rows */}
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {[
-              { label: "28-day norm", val: norm28, delta: `+${vsNorm}` },
-              { label: "Best day",    val: bestDay, delta: `+${vsBest}` },
-            ].map((b, i) => (
-              <div key={b.label} style={{ padding: "10px 0", borderTop: i === 0 ? "1px solid #f1f5f9" : "1px solid #f1f5f9" }}>
-                <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#94a3b8", margin: "0 0 4px", letterSpacing: "0.05em" }}>{b.label}</p>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
-                  <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 700, color: "#334155" }}>{b.val}</span>
-                  <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#94a3b8" }}>{b.delta} above</span>
-                </div>
-              </div>
+        {/* Segmented bar with hover tooltip */}
+        <div style={{ position: "relative" as const }}>
+          <div style={{ height: 12, borderRadius: 4, display: "flex", gap: 1, overflow: "hidden" }}>
+            {WASTE_SOURCES.map((s) => (
+              <div
+                key={s.label}
+                style={{ flex: s.minutes, height: "100%", background: s.color, cursor: "pointer", transition: "opacity 0.15s", opacity: hoveredSegment && hoveredSegment !== s.label ? 0.45 : 1 }}
+                onMouseEnter={() => setHoveredSegment(s.label)}
+                onMouseLeave={() => setHoveredSegment(null)}
+              />
             ))}
           </div>
-
-          {/* Formula */}
-          <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid #f1f5f9" }}>
-            <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "0 0 3px" }}>{WASTE_TOTAL_MIN} min waste ÷ {WASTE_PALLETS} pallets</p>
-            <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#475569", margin: 0 }}>= {WASTE_VALUE} min / pallet</p>
-          </div>
-        </div>
-
-        {/* Right — source breakdown */}
-        <div style={{ flex: 1, padding: "16px 18px", display: "flex", flexDirection: "column", minWidth: 0 }}>
-          <p style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", textTransform: "uppercase" as const, margin: "0 0 14px" }}>Waste sources · ranked by impact</p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 13, flex: 1 }}>
-            {WASTE_SOURCES.map((s, i) => {
-              const barPct = (s.minutes / WASTE_TOTAL_MIN) * 100;
-              const barColor = i === 0 ? "#475569" : "#cbd5e1";
-              return (
-                <div key={s.label}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                    <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#cbd5e1", width: 16, flexShrink: 0 }}>#{i + 1}</span>
-                    <span style={{ fontFamily: FF, fontSize: 11, color: "#334155", flex: 1 }}>{s.label}</span>
-                    <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{s.contrib}</span>
-                    <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", width: 42, textAlign: "right" as const, flexShrink: 0 }}>{s.minutes} min</span>
+          {/* Tooltip */}
+          {hoveredSegment && (() => {
+            const s = WASTE_SOURCES.find(x => x.label === hoveredSegment)!;
+            const pct = ((s.minutes / WASTE_TOTAL_MIN) * 100).toFixed(0);
+            const idx = WASTE_SOURCES.indexOf(s);
+            const offsetPct = WASTE_SOURCES.slice(0, idx).reduce((a, x) => a + x.minutes, 0) / WASTE_TOTAL_MIN * 100 + (s.minutes / WASTE_TOTAL_MIN * 100) / 2;
+            return (
+              <div style={{ position: "absolute" as const, bottom: "calc(100% + 6px)", left: `${offsetPct}%`, transform: "translateX(-50%)", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", whiteSpace: "nowrap" as const, zIndex: 10, fontFamily: FF, pointerEvents: "none" as const }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>{s.label}</span>
+                </div>
+                <div style={{ display: "flex", gap: 12 }}>
+                  <div>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", margin: "0 0 2px" }}>MINUTES</p>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0 }}>{s.minutes}</p>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ width: 24, flexShrink: 0 }} />
-                    <div style={{ flex: 1, height: 5, borderRadius: 3, background: "#f1f5f9" }}>
-                      <div style={{ width: `${barPct}%`, height: "100%", background: barColor, borderRadius: 3 }} />
-                    </div>
-                    <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", width: 28, textAlign: "right" as const, flexShrink: 0 }}>{barPct.toFixed(0)}%</span>
+                  <div>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", margin: "0 0 2px" }}>SHARE</p>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0 }}>{pct}%</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", margin: "0 0 2px" }}>CONTRIB</p>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0 }}>{s.contrib}</p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })()}
+        </div>
 
-          {/* Footer */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, marginTop: 12, borderTop: "1px solid #f1f5f9" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <AlertTriangle size={11} color="#94a3b8" />
-              <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>Normal · waste rising</span>
+        {/* Legend — single row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          {WASTE_SOURCES.map((s) => (
+            <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
+              <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>{s.label}</span>
             </div>
-            <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", fontStyle: "italic" }}>empty movement is primary driver</span>
-          </div>
+          ))}
         </div>
       </div>
+
+      {/* Stats row: Total min | 28-day norm | Best day */}
+      <div style={{ display: "flex", alignItems: "stretch", padding: "12px 0", flexShrink: 0 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "#94a3b8" }}>Total min</span>
+          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{WASTE_TOTAL_MIN}</span>
+          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#ef4444" }}>↑ +42 vs 28-day avg</span>
+        </div>
+        <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, paddingLeft: 20 }}>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "#94a3b8" }}>28-day norm</span>
+          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{norm28}</span>
+          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#16a34a" }}>↑ +{vsNorm} above</span>
+        </div>
+        <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, paddingLeft: 20 }}>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "#94a3b8" }}>Best day</span>
+          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{bestDay}</span>
+          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#16a34a" }}>↑ +{vsBest} above</span>
+        </div>
+      </div>
+
+      {/* Band */}
+      <div style={{ flexShrink: 0 }}>
+        {/* Header: BAND label + today's reading */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#64748b", letterSpacing: "0.09em", textTransform: "uppercase" as const }}>Band</span>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+            today's reading: <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#f97316" }}>Normal — waste rising</span>
+          </span>
+        </div>
+        {/* Pill above marker */}
+        <div style={{ position: "relative" as const, height: 22, marginBottom: 2 }}>
+          <div style={{ position: "absolute" as const, left: "36.75%", transform: "translateX(-50%)", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap" as const, display: "flex", alignItems: "center" }}>
+            <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#d97706" }}>{WASTE_VALUE}</span>
+          </div>
+        </div>
+        {/* Gradient bar + marker */}
+        <div style={{ position: "relative" as const, height: 7, borderRadius: 4, background: "linear-gradient(to right, #22c55e 0%, #a3e635 20%, #facc15 40%, #fb923c 68%, #ef4444 85%, #dc2626 100%)" }}>
+          <div style={{ position: "absolute" as const, left: "36.75%", top: -3, bottom: -3, width: 4, background: "#fff", borderRadius: 8, transform: "translateX(-50%)", boxShadow: "0 0 0 1px #e2e8f0" }} />
+        </div>
+        {/* Scale labels */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+          {["0", "1.0", "2.0", "3.5", "4+"].map(t => (
+            <span key={t} style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{t}</span>
+          ))}
+        </div>
+        {/* Formula — below scale */}
+        <div style={{ marginTop: 8, textAlign: "right" as const }}>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>
+            {WASTE_TOTAL_MIN} min waste ÷ {WASTE_PALLETS} pallets &nbsp;
+            <span style={{ fontWeight: 700, color: "#334155" }}>= {WASTE_VALUE} min / pallet</span>
+          </span>
+        </div>
+      </div>
+
+      </div>{/* end body */}
     </div>
   );
 }
@@ -1501,113 +1546,44 @@ export function Variation4Tab() {
         </div>
       </div>
 
-      {/* ══ SECTION 1b — Fleet + Operators capacity cards ══════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        {([
-          {
-            icon: Truck,  name: "Fleet",     sub: "Operational readiness · FMS",  available: 59, total: 76, segments: FLEET_SEGMENTS,
-            chip: { text: "13% capacity locked · 5 units need sign-off" },
-          },
-          {
-            icon: Users,  name: "Operators", sub: "Deployable workforce · MEPS",  available: 29, total: 42, segments: OPERATOR_SEGMENTS,
-            chip: { text: "Rotate 3 off floor · fatigue window closing" },
-          },
-        ]).map(row => {
-          const Icon      = row.icon;
-          const pct       = Math.round((row.available / row.total) * 100);
-          const pctColor  = pct >= 75 ? "#16a34a" : pct >= 60 ? "#d97706" : "#dc2626";
-          const pctBg     = pct >= 75 ? "#f0fdf4" : pct >= 60 ? "#fffbeb" : "#fef2f2";
-          const pctBorder = pct >= 75 ? "#bbf7d0" : pct >= 60 ? "#fde68a" : "#fecaca";
-          return (
-            <div key={row.name} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: 21, display: "flex", flexDirection: "column", gap: 12, background: "#fff" }}>
-              {/* Header */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Icon size={13} color="#475569" />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 1px" }}>{row.name}</p>
-                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0, whiteSpace: "nowrap" }}>{row.sub}</p>
-                </div>
-              </div>
-              {/* Count + badge + insight */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 6, paddingBottom: 6 }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, flexShrink: 0 }}>
-                  <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#334155", lineHeight: 1 }}>{row.available}</span>
-                  <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>/ {row.total}</span>
-                </div>
-                <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: pctColor, background: pctBg, border: `1px solid ${pctBorder}`, borderRadius: 6, padding: "2px 7px", flexShrink: 0 }}>{pct}%</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto", flexShrink: 0 }}>
-                  <AlertTriangle size={10} color="#94a3b8" />
-                  <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8" }}>{row.chip.text}</span>
-                </div>
-              </div>
-              {/* Distribution */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: 0 }}>Distribution :</p>
-                <div style={{ display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 1 }}>
-                  {row.segments.map((s: any) => (
-                    <div key={s.label} style={{ width: `${s.pct}%`, background: s.color, borderRadius: 2 }} />
-                  ))}
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px" }}>
-                  {row.segments.map((s: any) => (
-                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
-                      <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", whiteSpace: "nowrap" }}>
-                        {s.label} <span style={{ fontWeight: 700, color: "#334155" }}>{s.count}</span>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ══ SECTION 2 — Three Pillar Trend + Notifications */}
+      {/* ══ SECTION 2 — Three Pillar Trend (full width) ═══════════════════════ */}
       <div className="grid grid-cols-12 gap-4">
-        <SL>Trend Intelligence · Notifications — FMS · MEPS · RTSS · IMDS</SL>
-
-        {/* Left: Three Pillar Trend (wider) */}
-        <div className="col-span-8 flex" style={{ height: 380 }}>
+        <SL>Trend Intelligence — FMS · MEPS · RTSS · IMDS</SL>
+        <div className="col-span-12" style={{ height: 380 }}>
           <ThreePillarTrendWidget />
         </div>
-
-        {/* Right: Notifications */}
-        <div className="col-span-4 flex" style={{ height: 380 }}>
-          <NotificationsWidget />
-        </div>
-
       </div>
 
-      {/* ══ SECTION 6+7 — Risk × Performance + Roll-Call (50/50 row) ══════════ */}
+      {/* ══ SECTION 3 — Operations · Risk × Performance ════════════════════════ */}
       <div className="grid grid-cols-12 gap-4">
-        <SL>Risk × Performance · Roll-Call — Operator Intelligence & Reliability</SL>
-
-        <div className="col-span-12" style={{ display: "flex", gap: 16, alignItems: "stretch", height: 380 }}>
-          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
-            <OperatorQuadrantWidget />
-          </div>
-          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
-            <RollCallWidget />
-          </div>
-        </div>
+        <SL>Operations · Risk × Performance — Fleet · Waste · Notifications · Quadrant</SL>
       </div>
-
-      {/* ══ SECTION 4 — Fleet Intelligence · Pallet Waste ═══════════════════════ */}
-      <div className="grid grid-cols-12 gap-4">
-        <SL>Fleet Intelligence · Operational Efficiency</SL>
-        <div className="col-span-12" style={{ display: "flex", gap: 16, alignItems: "stretch", height: 400 }}>
-          <div style={{ flex: "0 0 36%", display: "flex" }}>
+      <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(12, 1fr)",
+          gridTemplateRows: "460px 380px",
+          gap: 16,
+        }}>
+          {/* Fleet Effective — col 1-4, row 1 */}
+          <div style={{ gridColumn: "1 / span 4", gridRow: "1", display: "flex" }}>
             <FleetEffectiveWidget />
           </div>
-          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
+
+          {/* Pallet Waste — col 5-8, row 1 */}
+          <div style={{ gridColumn: "5 / span 4", gridRow: "1", display: "flex" }}>
             <PalletWasteWidget />
           </div>
+
+          {/* Notifications — col 9-12, spans both rows */}
+          <div style={{ gridColumn: "9 / span 4", gridRow: "1 / span 2", display: "flex" }}>
+            <NotificationsWidget />
+          </div>
+
+          {/* Operator Quadrant — col 1-8, row 2 */}
+          <div style={{ gridColumn: "1 / span 8", gridRow: "2", display: "flex" }}>
+            <OperatorQuadrantWidget />
+          </div>
         </div>
-      </div>
 
     </div>
   );
