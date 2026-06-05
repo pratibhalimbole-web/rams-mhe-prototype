@@ -1148,39 +1148,38 @@ function PalletWasteWidget() {
   );
 }
 
-// ─── Quadrant corner labels rendered inside SVG ───────────────────────────────
+// ─── Quadrant zone watermarks centered in each quadrant ──────────────────────
 function QuadrantLabels({ xAxisMap, yAxisMap }: any) {
   if (!xAxisMap || !yAxisMap) return null;
   const xAxis = Object.values(xAxisMap)[0] as any;
   const yAxis = Object.values(yAxisMap)[0] as any;
   if (!xAxis || !yAxis) return null;
 
-  const left   = xAxis.x;
-  const right  = xAxis.x + xAxis.width;
-  const top    = yAxis.y;
-  const bottom = yAxis.y + yAxis.height;
-  const padX = 14;
-  const padTop = 16;
-  const padBottom = 28;
+  const left = xAxis.x;
+  const w    = xAxis.width;
+  const top  = yAxis.y;
+  const h    = yAxis.height;
 
-  const corners = [
-    { label: "COACH",    sub: "safe · slow",   color: "#d97706", ax: left  + padX, ay: top    + padTop,    anchor: "start" as const },
-    { label: "★ STAR",   sub: "safe · fast",   color: "#16a34a", ax: right - padX, ay: top    + padTop,    anchor: "end"   as const },
-    { label: "RETRAIN",  sub: "unsafe · slow", color: "#ef4444", ax: left  + padX, ay: bottom - padBottom, anchor: "start" as const },
-    { label: "RECKLESS", sub: "fast · unsafe", color: "#dc2626", ax: right - padX, ay: bottom - padBottom, anchor: "end"   as const },
+  // Each label sits at the midpoint of its zone in data space.
+  // Pixel Y is inverted: high data-Y (y>50) maps to upper half (cy = top + h*0.25).
+  const zones = [
+    { label: "COACH",    sub: "safe · slow",   color: "#d97706", cx: left + w * 0.25, cy: top + h * 0.25 },
+    { label: "★ STAR",   sub: "safe · fast",   color: "#16a34a", cx: left + w * 0.75, cy: top + h * 0.25 },
+    { label: "RETRAIN",  sub: "unsafe · slow", color: "#ef4444", cx: left + w * 0.25, cy: top + h * 0.75 },
+    { label: "RECKLESS", sub: "fast · unsafe", color: "#dc2626", cx: left + w * 0.75, cy: top + h * 0.75 },
   ];
 
   return (
     <g style={{ pointerEvents: "none" }}>
-      {corners.map(c => (
-        <g key={c.label}>
-          <text x={c.ax} y={c.ay} textAnchor={c.anchor}
-            style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, fill: c.color, letterSpacing: "0.06em" }}>
-            {c.label}
+      {zones.map(z => (
+        <g key={z.label}>
+          <text x={z.cx} y={z.cy} textAnchor="middle"
+            style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, fill: z.color, letterSpacing: "0.08em", opacity: 0.22 }}>
+            {z.label}
           </text>
-          <text x={c.ax} y={c.ay + 13} textAnchor={c.anchor}
-            style={{ fontFamily: FF, fontSize: 8.5, fontWeight: 400, fill: "#94a3b8" }}>
-            {c.sub}
+          <text x={z.cx} y={z.cy + 16} textAnchor="middle"
+            style={{ fontFamily: FF, fontSize: 9, fontWeight: 400, fill: z.color, opacity: 0.18 }}>
+            {z.sub}
           </text>
         </g>
       ))}
@@ -1226,9 +1225,9 @@ function OperatorQuadrantWidget() {
             <ZAxis type="number" dataKey="z" range={[1, 1]} />
             <ReferenceLine x={50} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4 3" />
             <ReferenceLine y={50} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4 3" />
+            <Customized component={QuadrantLabels} />
             <ReTooltip content={<QuadrantTooltip />} cursor={false} />
             <Scatter data={QUADRANT_DATA} shape={(p: any) => <QuadrantDot {...p} hoveredCategory={hoveredCategory} hoveredDot={hoveredDot} setHoveredDot={setHoveredDot} />} />
-            <Customized component={QuadrantLabels} />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
