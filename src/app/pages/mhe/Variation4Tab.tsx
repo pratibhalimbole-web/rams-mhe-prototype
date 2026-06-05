@@ -229,6 +229,25 @@ const OPR_ROLLCALL = [
   { id: "SP-003", name: "Sunil Patil",  util: 61, incidents: 5, safetyRating: 58, score: 58, exp: 2, trend: "down", fatigue: true  },
 ];
 
+// ─── Roll-Call table data (matches screenshot) ───────────────────────────────
+const EQUIP_RC = [
+  { id: "MHE 1",  model: "Toyota tyw423",   util: 0,   incd7d: 0, red: 0, reliability: 5.0 },
+  { id: "MHE 04", model: "Toyota EKS 110",  util: 2,   incd7d: 0, red: 0, reliability: 5.0 },
+  { id: "MHE 01", model: "Toyota 8FBE20",   util: 0,   incd7d: 0, red: 0, reliability: 4.3 },
+  { id: "MHE 10", model: "Toyota FKL-2021", util: 100, incd7d: 0, red: 0, reliability: 5.0 },
+  { id: "MHE 02", model: "Toyota 8FG25",    util: 45,  incd7d: 1, red: 0, reliability: 4.7 },
+  { id: "MHE 07", model: "Crown SC 5T",     util: 68,  incd7d: 2, red: 1, reliability: 4.1 },
+  { id: "MHE 15", model: "Hyster H50",      util: 55,  incd7d: 3, red: 1, reliability: 3.6 },
+  { id: "MHE 22", model: "Linde H30D",      util: 22,  incd7d: 5, red: 2, reliability: 2.8 },
+];
+const OPR_RC = [
+  { name: "Amit Sharma",    uid: "U30WPR9", util: 15, incd7d: 22,  safety: 4.6 },
+  { name: "Karan Jadhav",   uid: "U7Y86A1", util: 4,  incd7d: 110, safety: 3.8 },
+  { name: "Rahul Patil",    uid: "ULIEY8N", util: 4,  incd7d: 14,  safety: 4.3 },
+  { name: "Vivek Deshmukh", uid: "USU4BN8", util: 11, incd7d: 0,   safety: 4.5 },
+  { name: "Suresh Pawar",   uid: "USP1R4C", util: 8,  incd7d: 6,   safety: 3.2 },
+];
+
 // ─── Score Band Helpers ───────────────────────────────────────────────────────
 function scoreBandStyle(band: string) {
   if (band === "green")  return { bg: "#f0fdf4", color: "#166534", border: "#bbf7d0" };
@@ -1488,6 +1507,114 @@ function RollCallWidget() {
   );
 }
 
+// ─── Shared table pagination ─────────────────────────────────────────────────
+function TablePagination({ total, rowsPerPage = 10 }: { total: number; rowsPerPage?: number }) {
+  const pages = Math.ceil(total / rowsPerPage);
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, padding: "10px 16px", borderTop: "1px solid #f1f5f9", flexShrink: 0 }}>
+      <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8" }}>Rows per page:</span>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "1px solid #e2e8f0", borderRadius: 5, padding: "3px 8px", cursor: "default" }}>
+        <span style={{ fontFamily: FF, fontSize: 11, color: "#475569" }}>{rowsPerPage}</span>
+        <ChevronRight size={9} color="#94a3b8" style={{ transform: "rotate(90deg)" }} />
+      </div>
+      <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8" }}>1 – 1 of {total}</span>
+      {[180, 0].map(deg => (
+        <button key={deg} style={{ width: 26, height: 26, borderRadius: 5, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <ChevronRight size={11} color="#94a3b8" style={{ transform: `rotate(${deg}deg)` }} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Widget: Equipment Roll-Call ──────────────────────────────────────────────
+// Grid template: name takes remaining space, all data cols equal 1fr, rating col slightly wider
+const EQUIP_COLS = "1fr 1fr 1fr 1fr 1.4fr";
+function EquipmentRollCallWidget() {
+  const rowGrid = { display: "grid", gridTemplateColumns: EQUIP_COLS, alignItems: "center", padding: "13px 18px" };
+  return (
+    <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
+        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Equipment Roll-Call</p>
+        <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Reliability rating · incidents &amp; RED findings</p>
+      </div>
+
+      {/* Column headers */}
+      <div style={{ display: "grid", gridTemplateColumns: EQUIP_COLS, alignItems: "center", padding: "8px 18px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+        {["MHE", "Util", "Incd 7d", "RED Findings", "Reliability"].map(h => (
+          <span key={h} style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#94a3b8", textAlign: h === "MHE" ? "left" : "right" as const }}>{h}</span>
+        ))}
+      </div>
+
+      {/* Rows */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
+        {EQUIP_RC.map((row, i) => (
+          <div key={row.id}
+            style={{ ...rowGrid, borderBottom: i < EQUIP_RC.length - 1 ? "1px solid #f1f5f9" : "none", cursor: "default", transition: "background 0.12s" }}
+            onMouseEnter={hoverIn} onMouseLeave={hoverOut}
+          >
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>{row.id}</p>
+              <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{row.model}</p>
+            </div>
+            <span style={{ fontFamily: FF, fontSize: 12, color: "#334155", textAlign: "right" as const }}>{row.util}%</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 3 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.incd7d > 3 ? 700 : 400 }}>{row.incd7d}</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: row.red > 0 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.red > 0 ? 700 : 400 }}>{row.red}</span>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <StarRating value={row.reliability} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <TablePagination total={EQUIP_RC.length} />
+    </div>
+  );
+}
+
+// ─── Widget: Operator Roll-Call ───────────────────────────────────────────────
+const OPR_COLS = "1fr 1fr 1fr 1.4fr";
+function OperatorRollCallWidget() {
+  const rowGrid = { display: "grid", gridTemplateColumns: OPR_COLS, alignItems: "center", padding: "13px 18px" };
+  return (
+    <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
+        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Operator Roll-Call</p>
+        <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Safety rating · incidents in last 7 days</p>
+      </div>
+
+      {/* Column headers */}
+      <div style={{ display: "grid", gridTemplateColumns: OPR_COLS, alignItems: "center", padding: "8px 18px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+        {["Operator", "Util", "Incd 7d", "Safety"].map(h => (
+          <span key={h} style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#94a3b8", textAlign: h === "Operator" ? "left" : "right" as const }}>{h}</span>
+        ))}
+      </div>
+
+      {/* Rows */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
+        {OPR_RC.map((row, i) => (
+          <div key={row.uid}
+            style={{ ...rowGrid, borderBottom: i < OPR_RC.length - 1 ? "1px solid #f1f5f9" : "none", cursor: "default", transition: "background 0.12s" }}
+            onMouseEnter={hoverIn} onMouseLeave={hoverOut}
+          >
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>{row.name}</p>
+              <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{row.uid}</p>
+            </div>
+            <span style={{ fontFamily: FF, fontSize: 12, color: "#334155", textAlign: "right" as const }}>{row.util}%</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 10 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.incd7d > 10 ? 700 : 400 }}>{row.incd7d}</span>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <StarRating value={row.safety} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <TablePagination total={OPR_RC.length} />
+    </div>
+  );
+}
+
 // ─── Main Export ──────────────────────────────────────────────────────────────
 // ─── Widget: Warehouse Performance Banner ─────────────────────────────────────
 function WarehousePerformanceBanner() {
@@ -1607,6 +1734,15 @@ export function Variation4Tab() {
             <OperatorQuadrantWidget />
           </div>
         </div>
+
+      {/* ══ SECTION 4 — Roll-Call ══════════════════════════════════════════════ */}
+      <div className="grid grid-cols-12 gap-4">
+        <SL>Roll-Call — Equipment reliability · Operator safety leaderboards</SL>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, height: 480 }}>
+        <EquipmentRollCallWidget />
+        <OperatorRollCallWidget />
+      </div>
 
     </div>
   );
