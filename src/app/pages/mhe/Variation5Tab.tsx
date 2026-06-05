@@ -122,6 +122,22 @@ const PRODUCTIVE_SEGMENTS = [
   { label: "Idle Empty",        pct: 10.2, count: 6,  color: "#bfdbfe" },
 ];
 
+// ─── Fleet V5: multi-condition model (each unit can have multiple issues) ─────
+const FLEET_UNITS_V5 = [
+  { id: "MHE-01", deployed: true,  conditions: [] as string[] },
+  { id: "MHE-03", deployed: true,  conditions: [] as string[] },
+  { id: "MHE-07", deployed: true,  conditions: [] as string[] },
+  { id: "MHE-12", deployed: false, conditions: ["maintenance"] },
+  { id: "MHE-15", deployed: true,  conditions: ["service_overdue"] },
+  { id: "MHE-19", deployed: true,  conditions: [] as string[] },
+  { id: "MHE-22", deployed: true,  conditions: ["service_overdue", "warranty_expiry"] },
+];
+const CONDITION_META: Record<string, { label: string; bg: string; color: string; border: string }> = {
+  maintenance:     { label: "MAINTENANCE",     bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
+  service_overdue: { label: "SERVICE OVERDUE", bg: "#fffbeb", color: "#92400e", border: "#fde68a" },
+  warranty_expiry: { label: "WARRANTY EXPIRY", bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
+};
+
 const QUADRANT_DATA = [
   { name: "OP-017", x: 88, y: 82, z: 90, incidents: 0 },
   { name: "OP-022", x: 84, y: 79, z: 68, incidents: 1 },
@@ -1173,6 +1189,363 @@ function RollCallWidget() {
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 // ─── Widget: Warehouse Performance Banner ─────────────────────────────────────
+// ─── Widget: Fleet · Effective Available V5 (multi-condition model) ──────────
+function FleetEffectiveV5Widget() {
+  const units  = FLEET_UNITS_V5;
+  const total  = units.length;
+  const clean    = units.filter(u => u.deployed && u.conditions.length === 0);
+  const atRisk   = units.filter(u => u.deployed && u.conditions.length > 0);
+  const hardStop = units.filter(u => !u.deployed);
+  const deployable = clean.length + atRisk.length;
+
+  const tiers = [
+    { label: "Clean",     count: clean.length,    color: "#16a34a" },
+    { label: "At Risk",   count: atRisk.length,   color: "#d97706" },
+    { label: "Hard Stop", count: hardStop.length, color: "#dc2626" },
+  ];
+
+  // Group by condition type — always exactly N rows regardless of fleet size
+  const CONDITION_ORDER = ["maintenance", "service_overdue", "warranty_expiry"];
+  const conditionGroups = CONDITION_ORDER
+    .map(c => ({
+      condition: c,
+      meta: CONDITION_META[c],
+      unitIds: units.filter(u => u.conditions.includes(c)).map(u => u.id),
+    }))
+    .filter(g => g.unitIds.length > 0);
+
+  return (
+    <div style={{ ...CARD, display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 16px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Fleet · Effective Available</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Multi-condition model · each unit counted once</p>
+        </div>
+        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const }}>
+          {total} units
+        </span>
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+
+        {/* Hero + three-tier bar */}
+        <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+          {/* KPI */}
+          <div style={{ flexShrink: 0, paddingRight: 14 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 1 }}>
+              <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{deployable}</span>
+              <span style={{ fontFamily: FF, fontSize: 13, color: "#94a3b8" }}>/{total}</span>
+            </div>
+            <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>deployable</span>
+          </div>
+
+          <div style={{ width: 1, background: "#e2e8f0", flexShrink: 0, alignSelf: "stretch" }} />
+
+          <div style={{ flex: 1, paddingLeft: 14, paddingTop: 2, display: "flex", flexDirection: "column", gap: 0 }}>
+            <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 8px" }}>Readiness :</p>
+            {/* Stacked three-tier bar */}
+            <div style={{ display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 1 }}>
+              {tiers.map(t => (
+                <div key={t.label} style={{ width: `${(t.count / total) * 100}%`, background: t.color, borderRadius: 2 }} />
+              ))}
+            </div>
+            {/* Tier legend */}
+            <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" as const }}>
+              {tiers.map(t => (
+                <div key={t.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: 2, background: t.color, flexShrink: 0 }} />
+                  <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+                    {t.label} <span style={{ fontWeight: 700, color: "#0f172a" }}>{t.count}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Attention required — grouped by condition type, always fixed rows regardless of fleet size */}
+        <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 10 }}>
+          <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 8px" }}>
+            Attention required · by condition :
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {conditionGroups.map((group, i) => (
+              <div key={group.condition} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i === 0 ? "none" : "1px solid #f1f5f9" }}>
+                {/* Condition pill */}
+                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: group.meta.color, background: group.meta.bg, border: `1px solid ${group.meta.border}`, borderRadius: 4, padding: "2px 6px", letterSpacing: "0.04em", whiteSpace: "nowrap" as const, flexShrink: 0 }}>
+                  {group.meta.label}
+                </span>
+                {/* Count */}
+                <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#475569", flexShrink: 0 }}>
+                  {group.unitIds.length} unit{group.unitIds.length > 1 ? "s" : ""}
+                </span>
+                {/* Unit ID chips — hard-stopped units get a red tint */}
+                <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "flex-end", flexWrap: "wrap" as const }}>
+                  {group.unitIds.map(uid => {
+                    const u = units.find(u => u.id === uid);
+                    const stopped = u && !u.deployed;
+                    return (
+                      <span key={uid} style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: stopped ? "#dc2626" : "#334155", background: stopped ? "#fef2f2" : "#f1f5f9", border: `1px solid ${stopped ? "#fecaca" : "#e2e8f0"}`, borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap" as const }}>
+                        {uid}{stopped ? " ●" : ""}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Hard-stop legend */}
+          {units.some(u => !u.deployed) && (
+            <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "8px 0 0", display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ color: "#dc2626", fontWeight: 700 }}>●</span> Hard Stop — unit not deployed
+            </p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── Widget: Fleet · Status Board (swimlane per deployment state) ────────────
+function FleetStatusBoardWidget() {
+  const units         = FLEET_UNITS_V5;
+  const total         = units.length;
+  const cleanUnits    = units.filter(u => u.deployed && u.conditions.length === 0);
+  const atRiskUnits   = units.filter(u => u.deployed && u.conditions.length > 0)
+                             .sort((a, b) => b.conditions.length - a.conditions.length);
+  const hardStopUnits = units.filter(u => !u.deployed);
+  const deployable    = cleanUnits.length + atRiskUnits.length;
+
+  const tiers = [
+    { label: "Clean",     count: cleanUnits.length,    color: "#16a34a" },
+    { label: "At Risk",   count: atRiskUnits.length,   color: "#d97706" },
+    { label: "Hard Stop", count: hardStopUnits.length, color: "#dc2626" },
+  ];
+
+  const lanes = [
+    { label: "Hard Stop", color: "#dc2626", bg: "#fef2f2", border: "#fecaca", units: hardStopUnits },
+    { label: "At Risk",   color: "#d97706", bg: "#fffbeb", border: "#fde68a", units: atRiskUnits   },
+    { label: "Clean",     color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", units: cleanUnits    },
+  ].filter(l => l.units.length > 0);
+
+  return (
+    <div style={{ ...CARD, display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "14px 16px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Fleet · Effective Available</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Status board · grouped by deployment state</p>
+        </div>
+        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const }}>{total} units</span>
+      </div>
+
+      <div style={{ flex: 1, padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+
+        {/* Hero + bar */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 2 }}>
+              <span style={{ fontFamily: FF, fontSize: 36, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{deployable}</span>
+              <span style={{ fontFamily: FF, fontSize: 14, color: "#94a3b8" }}>/{total}</span>
+            </div>
+            <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>deployable</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden", gap: 1, marginBottom: 7 }}>
+              {tiers.map(t => (
+                <div key={t.label} style={{ width: `${(t.count / total) * 100}%`, background: t.color, borderRadius: 2 }} />
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 12 }}>
+              {tiers.map(t => (
+                <span key={t.label} style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+                  <span style={{ fontWeight: 700, color: t.color }}>{t.count}</span> {t.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Swimlanes */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: "1px solid #f1f5f9", paddingTop: 12 }}>
+          {lanes.map(lane => (
+            <div key={lane.label}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: lane.color, flexShrink: 0 }} />
+                <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: lane.color, letterSpacing: "0.05em" }}>{lane.label.toUpperCase()}</span>
+                <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>· {lane.units.length} unit{lane.units.length > 1 ? "s" : ""}</span>
+              </div>
+              {lane.label === "Clean" ? (
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" as const }}>
+                  {lane.units.map(u => (
+                    <span key={u.id} style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "3px 9px" }}>{u.id}</span>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
+                  {lane.units.map(u => (
+                    <div key={u.id} style={{ background: lane.bg, border: `1px solid ${lane.border}`, borderLeft: `3px solid ${lane.color}`, borderRadius: 7, padding: "7px 10px", minWidth: 88 }}>
+                      <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", display: "block", marginBottom: 5 }}>{u.id}</span>
+                      <div style={{ display: "flex", flexDirection: "column" as const, gap: 3 }}>
+                        {u.conditions.map(c => {
+                          const m = CONDITION_META[c];
+                          return (
+                            <span key={c} style={{ fontFamily: FF, fontSize: 8, fontWeight: 600, color: m.color, background: "#fff", border: `1px solid ${m.border}`, borderRadius: 3, padding: "1px 5px", letterSpacing: "0.03em", whiteSpace: "nowrap" as const }}>{m.label}</span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── Widget: Fleet · Condition Matrix (unit × condition grid) ─────────────────
+function FleetMatrixWidget() {
+  const units      = FLEET_UNITS_V5;
+  const total      = units.length;
+  const clean      = units.filter(u => u.deployed && u.conditions.length === 0);
+  const atRisk     = units.filter(u => u.deployed && u.conditions.length > 0);
+  const hardStop   = units.filter(u => !u.deployed);
+  const deployable = clean.length + atRisk.length;
+
+  const tiers = [
+    { label: "Clean",     count: clean.length,    color: "#16a34a" },
+    { label: "At Risk",   count: atRisk.length,   color: "#d97706" },
+    { label: "Hard Stop", count: hardStop.length, color: "#dc2626" },
+  ];
+
+  const COLS = [
+    { key: "maintenance",     short: "MAINT",       meta: CONDITION_META["maintenance"]     },
+    { key: "service_overdue", short: "SVC OVERDUE", meta: CONDITION_META["service_overdue"] },
+    { key: "warranty_expiry", short: "WARRANTY",    meta: CONDITION_META["warranty_expiry"] },
+  ];
+
+  return (
+    <div style={{ ...CARD, display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <div style={{ padding: "14px 16px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Fleet · Effective Available</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Unit × condition matrix — overlap visible per row</p>
+        </div>
+        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const }}>
+          {total} units
+        </span>
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+
+        {/* Hero + three-tier bar */}
+        <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+          <div style={{ flexShrink: 0, paddingRight: 14 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 1 }}>
+              <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{deployable}</span>
+              <span style={{ fontFamily: FF, fontSize: 13, color: "#94a3b8" }}>/{total}</span>
+            </div>
+            <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>deployable</span>
+          </div>
+          <div style={{ width: 1, background: "#e2e8f0", flexShrink: 0, alignSelf: "stretch" }} />
+          <div style={{ flex: 1, paddingLeft: 14, paddingTop: 2, display: "flex", flexDirection: "column" }}>
+            <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 8px" }}>Readiness :</p>
+            <div style={{ display: "flex", height: 7, borderRadius: 4, overflow: "hidden", gap: 1 }}>
+              {tiers.map(t => (
+                <div key={t.label} style={{ width: `${(t.count / total) * 100}%`, background: t.color, borderRadius: 2 }} />
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" as const }}>
+              {tiers.map(t => (
+                <div key={t.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: 2, background: t.color, flexShrink: 0 }} />
+                  <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+                    {t.label} <span style={{ fontWeight: 700, color: "#0f172a" }}>{t.count}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Matrix */}
+        <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 10 }}>
+          {/* Column headers — aligned to data columns */}
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 4, paddingLeft: 72 }}>
+            {COLS.map(col => (
+              <div key={col.key} style={{ flex: 1, textAlign: "center" as const }}>
+                <span style={{ fontFamily: FF, fontSize: 8, fontWeight: 700, color: col.meta.color, letterSpacing: "0.05em" }}>
+                  {col.short}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Unit rows */}
+          {units.map((unit, i) => {
+            const isHardStop = !unit.deployed;
+            const isAtRisk   = unit.deployed && unit.conditions.length > 0;
+            const stripColor = isHardStop ? "#dc2626" : isAtRisk ? "#d97706" : "#16a34a";
+            const rowBg      = isHardStop ? "#fff8f8" : isAtRisk ? "#fffdf5" : "#ffffff";
+            return (
+              <div key={unit.id} style={{ display: "flex", alignItems: "center", padding: "5px 0", borderTop: i === 0 ? "none" : `1px solid #f1f5f9`, background: rowBg, borderRadius: 4, marginLeft: -4, paddingLeft: 4 }}>
+                {/* State strip + unit ID */}
+                <div style={{ display: "flex", alignItems: "center", gap: 7, width: 72, flexShrink: 0 }}>
+                  <div style={{ width: 3, height: 18, borderRadius: 2, background: stripColor, flexShrink: 0 }} />
+                  <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#0f172a" }}>{unit.id}</span>
+                </div>
+                {/* Condition cells */}
+                {COLS.map(col => {
+                  const has = unit.conditions.includes(col.key);
+                  return (
+                    <div key={col.key} style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                      <div style={{
+                        width: 10, height: 10, borderRadius: "50%",
+                        background: has ? col.meta.color : "#e2e8f0",
+                        opacity: has ? 1 : 0.5,
+                        boxShadow: has ? `0 0 0 2px ${col.meta.bg}` : "none",
+                      }} />
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+
+          {/* Legend */}
+          <div style={{ display: "flex", gap: 14, marginTop: 10, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" as const }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#475569" }} />
+              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>has condition</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#e2e8f0", opacity: 0.5 }} />
+              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>no condition</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" as const }}>
+              <div style={{ width: 3, height: 12, borderRadius: 2, background: "#dc2626" }} />
+              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>Hard Stop</span>
+              <div style={{ width: 3, height: 12, borderRadius: 2, background: "#d97706", marginLeft: 6 }} />
+              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>At Risk</span>
+              <div style={{ width: 3, height: 12, borderRadius: 2, background: "#16a34a", marginLeft: 6 }} />
+              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>Clean</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 function WarehousePerformanceBanner() {
   const now = new Date();
   const weekday = now.toLocaleDateString("en-GB", { weekday: "short" });
@@ -1341,18 +1714,13 @@ export function Variation5Tab() {
         </div>
       </div>
 
-      {/* ══ SECTION 1c — Fleet + Operators capacity cards ══════════════════════ */}
+      {/* ══ SECTION 1c — Fleet (redesigned) + Operators capacity card ═══════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        {([
-          {
-            icon: Truck,  name: "Fleet",     sub: "Operational readiness · FMS",  available: 59, total: 76, segments: FLEET_SEGMENTS,
-            chip: { text: "13% capacity locked · 5 units need sign-off" },
-          },
-          {
-            icon: Users,  name: "Operators", sub: "Deployable workforce · MEPS",  available: 29, total: 42, segments: OPERATOR_SEGMENTS,
-            chip: { text: "Rotate 3 off floor · fatigue window closing" },
-          },
-        ]).map(row => {
+        {/* Fleet — grouped by condition type */}
+        <FleetEffectiveV5Widget />
+
+        {/* Operators — unchanged */}
+        {([ { icon: Users, name: "Operators", sub: "Deployable workforce · MEPS", available: 29, total: 42, segments: OPERATOR_SEGMENTS, chip: { text: "Rotate 3 off floor · fatigue window closing" } } ]).map(row => {
           const Icon      = row.icon;
           const pct       = Math.round((row.available / row.total) * 100);
           const pctColor  = pct >= 75 ? "#16a34a" : pct >= 60 ? "#d97706" : "#dc2626";
