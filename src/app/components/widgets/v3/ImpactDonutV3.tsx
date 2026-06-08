@@ -54,10 +54,11 @@ const filterStyle: React.CSSProperties = {
   fontWeight: 400,
 };
 
-export function ImpactDonutV3() {
+export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter }: { title?: string; description?: string; hideZoneFilter?: boolean; useOemFilter?: boolean } = {}) {
   const [activeIndex, setActiveIndex] = useState(maxIndex);
   const [zone, setZone] = useState("all_zones");
   const [type, setType] = useState("all_types");
+  const [oem, setOem] = useState("all_oems");
 
   return (
     <div style={{
@@ -83,30 +84,45 @@ export function ImpactDonutV3() {
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
-            MHE Impact Responsibility Analysis
+            {title ?? "MHE Impact Responsibility Analysis"}
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
-            Stacked impact events by severity level
+            {description ?? "Stacked impact events by severity level"}
           </span>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center", flexShrink: 0 }}>
-          <Select value={zone} onValueChange={setZone}>
-            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all_zones" style={{ whiteSpace: "nowrap" }}>All Zones</SelectItem>
-              <SelectItem value="zone_a" style={{ whiteSpace: "nowrap" }}>Zone A</SelectItem>
-              <SelectItem value="zone_b" style={{ whiteSpace: "nowrap" }}>Zone B</SelectItem>
-              <SelectItem value="zone_c" style={{ whiteSpace: "nowrap" }}>Zone C</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all_types" style={{ whiteSpace: "nowrap" }}>All Types</SelectItem>
-              <SelectItem value="forklift" style={{ whiteSpace: "nowrap" }}>Forklift</SelectItem>
-              <SelectItem value="pallet_jack" style={{ whiteSpace: "nowrap" }}>Pallet Jack</SelectItem>
-            </SelectContent>
-          </Select>
+          {!hideZoneFilter && (
+            <Select value={zone} onValueChange={setZone}>
+              <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all_zones" style={{ whiteSpace: "nowrap" }}>All Zones</SelectItem>
+                <SelectItem value="zone_a" style={{ whiteSpace: "nowrap" }}>Zone A</SelectItem>
+                <SelectItem value="zone_b" style={{ whiteSpace: "nowrap" }}>Zone B</SelectItem>
+                <SelectItem value="zone_c" style={{ whiteSpace: "nowrap" }}>Zone C</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+          {useOemFilter ? (
+            <Select value={oem} onValueChange={setOem}>
+              <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all_oems" style={{ whiteSpace: "nowrap" }}>All OEMs</SelectItem>
+                <SelectItem value="toyota" style={{ whiteSpace: "nowrap" }}>Toyota</SelectItem>
+                <SelectItem value="crown" style={{ whiteSpace: "nowrap" }}>Crown</SelectItem>
+                <SelectItem value="raymond" style={{ whiteSpace: "nowrap" }}>Raymond</SelectItem>
+                <SelectItem value="jungheinrich" style={{ whiteSpace: "nowrap" }}>Jungheinrich</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all_types" style={{ whiteSpace: "nowrap" }}>All Types</SelectItem>
+                <SelectItem value="forklift" style={{ whiteSpace: "nowrap" }}>Forklift</SelectItem>
+                <SelectItem value="pallet_jack" style={{ whiteSpace: "nowrap" }}>Pallet Jack</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 

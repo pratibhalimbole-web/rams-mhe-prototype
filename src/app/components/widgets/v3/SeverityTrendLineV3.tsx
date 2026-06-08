@@ -143,7 +143,7 @@ const filterStyle: React.CSSProperties = {
   fontWeight: 400,
 };
 
-export function SeverityTrendLineV3() {
+export function SeverityTrendLineV3({ hideInsight }: { hideInsight?: boolean } = {}) {
   const [selectedMhe, setSelectedMhe] = useState("MHE_02");
   const [dateRange, setDateRange] = useState("last_30_days");
 
@@ -254,24 +254,25 @@ export function SeverityTrendLineV3() {
         </div>
       </div>
 
-      {/* Insight footer */}
-      <div style={{
-        borderTop: "1px solid #f1f5f9",
-        padding: "11px 16px 0 16px",
-        flexShrink: 0,
-        height: "59.5px",
-        boxSizing: "border-box",
-        overflow: "hidden",
-      }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {selectedMhe} reported most, mainly has red severity = 06
-          </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {footerRange}
-          </span>
+      {!hideInsight && (
+        <div style={{
+          borderTop: "1px solid #f1f5f9",
+          padding: "11px 16px 0 16px",
+          flexShrink: 0,
+          height: "59.5px",
+          boxSizing: "border-box",
+          overflow: "hidden",
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {selectedMhe} reported most, mainly has red severity = 06
+            </span>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {footerRange}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

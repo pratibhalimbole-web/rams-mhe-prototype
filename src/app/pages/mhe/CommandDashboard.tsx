@@ -15,6 +15,7 @@ import { Variation1Tab } from "./Variation1Tab";
 import { Variation3Tab } from "./Variation3Tab";
 import { Variation4Tab } from "./Variation4Tab";
 import { Variation5Tab } from "./Variation5Tab";
+import { Variation6Tab } from "./Variation6Tab";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
 
 const TABS = [
@@ -23,6 +24,7 @@ const TABS = [
   { id: "variation3", label: "Variation 3" },
   { id: "variation4", label: "Variation 4" },
   { id: "variation5", label: "Variation 5" },
+  { id: "variation6", label: "Variation 6" },
 ];
 
 export function CommandDashboard() {
@@ -65,7 +67,11 @@ export function CommandDashboard() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === "variation5" ? (
+      {activeTab === "variation6" ? (
+        <div className="flex-1 overflow-y-auto">
+          <Variation6Tab />
+        </div>
+      ) : activeTab === "variation5" ? (
         <div className="flex-1 overflow-y-auto">
           <Variation5Tab />
         </div>
