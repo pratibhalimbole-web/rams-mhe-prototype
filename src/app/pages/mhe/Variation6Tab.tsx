@@ -41,36 +41,36 @@ export function Variation6Tab() {
           <KpiCardV3 label="Active Sensors"      value="95" description="Active sensors percentage"   icon={Wifi} />
         </div>
 
-        {/* Section — RTSS Charts */}
+        {/* Section — IMDS Operational Widgets */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
           <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-            FMS · RTSS
+            FMS · IMDS
           </span>
         </div>
 
-        <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
-          <SeverityTrendLineV3 hideInsight />
-        </div>
-        <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
-          <FleetCompositionWidget />
-        </div>
-
-        {/* Section — Operational Widgets */}
-        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-            COMMAND CENTER · RTSS · IMDS
-          </span>
-        </div>
-
-        <div className="col-span-12 xl:col-span-7 flex min-h-[360px]">
+        <div className="col-span-12 xl:col-span-7 flex min-h-[420px]">
           <FleetHealthDistributionWidget />
         </div>
-        <div className="col-span-12 xl:col-span-5 flex min-h-[360px]">
+        <div className="col-span-12 xl:col-span-5 flex min-h-[420px]">
           <ComponentFailureWidget />
         </div>
 
-        <div className="col-span-12 flex min-h-[320px]">
+        <div className="col-span-12 xl:col-span-7 flex min-h-[380px]">
           <InspectionAttentionWidget />
+        </div>
+        <div className="col-span-12 xl:col-span-5 flex min-h-[380px]">
+          <SeverityTrendLineV3 hideInsight />
+        </div>
+
+        {/* Section — Fleet Composition */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+            FMS · FLEET
+          </span>
+        </div>
+
+        <div className="col-span-12 xl:col-span-5 flex min-h-[340px]">
+          <FleetCompositionWidget />
         </div>
 
         {/* Section — Warranty / License Table */}
