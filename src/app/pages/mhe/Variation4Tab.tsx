@@ -14,6 +14,7 @@ import {
   AreaChart, Area, LineChart, Line, ScatterChart, Scatter, ZAxis,
   XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   Tooltip as ReTooltip, ReferenceLine, ReferenceArea, Customized,
+  PieChart, Pie, Cell,
 } from "recharts";
 import {
   AlertTriangle, ShieldCheck, Zap, Activity, Truck, Users,
@@ -908,37 +909,49 @@ function QuadrantDot(props: any) {
 
 // ─── Widget: Fleet · Effective Available ─────────────────────────────────────
 const FLEET_UNITS = [
-  { id: "MHE-01", status: "available"   },
-  { id: "MHE-03", status: "available"   },
-  { id: "MHE-07", status: "available"   },
-  { id: "MHE-12", status: "maintenance" },
-  { id: "MHE-15", status: "available"   },
-  { id: "MHE-19", status: "available"   },
-  { id: "MHE-22", status: "available"   },
+  { id: "MHE-01", status: "available",   conditions: [] as string[] },
+  { id: "MHE-03", status: "available",   conditions: [] as string[] },
+  { id: "MHE-07", status: "available",   conditions: [] as string[] },
+  { id: "MHE-12", status: "maintenance", conditions: ["maintenance"] },
+  { id: "MHE-15", status: "service",     conditions: ["service_overdue"] },
+  { id: "MHE-19", status: "available",   conditions: [] as string[] },
+  { id: "MHE-22", status: "service",     conditions: ["service_overdue"] },
 ];
+
+const FLEET_CONDITION_META: Record<string, { label: string; bg: string; color: string; border: string }> = {
+  maintenance:     { label: "MAINTENANCE",     bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
+  service_overdue: { label: "SERVICE OVERDUE", bg: "#fffbeb", color: "#92400e", border: "#fde68a" },
+  warranty_expiry: { label: "WARRANTY EXPIRY", bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
+};
 
 function FleetEffectiveWidget() {
   const total       = FLEET_UNITS.length;
   const available   = FLEET_UNITS.filter(u => u.status === "available").length;
   const maintenance = FLEET_UNITS.filter(u => u.status === "maintenance").length;
   const service     = FLEET_UNITS.filter(u => u.status === "service").length;
-  const warranty    = 0;
   const pct         = Math.round((available / total) * 100);
   const target      = 85;
 
-  const rows = [
-    { label: "Total fleet",       val: total,        display: `${total}`,        barPct: 100,                        barColor: "#e2e8f0", bold: false },
-    { label: "Under maintenance", val: -maintenance, display: `-${maintenance}`, barPct: (maintenance / total) * 100, barColor: "#cbd5e1", bold: false },
-    { label: "Service overdue",   val: -service,     display: `-${service}`,     barPct: (service / total) * 100,     barColor: "#cbd5e1", bold: false },
-    { label: "Warranty Expiry",   val: warranty,     display: `${warranty}`,     barPct: 0,                           barColor: "#cbd5e1", bold: false },
-    { label: "= Available",       val: available,    display: `${available}`,    barPct: (available / total) * 100,   barColor: "#16a34a", bold: true  },
-  ];
+  const NOTCH = 2;
+  const donutData = pct < target
+    ? [
+        { value: pct,                  color: "#1b59f8" },
+        { value: target - pct - NOTCH, color: "#dbeafe" },
+        { value: NOTCH,                color: "#1e40af" },
+        { value: 100 - target,         color: "#eff6ff" },
+      ]
+    : [
+        { value: target - NOTCH,       color: "#16a34a" },
+        { value: NOTCH,                color: "#1e40af" },
+        { value: pct - target,         color: "#22c55e" },
+        { value: 100 - pct,            color: "#eff6ff" },
+      ].filter(d => d.value > 0);
 
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
 
       {/* Header */}
-      <div style={{ padding: "14px 16px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+      <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
           <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Fleet · Effective Available</p>
           <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Total → minus maintenance, service, warranty</p>
@@ -946,65 +959,115 @@ function FleetEffectiveWidget() {
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ flex: 1, padding: "16px 18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
 
-        {/* Hero + Distribution bar side by side */}
-        <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+        {/* KPI */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+          <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{available}</span>
+          <span style={{ fontFamily: FF, fontSize: 12, color: "#94a3b8" }}>/ {total} / UNITS DEPLOYABLE</span>
+          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#16a34a" }}>↑ +1 vs yesterday</span>
+        </div>
 
-          {/* KPI */}
-          <div style={{ flexShrink: 0, paddingRight: 14 }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 1 }}>
-              <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{available}</span>
-              <span style={{ fontFamily: FF, fontSize: 13, color: "#94a3b8" }}>/{total}</span>
+        {/* Readiness donut */}
+        <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: 0 }}>Fleet Readiness Index · operational status</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+          {/* Donut ring */}
+          <div style={{ position: "relative" as const, width: 112, height: 112, flexShrink: 0 }}>
+            <PieChart width={112} height={112}>
+              <Pie
+                data={donutData}
+                dataKey="value"
+                cx={52}
+                cy={52}
+                innerRadius={40}
+                outerRadius={52}
+                startAngle={90}
+                endAngle={-270}
+                stroke="none"
+                paddingAngle={1}
+                cornerRadius={4}
+              >
+                {donutData.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Pie>
+            </PieChart>
+            <div style={{ position: "absolute" as const, left: 20, top: 16, width: 80, height: 80, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{pct}%</span>
+              <span style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", marginTop: 2, letterSpacing: "0.04em" }}>READY</span>
             </div>
-            <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>units deployable</span>
           </div>
 
-          {/* Vertical divider */}
-          <div style={{ width: 1, background: "#e2e8f0", flexShrink: 0, alignSelf: "stretch" }} />
-
-          {/* Distribution bar */}
-          <div style={{ flex: 1, paddingLeft: 14, paddingTop: 4, display: "flex", flexDirection: "column", gap: 0 }}>
-            <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 4px" }}>Readiness :</p>
-
-            {/* Target label above marker */}
-            <div style={{ position: "relative" as const, height: 22, marginBottom: 2 }}>
-              <div style={{ position: "absolute" as const, left: `${target}%`, transform: "translateX(-50%)", background: pct >= target ? "#f0fdf4" : "#f1f5f9", border: `1px solid ${pct >= target ? "#bbf7d0" : "#e2e8f0"}`, borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap" as const, display: "flex", alignItems: "center", gap: 3 }}>
-                {pct >= target && <span style={{ fontFamily: FF, fontSize: 9, color: "#16a34a" }}>✓</span>}
-                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: pct >= target ? "#15803d" : "#334155" }}>{target}%</span>
-                <span style={{ fontFamily: FF, fontSize: 9, color: pct >= target ? "#16a34a" : "#94a3b8" }}>target</span>
-              </div>
+          {/* Legend */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
+              <div style={{ width: 7, height: 7, borderRadius: 2, background: pct >= target ? "#16a34a" : "#1b59f8", flexShrink: 0 }} />
+              <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", flex: 1 }}>Current</span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{pct}%</span>
             </div>
-
-            {/* Bar */}
-            <div style={{ position: "relative" as const, height: 7, borderRadius: 4, background: "#f5f3f3" }}>
-              <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pct >= target ? "#16a34a" : "#1b59f8", borderRadius: 2 }} />
-              <div style={{ position: "absolute" as const, left: `${target}%`, top: -3, bottom: -3, width: 4, background: "#fff", borderRadius: 8, transform: "translateX(-50%)", boxShadow: "0 0 0 1px #e2e8f0" }} />
+            <div style={{ height: 1, background: "#f1f5f9" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
+              <div style={{ width: 7, height: 7, borderRadius: 2, background: "#1e40af", flexShrink: 0 }} />
+              <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", flex: 1 }}>Target</span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{target}%</span>
             </div>
-
-            {/* Current + gap */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 5 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <div style={{ width: 7, height: 7, borderRadius: 2, background: pct >= target ? "#16a34a" : "#1b59f8", flexShrink: 0 }} />
-                <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#0f172a" }}>{pct}%</span>
-                <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>now</span>
-              </div>
-              <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: pct >= target ? "#16a34a" : "#ef4444" }}>
-                {pct >= target ? `+${pct - target}pp above` : `−${target - pct}pp short`}
+            <div style={{ height: 1, background: "#f1f5f9" }} />
+            <div style={{ padding: "7px 0", display: "flex", justifyContent: "flex-end" }}>
+              <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: pct >= target ? "#16a34a" : "#ef4444" }}>
+                {pct >= target ? `+${pct - target}pp above target` : `−${target - pct}pp below target`}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Data rows — label gray, value dark */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
-          {rows.map((r, i) => (
-            <div key={r.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 0", borderTop: i === 0 ? "none" : "1px solid #f1f5f9" }}>
-              <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8", fontWeight: 400 }}>{r.label}</span>
-              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: r.bold ? 800 : 600, color: r.bold ? "#16a34a" : "#0f172a" }}>{r.display}</span>
+        {/* Attention required · by condition — Figma spec */}
+        {(() => {
+          const CONDITION_ORDER = ["maintenance", "service_overdue", "warranty_expiry"];
+          const ICON_MAP: Record<string, React.ReactNode> = {
+            maintenance:     <AlertTriangle size={13} color="#ef4444" />,
+            service_overdue: <Clock         size={13} color="#f59e0b" />,
+            warranty_expiry: <Shield        size={13} color="#f97316" />,
+          };
+          const conditionGroups = CONDITION_ORDER
+            .map(c => ({
+              condition: c,
+              meta: FLEET_CONDITION_META[c],
+              unitIds: FLEET_UNITS.filter(u => u.conditions.includes(c)).map(u => u.id),
+            }))
+            .filter(g => g.unitIds.length > 0);
+
+          return (
+            <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 10 }}>
+              <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 10px" }}>
+                Attention required · by condition :
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                {conditionGroups.map((group, i) => (
+                  <div key={group.condition} style={{ borderTop: i === 0 ? "none" : "1px solid #f1f5f9", paddingTop: i === 0 ? 0 : 8, marginTop: i === 0 ? 0 : 2 }}>
+                    {/* Header row: icon box + label + total badge */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 28, height: 28, background: "#f1f5f9", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        {ICON_MAP[group.condition]}
+                      </div>
+                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#64748b", letterSpacing: "0.04em", textTransform: "uppercase" as const, flex: 1 }}>
+                        {group.meta.label}
+                      </span>
+                      <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#f1f5f9", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#475569", lineHeight: 1 }}>
+                          {group.unitIds.length}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Units row: pipe-separated plain text */}
+                    <div style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 36 }}>
+                      <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 400, color: "#64748b", margin: 0 }}>
+                        {group.unitIds.join(" | ")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })()}
 
       </div>
     </div>

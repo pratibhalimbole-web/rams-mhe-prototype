@@ -1265,43 +1265,52 @@ function FleetEffectiveV5Widget() {
           </div>
         </div>
 
-        {/* Attention required — grouped by condition type, always fixed rows regardless of fleet size */}
+        {/* Attention required · by condition — Figma spec */}
         <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 10 }}>
-          <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 8px" }}>
+          <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 10px" }}>
             Attention required · by condition :
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-            {conditionGroups.map((group, i) => (
-              <div key={group.condition} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i === 0 ? "none" : "1px solid #f1f5f9" }}>
-                {/* Condition pill */}
-                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: group.meta.color, background: group.meta.bg, border: `1px solid ${group.meta.border}`, borderRadius: 4, padding: "2px 6px", letterSpacing: "0.04em", whiteSpace: "nowrap" as const, flexShrink: 0 }}>
-                  {group.meta.label}
-                </span>
-                {/* Count */}
-                <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#475569", flexShrink: 0 }}>
-                  {group.unitIds.length} unit{group.unitIds.length > 1 ? "s" : ""}
-                </span>
-                {/* Unit ID chips — hard-stopped units get a red tint */}
-                <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "flex-end", flexWrap: "wrap" as const }}>
-                  {group.unitIds.map(uid => {
-                    const u = units.find(u => u.id === uid);
-                    const stopped = u && !u.deployed;
-                    return (
-                      <span key={uid} style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: stopped ? "#dc2626" : "#334155", background: stopped ? "#fef2f2" : "#f1f5f9", border: `1px solid ${stopped ? "#fecaca" : "#e2e8f0"}`, borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap" as const }}>
-                        {uid}{stopped ? " ●" : ""}
+            {conditionGroups.map((group, i) => {
+              const ICON_MAP: Record<string, React.ReactNode> = {
+                maintenance:     <AlertTriangle size={13} color="#ef4444" />,
+                service_overdue: <Clock         size={13} color="#f59e0b" />,
+                warranty_expiry: <Shield        size={13} color="#f97316" />,
+              };
+              return (
+                <div key={group.condition} style={{ borderTop: i === 0 ? "none" : "1px solid #f1f5f9", paddingTop: i === 0 ? 0 : 8, marginTop: i === 0 ? 0 : 2 }}>
+                  {/* Header row: icon box + label + total badge */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 28, height: 28, background: "#f1f5f9", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      {ICON_MAP[group.condition]}
+                    </div>
+                    <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#64748b", letterSpacing: "0.04em", textTransform: "uppercase" as const, flex: 1 }}>
+                      {group.meta.label}
+                    </span>
+                    <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#f1f5f9", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#475569", lineHeight: 1 }}>
+                        {group.unitIds.length}
                       </span>
-                    );
-                  })}
+                    </div>
+                  </div>
+                  {/* Units row: pipe-separated, hard-stopped units marked */}
+                  <div style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 36 }}>
+                    <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 400, color: "#64748b", margin: 0 }}>
+                      {group.unitIds.map((uid, idx) => {
+                        const stopped = !units.find(u => u.id === uid)?.deployed;
+                        return (
+                          <React.Fragment key={uid}>
+                            {idx > 0 && <span style={{ color: "#cbd5e1" }}> | </span>}
+                            <span style={{ color: stopped ? "#ef4444" : "#64748b", fontWeight: stopped ? 600 : 400 }}>{uid}</span>
+                          </React.Fragment>
+                        );
+                      })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          {/* Hard-stop legend */}
-          {units.some(u => !u.deployed) && (
-            <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "8px 0 0", display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ color: "#dc2626", fontWeight: 700 }}>●</span> Hard Stop — unit not deployed
-            </p>
-          )}
         </div>
 
       </div>
