@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { Truck, Activity, ShieldCheck, Wifi } from "lucide-react";
-import { KpiCardV3 } from "../../components/widgets/v3/KpiCardV3";
+import { KPICard, LicenseRenewDrawer, OperatorLicenseExpiryDrawer } from "./FMSDashboard";
 import { SeverityTrendLineV3 } from "../../components/widgets/v3/SeverityTrendLineV3";
 import { FleetCompositionWidget } from "../../components/widgets/v6/FleetCompositionWidget";
-import { FleetEquipmentHealthDistribution } from "../../components/widgets/v6/FleetEquipmentHealthDistribution";
-import { ComponentFailureDistribution } from "../../components/widgets/v6/ComponentFailureDistribution";
-import { MachinesInspectionAttention } from "../../components/widgets/v6/MachinesInspectionAttention";
+import { TopFailingPartsWidget } from "../../components/widgets/v6/TopFailingPartsWidget";
+import { TopMhesWithFindingsWidget } from "../../components/widgets/v6/TopMhesWithFindingsWidget";
+import { LiabilityExposureWidget } from "../../components/widgets/v6/LiabilityExposureWidget";
+import { AssetBurnForecastWidget } from "../../components/widgets/v6/AssetBurnForecastWidget";
+import { TodaysActivityWidget } from "../../components/widgets/v6/TodaysActivityWidget";
+import { TripLoadBreakdownWidget } from "../../components/widgets/v6/TripLoadBreakdownWidget";
+import { InspectionHealthWidget } from "../../components/widgets/v6/InspectionHealthWidget";
 import { WarrantyExpiryTableV3 } from "../../components/widgets/v3/WarrantyExpiryTableV3";
-import { LicenseRenewDrawer, OperatorLicenseExpiryDrawer } from "./FMSDashboard";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
 
 export function Variation6Tab() {
@@ -28,17 +31,17 @@ export function Variation6Tab() {
           </span>
         </div>
 
-        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-          <KpiCardV3 label="Fleet Size"         value="42"  description="Total machines in operation" icon={Truck} />
+        <div className="col-span-3">
+          <KPICard title="Fleet Size"         value="42"  description="Total machines in operation" icon={Truck} />
         </div>
-        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-          <KpiCardV3 label="Fleet Utilization"  value="78%" description="Percentage active equipment" icon={Activity} />
+        <div className="col-span-3">
+          <KPICard title="Fleet Utilization"  value="78%" description="Percentage active equipment" icon={Activity} />
         </div>
-        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-          <KpiCardV3 label="Fleet Safety Score" value="92%" description="Safety performance rating"   icon={ShieldCheck} />
+        <div className="col-span-3">
+          <KPICard title="Fleet Safety Score" value="92%" description="Safety performance rating"   icon={ShieldCheck} />
         </div>
-        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
-          <KpiCardV3 label="Active Sensors"      value="95" description="Active sensors percentage"   icon={Wifi} />
+        <div className="col-span-3">
+          <KPICard title="Sensor Health"      value="95%" description="Active sensors percentage"   icon={Wifi} />
         </div>
 
         {/* Section — RTSS */}
@@ -55,28 +58,55 @@ export function Variation6Tab() {
           <FleetCompositionWidget />
         </div>
 
-        {/* Section — IMDS */}
+        {/* Section — Risk & Service Signals */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
           <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-            COMMAND CENTER · RTSS · IMDS
+            RISK &amp; SERVICE SIGNALS
           </span>
         </div>
 
-        <div className="col-span-12 md:col-span-6 flex min-h-[480px]">
-          <FleetEquipmentHealthDistribution />
+        <div className="col-span-6 flex min-h-[380px]">
+          <LiabilityExposureWidget />
         </div>
-        <div className="col-span-12 md:col-span-6 flex min-h-[480px]">
-          <ComponentFailureDistribution />
+        <div className="col-span-6 flex min-h-[380px]">
+          <AssetBurnForecastWidget />
         </div>
 
-        <div className="col-span-12 md:col-span-6 flex">
-          <MachinesInspectionAttention />
+        {/* Section — Top Failing Parts & Top MHEs */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+            COMMAND CENTER · FINDINGS
+          </span>
+        </div>
+
+        <div className="col-span-6 flex min-h-[422px]">
+          <TopFailingPartsWidget />
+        </div>
+        <div className="col-span-6 flex min-h-[422px]">
+          <TopMhesWithFindingsWidget />
+        </div>
+
+        {/* Section — Activity & Inspection */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+            COMMAND CENTER · ACTIVITY
+          </span>
+        </div>
+
+        <div className="col-span-4 flex min-h-[422px]">
+          <TodaysActivityWidget />
+        </div>
+        <div className="col-span-4 flex min-h-[422px]">
+          <TripLoadBreakdownWidget />
+        </div>
+        <div className="col-span-4 flex min-h-[422px]">
+          <InspectionHealthWidget />
         </div>
 
         {/* Section — Warranty / License Table */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
           <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-            COMMAND CENTER · IMDS
+            COMMAND CENTER · WARRANTY
           </span>
         </div>
 
