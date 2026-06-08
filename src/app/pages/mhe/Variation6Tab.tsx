@@ -11,8 +11,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "../../components/ui/select";
 import { PieChart, Pie, Cell, Sector, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { KpiCardV3 } from "../../components/widgets/v3/KpiCardV3";
+import { SeverityTrendLineV3 } from "../../components/widgets/v3/SeverityTrendLineV3";
 import { FleetCompositionWidget } from "../../components/widgets/v6/FleetCompositionWidget";
 import { WarrantyExpiryTableV3 } from "../../components/widgets/v3/WarrantyExpiryTableV3";
 import {
@@ -94,24 +94,52 @@ export function Variation6Tab() {
   }, [selectedEquipment]);
 
   return (
-    <div className="space-y-6 p-8">
-
-      {/* Section — Command Center KPIs */}
-      <div style={{ marginBottom: "-8px" }}>
-        <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-          FMS · COMMAND CENTER
-        </span>
-      </div>
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-3"><KpiCardV3 label="Fleet Size"         value="42"  description="Total machines in operation" icon={Truck}      /></div>
-        <div className="col-span-3"><KpiCardV3 label="Fleet Utilization"  value="78%" description="Percentage active equipment" icon={Activity}   /></div>
-        <div className="col-span-3"><KpiCardV3 label="Fleet Safety Score" value="92%" description="Safety performance rating"   icon={ShieldCheck}/></div>
-        <div className="col-span-3"><KpiCardV3 label="Sensor Health"      value="95%" description="Active sensors percentage"  icon={Wifi}       /></div>
-      </div>
-
-      {/* Row 2: Fleet Health + Component Failure — exact from Variation 1 */}
+    <div className="flex-1 p-8 overflow-y-auto">
       <div className="grid grid-cols-12 gap-6">
-        <Card className="col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
+
+        {/* Section — Command Center KPIs */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+            FMS · COMMAND CENTER
+          </span>
+        </div>
+
+        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+          <KpiCardV3 label="Fleet Size"         value="42"  description="Total machines in operation" icon={Truck} />
+        </div>
+        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+          <KpiCardV3 label="Fleet Utilization"  value="78%" description="Percentage active equipment" icon={Activity} />
+        </div>
+        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+          <KpiCardV3 label="Fleet Safety Score" value="92%" description="Safety performance rating"   icon={ShieldCheck} />
+        </div>
+        <div className="col-span-12 md:col-span-6 xl:col-span-3 flex">
+          <KpiCardV3 label="Active Sensors"      value="95" description="Active sensors percentage"   icon={Wifi} />
+        </div>
+
+        {/* Section — RTSS */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+            FMS · RTSS
+          </span>
+        </div>
+
+        <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
+          <SeverityTrendLineV3 hideInsight />
+        </div>
+        <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
+          <FleetCompositionWidget />
+        </div>
+
+        {/* Section — IMDS */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+            COMMAND CENTER · RTSS · IMDS
+          </span>
+        </div>
+
+        {/* Fleet Equipment Health Distribution */}
+        <Card className="col-span-12 md:col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
           <CardHeader className="pb-2 border-b border-[var(--border)]">
             <div className="flex items-start justify-between w-full gap-4">
               <div className="flex flex-col gap-1 flex-1">
@@ -180,7 +208,8 @@ export function Variation6Tab() {
           )}
         </Card>
 
-        <Card className="col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
+        {/* Component Failure Distribution */}
+        <Card className="col-span-12 md:col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden">
           <CardHeader className="pb-2 border-b border-[var(--border)]">
             <div className="flex items-start justify-between w-full gap-4">
               <div className="flex flex-col gap-1 flex-1">
@@ -232,11 +261,9 @@ export function Variation6Tab() {
             </div>
           )}
         </Card>
-      </div>
 
-      {/* Row 3: Machines Attention + Severity Timeline — exact from Variation 1 */}
-      <div className="grid grid-cols-12 gap-6">
-        <Card className="col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ height: "448px" }}>
+        {/* Machines Requiring Inspection Attention */}
+        <Card className="col-span-12 md:col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ height: "448px" }}>
           <CardHeader className="pb-4 border-b border-[var(--border)]">
             <div className="flex items-start justify-between w-full">
               <div className="flex flex-col gap-1">
@@ -310,30 +337,28 @@ export function Variation6Tab() {
           </CardContent>
         </Card>
 
-        <div className="col-span-6 w-full overflow-auto" style={{ height: "448px" }}>
-          <MheInspectionSeverityTimeline />
+        {/* Section — Warranty / License Table */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+            COMMAND CENTER · IMDS
+          </span>
         </div>
-      </div>
 
-      {/* Fleet Composition */}
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-5 flex min-h-[360px]">
-          <FleetCompositionWidget />
+        <div className="col-span-12">
+          <WarrantyExpiryTableV3
+            onRenew={(id, type) => {
+              if (type === "operator") {
+                setSelectedOperatorForLicense(id);
+                setIsLicenseDrawerOpen(true);
+              } else {
+                setSelectedMheForRenewal(id);
+                setIsRenewDrawerOpen(true);
+              }
+            }}
+          />
         </div>
-      </div>
 
-      {/* Warranty Table */}
-      <WarrantyExpiryTableV3
-        onRenew={(id, type) => {
-          if (type === "operator") {
-            setSelectedOperatorForLicense(id);
-            setIsLicenseDrawerOpen(true);
-          } else {
-            setSelectedMheForRenewal(id);
-            setIsRenewDrawerOpen(true);
-          }
-        }}
-      />
+      </div>
 
       <LicenseRenewDrawer
         isOpen={isRenewDrawerOpen}
