@@ -34,12 +34,12 @@ const ALL_DATA: Record<DataKey, PartRow[]> = {
 const filterStyle: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif",
   fontWeight: 400,
 };
@@ -50,19 +50,19 @@ function CustomTooltip({ active, payload, label }: any) {
   const amber = payload.find((p: any) => p.dataKey === "amber")?.value ?? 0;
   return (
     <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "140px" }}>
-      <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a", margin: "0 0 8px" }}>{label}</p>
+      <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)", margin: "0 0 8px" }}>{label}</p>
       {([["Red", "#ef4444", red], ["Amber", "#f59e0b", amber]] as [string, string, number][]).map(([l, c, v]) => (
         <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>
             <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: c, flexShrink: 0, display: "inline-block" }} />{l}
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{v}</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)" }}>{v}</span>
         </div>
       ))}
-      <div style={{ height: "0.5px", background: "#e2e8f0", margin: "6px 0 4px" }} />
+      <div style={{ height: "0.5px", background: "var(--w-border)", margin: "6px 0 4px" }} />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>Total</span>
-        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "#0f172a" }}>{red + amber}</span>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>Total</span>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "var(--w-text-1)" }}>{red + amber}</span>
       </div>
     </div>
   );
@@ -75,12 +75,12 @@ export function TopFailingPartsV3() {
   const data = ALL_DATA[key] ?? ALL_DATA[`${type}|all`] ?? ALL_DATA["all|all"];
 
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Top Failing Parts</span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Findings by part · last 30 days</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Top Failing Parts</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Findings by part · last 30 days</span>
         </div>
         <div style={{ display: "flex", gap: "6px" }}>
           <Select value={oem} onValueChange={setOem}>
@@ -111,22 +111,22 @@ export function TopFailingPartsV3() {
       <div style={{ flex: 1, padding: "14px 16px 12px 4px", minHeight: 0 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ top: 2, right: 8, left: 0, bottom: 2 }} barSize={10} barCategoryGap="30%">
-            <CartesianGrid horizontal={false} stroke="#f1f5f9" strokeDasharray="" />
+            <CartesianGrid horizontal={false} stroke="var(--w-bg-muted)" strokeDasharray="" />
             <XAxis
               type="number"
-              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#94a3b8" }}
+              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-3)" }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               type="category"
               dataKey="name"
-              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+              tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }}
               axisLine={false}
               tickLine={false}
               width={88}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f8fafc" }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--w-bg-page)" }} />
             <Bar dataKey="red"   fill="#ef4444" stackId="s" radius={[0, 0, 0, 0]} />
             <Bar dataKey="amber" fill="#f59e0b" stackId="s" radius={[0, 3, 3, 0]} />
           </BarChart>
@@ -134,9 +134,9 @@ export function TopFailingPartsV3() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+      <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             Hydraulic seal leads with highest findings
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

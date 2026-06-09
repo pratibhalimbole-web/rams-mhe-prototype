@@ -4,6 +4,7 @@ import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import { isFigmaMakeActive, isEventFromFigmaMake } from "../utils/figma-make";
 import { StorageWarningBanner } from "./components/StorageWarningBanner";
+import { ThemeProvider } from "./components/theme-provider";
 
 // Version: 2.0.1 - Router-based navigation (Cache cleared)
 export default function App() {
@@ -133,10 +134,12 @@ export default function App() {
   }, []);
 
   return (
-    <div className="w-screen h-screen overflow-hidden" style={{ fontFamily: "Inter, sans-serif" }}>
-      <RouterProvider router={router} />
-      <Toaster />
-      <StorageWarningBanner />
-    </div>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <div className="w-screen h-screen overflow-hidden" style={{ fontFamily: "Inter, sans-serif" }}>
+        <RouterProvider router={router} />
+        <Toaster />
+        <StorageWarningBanner />
+      </div>
+    </ThemeProvider>
   );
 }

@@ -20,12 +20,12 @@ const rankedItems = [
 const filterStyle: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif",
   fontWeight: 400,
 };
@@ -44,8 +44,8 @@ export function ImpactTrendRankedV3() {
 
   return (
     <div style={{
-      background: "#ffffff",
-      border: "1px solid #e2e8f0",
+      background: "var(--w-bg)",
+      border: "1px solid var(--w-border)",
       borderRadius: "12px",
       padding: "1px",
       display: "flex",
@@ -59,17 +59,17 @@ export function ImpactTrendRankedV3() {
         alignItems: "flex-start",
         justifyContent: "space-between",
         padding: "16px 20px",
-        borderBottom: "1px solid #e2e8f0",
+        borderBottom: "1px solid var(--w-border)",
         flexShrink: 0,
         height: "80px",
         boxSizing: "border-box",
         gap: 10,
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexShrink: 0 }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, lineHeight: "16px", color: "#0f172a" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, lineHeight: "16px", color: "var(--w-text-1)" }}>
             Impact Trend by Zone & MHE
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "var(--w-text-2)" }}>
             Total impact events over time
           </span>
         </div>
@@ -96,7 +96,7 @@ export function ImpactTrendRankedV3() {
       {/* Body — max 2 items visible, scroll for more */}
       <div style={{ maxHeight: "352px", overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "12px" }}>
         {visibleItems.map((item, i) => (
-          <div key={i} style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 13px", display: "flex", flexDirection: "column", gap: "8px", background: "#ffffff" }}>
+          <div key={i} style={{ border: "1px solid var(--w-border)", borderRadius: 8, padding: "8px 13px", display: "flex", flexDirection: "column", gap: "8px", background: "var(--w-bg)" }}>
 
             {/* Row 1: avatar + name + count badge */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0" }}>
@@ -104,8 +104,8 @@ export function ImpactTrendRankedV3() {
                 <Truck style={{ width: 14, height: 14, color: "#2563eb" }} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "16px", color: "#0f172a", whiteSpace: "nowrap" }}>{item.id}</span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Last Inspection: {item.lastInspection}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "16px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>{item.id}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Last Inspection: {item.lastInspection}</span>
               </div>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(37,99,235,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, lineHeight: "20px", color: "#2563eb" }}>{item.impactCount}</span>
@@ -116,24 +116,24 @@ export function ImpactTrendRankedV3() {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 0, padding: "6px 0" }}>
               {([["#e11d48", "Critical", item.red], ["#f59e0b", "Medium", item.amber], ["#16a34a", "Low", item.green]] as [string, string, number][]).map(([color, label, val], idx) => (
                 <div key={label} style={{ display: "flex", flexDirection: "column", gap: 1, flex: 1 }}>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, lineHeight: "14.3px", color: "#0f172a" }}>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, lineHeight: "14.3px", color: "var(--w-text-1)" }}>
                     {String(val).padStart(2, "0")}
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <div style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>{label}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>{label}</span>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Row 3: highly impacted + event type */}
-            <div style={{ borderTop: "1px solid #e2e8f0", padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
-                Highly Impacted: <b style={{ color: "#0f172a" }}>{item.highlyImpacted}</b>
+            <div style={{ borderTop: "1px solid var(--w-border)", padding: "8px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
+                Highly Impacted: <b style={{ color: "var(--w-text-1)" }}>{item.highlyImpacted}</b>
               </span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
-                Event Type: <b style={{ color: "#0f172a" }}>{item.eventType}</b>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 10, lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
+                Event Type: <b style={{ color: "var(--w-text-1)" }}>{item.eventType}</b>
               </span>
             </div>
           </div>
@@ -142,7 +142,7 @@ export function ImpactTrendRankedV3() {
 
       {/* Footer */}
       <div style={{
-        borderTop: "1px solid #f1f5f9",
+        borderTop: "1px solid var(--w-divider)",
         padding: "11px 16px 0 16px",
         flexShrink: 0,
         height: "59.5px",
@@ -150,7 +150,7 @@ export function ImpactTrendRankedV3() {
         overflow: "hidden",
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             MHE-001 leads with 12 impacts; Storage A most affected — 20 red severities
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11, lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

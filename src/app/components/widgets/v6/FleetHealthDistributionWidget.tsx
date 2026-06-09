@@ -23,12 +23,12 @@ const total = data.reduce((s: number, d: any) => s + d.value, 0);
 
 export function FleetHealthDistributionWidget() {
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
       {/* Header */}
-      <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
-        <p style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: "#0f172a", margin: "0 0 4px" }}>Fleet Equipment Health Distribution</p>
-        <p style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8", margin: 0 }}>Fleet equipment warranty validity status across all MHE assets.</p>
+      <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0 }}>
+        <p style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 4px" }}>Fleet Equipment Health Distribution</p>
+        <p style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)", margin: 0 }}>Fleet equipment warranty validity status across all MHE assets.</p>
       </div>
 
       {/* Body: donut + legend */}
@@ -46,19 +46,19 @@ export function FleetHealthDistributionWidget() {
               outerRadius={110}
               startAngle={90}
               endAngle={-270}
-              stroke="#ffffff"
+              stroke="var(--w-bg)"
               strokeWidth={3}
               paddingAngle={3}
             >
               {data.map((d: any, i: number) => (
-                <Cell key={i} fill={HEALTH_COLORS[d.name] ?? "#e2e8f0"} />
+                <Cell key={i} fill={HEALTH_COLORS[d.name] ?? "var(--w-border)"} />
               ))}
             </Pie>
           </PieChart>
           {/* Centre */}
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-            <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 600, color: "#0f172a", lineHeight: 1 }}>{total}</span>
-            <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8", marginTop: 6 }}>Total MHEs</span>
+            <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 600, color: "var(--w-text-1)", lineHeight: 1 }}>{total}</span>
+            <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)", marginTop: 6 }}>Total MHEs</span>
           </div>
         </div>
 
@@ -66,7 +66,7 @@ export function FleetHealthDistributionWidget() {
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {data.map((d: any) => (
             <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: HEALTH_COLORS[d.name] ?? "#e2e8f0", flexShrink: 0 }} />
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: HEALTH_COLORS[d.name] ?? "var(--w-border)", flexShrink: 0 }} />
               <span style={{ fontFamily: FF, fontSize: 13, color: "#334155" }}>{HEALTH_LABELS[d.name] ?? d.name}</span>
             </div>
           ))}

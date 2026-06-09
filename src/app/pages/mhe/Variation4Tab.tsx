@@ -4,6 +4,7 @@
  * "How healthy, deployable, safe, productive, and compliant is the warehouse right now?"
  */
 import React, { useState, useEffect, useRef } from "react";
+import { useTheme } from "../../hooks/useTheme";
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "../../components/ui/card";
@@ -25,21 +26,21 @@ import {
 
 // ─── Filter dropdown style (matches V3) ──────────────────────────────────────
 const FILTER_STYLE: React.CSSProperties = {
-  height: "28px", width: "auto", background: "#ffffff",
-  border: "1px solid #e2e8f0", borderRadius: "6px",
-  padding: "0 10px", fontSize: "10px", color: "#0f172a",
+  height: "28px", width: "auto", background: "var(--w-bg)",
+  border: "1px solid var(--w-border)", borderRadius: "6px",
+  padding: "0 10px", fontSize: "10px", color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif", fontWeight: 400,
 };
 
 // ─── Design tokens (exact match to Variation 3) ───────────────────────────────
 const FF = "Inter, sans-serif";
 const CARD: React.CSSProperties = {
-  background: "#ffffff", border: "1px solid #e2e8f0",
+  background: "var(--w-bg)", border: "1px solid var(--w-border)",
   borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden",
 };
-const HDR_BORDER = "1px solid #e2e8f0";
-const DIV_LIGHT  = "1px solid #f1f5f9";
-const hoverIn  = (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; };
+const HDR_BORDER = "1px solid var(--w-border)";
+const DIV_LIGHT  = "1px solid var(--w-divider)";
+const hoverIn  = (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg-page)"; };
 const hoverOut = (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "transparent"; };
 
 // ─── Section Label — same as V3 SL ───────────────────────────────────────────
@@ -47,10 +48,10 @@ function SL({ children }: { children: React.ReactNode }) {
   return (
     <div className="col-span-12" style={{ marginTop: 4, marginBottom: -8 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748b", whiteSpace: "nowrap" }}>
+        <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
           {children}
         </span>
-        <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+        <div style={{ flex: 1, height: 1, background: "var(--w-border)" }} />
       </div>
     </div>
   );
@@ -99,9 +100,9 @@ const LIVE_EVENTS = [
 ];
 
 const EVENT_CHIP: Record<string, { bg: string; color: string; border: string }> = {
-  critical: { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
-  high:     { bg: "#fef3c7", color: "#92400e", border: "#fde68a" },
-  medium:   { bg: "#eff6ff", color: "#1e40af", border: "#bfdbfe" },
+  critical: { bg: "var(--w-red-bg)",   color: "#dc2626", border: "var(--w-red-border)" },
+  high:     { bg: "var(--w-amber-bg)", color: "#92400e", border: "var(--w-amber-border)" },
+  medium:   { bg: "var(--w-blue-bg)",  color: "#1e40af", border: "var(--w-blue-border)" },
 };
 
 const FLEET_SEGMENTS = [
@@ -251,9 +252,9 @@ const OPR_RC = [
 
 // ─── Score Band Helpers ───────────────────────────────────────────────────────
 function scoreBandStyle(band: string) {
-  if (band === "green")  return { bg: "#f0fdf4", color: "#166534", border: "#bbf7d0" };
-  if (band === "amber")  return { bg: "#fef3c7", color: "#92400e", border: "#fde68a" };
-  return { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" };
+  if (band === "green")  return { bg: "var(--w-green-bg)", color: "#166534", border: "var(--w-green-border)" };
+  if (band === "amber")  return { bg: "var(--w-amber-bg)", color: "#92400e", border: "var(--w-amber-border)" };
+  return { bg: "var(--w-red-bg)", color: "#dc2626", border: "var(--w-red-border)" };
 }
 function scoreToBand(score: number) {
   return score >= 80 ? "green" : score >= 60 ? "amber" : "red";
@@ -270,7 +271,7 @@ function RadialScore({ value, max = 100, size = 148, stroke = 10 }: { value: num
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
       {/* Track */}
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke="#f1f5f9" strokeWidth={stroke} />
+      <circle cx={cx} cy={cx} r={r} fill="none" stroke="var(--w-bg-muted)" strokeWidth={stroke} />
       {/* Progress */}
       <circle
         cx={cx} cy={cx} r={r} fill="none"
@@ -281,9 +282,9 @@ function RadialScore({ value, max = 100, size = 148, stroke = 10 }: { value: num
         style={{ transition: "stroke-dasharray 0.6s ease" }}
       />
       {/* Centre label */}
-      <text x={cx} y={cx - 8} textAnchor="middle" style={{ fontFamily: FF, fontSize: 30, fontWeight: 700, fill: "#0f172a" }}>{value}</text>
-      <text x={cx} y={cx + 12} textAnchor="middle" style={{ fontFamily: FF, fontSize: 10, fill: "#94a3b8" }}>/ {max}</text>
-      <text x={cx} y={cx + 26} textAnchor="middle" style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, fill: "#64748b", letterSpacing: "0.06em" }}>HEALTH SCORE</text>
+      <text x={cx} y={cx - 8} textAnchor="middle" style={{ fontFamily: FF, fontSize: 30, fontWeight: 700, fill: "var(--w-text-1)" }}>{value}</text>
+      <text x={cx} y={cx + 12} textAnchor="middle" style={{ fontFamily: FF, fontSize: 10, fill: "var(--w-text-3)" }}>/ {max}</text>
+      <text x={cx} y={cx + 26} textAnchor="middle" style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, fill: "var(--w-text-2)", letterSpacing: "0.06em" }}>HEALTH SCORE</text>
     </svg>
   );
 }
@@ -315,7 +316,7 @@ function SemiGauge({ value, max = 100 }: { value: number; max?: number }) {
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block", maxWidth: 210 }}>
       {/* Background track */}
-      <path d={arc(0, 1)} fill="none" stroke="#f1f5f9" strokeWidth={SW} strokeLinecap="round" />
+      <path d={arc(0, 1)} fill="none" stroke="var(--w-bg-muted)" strokeWidth={SW} strokeLinecap="round" />
       {/* Zone colour bands */}
       {zones.map(([a, b, c], i) => (
         <path key={i} d={arc(a, b)} fill="none" stroke={c} strokeWidth={SW - 2} strokeLinecap="butt" opacity={0.6} />
@@ -326,9 +327,9 @@ function SemiGauge({ value, max = 100 }: { value: number; max?: number }) {
       <circle cx={tip.x} cy={tip.y} r={5} fill="#fff" stroke="#1b59f8" strokeWidth={2.5} />
       {/* Score */}
       <text x={cx} y={cy - 4} textAnchor="middle"
-        style={{ fontFamily: FF, fontSize: "30px", fontWeight: 700, fill: "#0f172a" }}>{value}</text>
+        style={{ fontFamily: FF, fontSize: "30px", fontWeight: 700, fill: "var(--w-text-1)" }}>{value}</text>
       <text x={cx} y={cy + 14} textAnchor="middle"
-        style={{ fontFamily: FF, fontSize: "9px", fill: "#94a3b8", letterSpacing: "0.05em" }}>OUT OF {max}</text>
+        style={{ fontFamily: FF, fontSize: "9px", fill: "var(--w-text-3)", letterSpacing: "0.05em" }}>OUT OF {max}</text>
     </svg>
   );
 }
@@ -364,44 +365,44 @@ function PillarCard({
 }) {
   const [tip, setTip] = useState(false);
   const TrendIcon = trend > 0 ? TrendingUp : trend < 0 ? TrendingDown : Minus;
-  const trendColor = trend > 0 ? "#16a34a" : trend < 0 ? "#dc2626" : "#94a3b8";
+  const trendColor = trend > 0 ? "#16a34a" : trend < 0 ? "#dc2626" : "var(--w-text-3)";
   return (
     <div style={{ ...CARD, flex: 1, position: "relative" }}>
       {/* Tooltip */}
       {tip && (
         <div style={{
           position: "absolute", top: 8, right: 8, zIndex: 10,
-          background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8,
+          background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 8,
           padding: "10px 13px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
           minWidth: 180, fontFamily: FF,
         }}>
-          <p style={{ fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 7px" }}>Factors</p>
+          <p style={{ fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 7px" }}>Factors</p>
           {tooltipItems.map(t => (
             <div key={t} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
               <div style={{ width: 4, height: 4, borderRadius: "50%", background: sparkColor, flexShrink: 0 }} />
-              <span style={{ fontSize: 10, color: "#475569" }}>{t}</span>
+              <span style={{ fontSize: 10, color: "var(--w-text-4)" }}>{t}</span>
             </div>
           ))}
         </div>
       )}
       <div style={{ padding: "16px 16px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{title}</span>
+          <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "var(--w-text-1)" }}>{title}</span>
           <button onMouseEnter={() => setTip(true)} onMouseLeave={() => setTip(false)}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "#cbd5e1", display: "flex" }}>
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--w-text-5)", display: "flex" }}>
             <Eye size={13} />
           </button>
         </div>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-              <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 700, color: "#0f172a", lineHeight: 1 }}>{value}</span>
-              <span style={{ fontFamily: FF, fontSize: 12, color: "#94a3b8" }}>/ 100</span>
+              <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 700, color: "var(--w-text-1)", lineHeight: 1 }}>{value}</span>
+              <span style={{ fontFamily: FF, fontSize: 12, color: "var(--w-text-3)" }}>/ 100</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 5 }}>
               <TrendIcon size={11} color={trendColor} />
               <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: trendColor }}>{trend > 0 ? "+" : ""}{trend.toFixed(1)}</span>
-              <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>vs last week</span>
+              <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)" }}>vs last week</span>
             </div>
           </div>
           <Spark data={spark} color={sparkColor} />
@@ -421,7 +422,7 @@ function TrendTooltip({ active, payload, label }: any) {
   ];
   return (
     <div style={{
-      background: "#fff",
+      background: "var(--w-bg)",
       border: "1px solid #e8e8e8",
       borderRadius: 8,
       padding: "12px 14px",
@@ -433,7 +434,7 @@ function TrendTooltip({ active, payload, label }: any) {
     }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 8, borderBottom: "0.64px solid #e2e8f0" }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#0f172a" }}>Day {label}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "var(--w-text-1)" }}>Day {label}</span>
       </div>
       {/* Metric rows */}
       {items.map(({ key, label: l, color }) => {
@@ -441,7 +442,7 @@ function TrendTooltip({ active, payload, label }: any) {
         return entry ? (
           <div key={key} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />
-            <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>{l}</span>
+            <span style={{ fontSize: 10, fontWeight: 600, color: "var(--w-text-1)", flex: 1 }}>{l}</span>
             <span style={{ fontSize: 10, fontWeight: 700, color }}>{entry.value}</span>
           </div>
         ) : null;
@@ -463,8 +464,8 @@ function SegmentBar({ segments }: { segments: { label: string; pct: number; coun
         {segments.map(s => (
           <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
-            <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b" }}>{s.label}</span>
-            <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#475569" }}>{s.count}</span>
+            <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-2)" }}>{s.label}</span>
+            <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "var(--w-text-4)" }}>{s.count}</span>
           </div>
         ))}
       </div>
@@ -480,16 +481,16 @@ function QuadrantTooltip({ active, payload }: any) {
   const color = qdColor(d.x, d.y);
   const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
   return (
-    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 13px", boxShadow: "0 4px 14px rgba(0,0,0,0.10)", minWidth: 170, fontFamily: FF }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 8, padding: "10px 13px", boxShadow: "0 4px 14px rgba(0,0,0,0.10)", minWidth: 170, fontFamily: FF }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
         <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />
-        <span style={{ fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{d.name}</span>
-        <span style={{ fontSize: 10, color: "#94a3b8", marginLeft: 2 }}>{catLabel}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--w-text-1)" }}>{d.name}</span>
+        <span style={{ fontSize: 10, color: "var(--w-text-3)", marginLeft: 2 }}>{catLabel}</span>
       </div>
       {[["Productivity", d.x], ["Safety", d.y]].map(([k, v]) => (
         <div key={String(k)} style={{ display: "flex", justifyContent: "space-between", gap: 24, marginBottom: 3 }}>
-          <span style={{ fontSize: 11, color: "#64748b" }}>{k}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>{v}</span>
+          <span style={{ fontSize: 11, color: "var(--w-text-2)" }}>{k}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--w-text-1)" }}>{v}</span>
         </div>
       ))}
     </div>
@@ -520,8 +521,8 @@ function ThreePillarTrendWidget() {
       {/* Header */}
       <div style={{ padding: "16px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
         <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Health Trend</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Safety · Efficiency · Compliance</p>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Health Trend</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)", margin: 0 }}>Safety · Efficiency · Compliance</p>
         </div>
       </div>
 
@@ -530,10 +531,10 @@ function ThreePillarTrendWidget() {
         <div style={{ position: "absolute", inset: "16px 12px 8px 4px" }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={TREND_30D} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="day" tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={4} dy={5} />
-              <YAxis domain={[50, 90]} ticks={[50,60,70,80,90]} tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} dx={-4} />
-              <ReTooltip content={<TrendTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1, strokeDasharray: "4 2" }} />
+              <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
+              <XAxis dataKey="day" tick={{ fontFamily: FF, fontSize: 9, fill: "var(--w-text-3)" }} axisLine={false} tickLine={false} interval={4} dy={5} />
+              <YAxis domain={[50, 90]} ticks={[50,60,70,80,90]} tick={{ fontFamily: FF, fontSize: 9, fill: "var(--w-text-3)" }} axisLine={false} tickLine={false} dx={-4} />
+              <ReTooltip content={<TrendTooltip />} cursor={{ stroke: "var(--w-border)", strokeWidth: 1, strokeDasharray: "4 2" }} />
               <Area type="monotone" dataKey="safety"
                 stroke="#3b82f6" strokeWidth={lineWidth("safety")} strokeOpacity={lineOpacity("safety")}
                 fill="none"
@@ -563,8 +564,8 @@ function ThreePillarTrendWidget() {
               onMouseLeave={() => setHoveredLine(null)}
             >
               <span style={{ width: 8, height: 8, background: color, display: "inline-block", borderRadius: 2, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: "#64748b" }}>{label}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{value}</span>
+              <span style={{ fontSize: 11, color: "var(--w-text-2)" }}>{label}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--w-text-1)" }}>{value}</span>
               <span style={{ fontSize: 10, fontWeight: 600, color: delta < 0 ? "#ef4444" : "#16a34a" }}>{delta > 0 ? "+" : ""}{delta}</span>
             </span>
           );
@@ -621,37 +622,37 @@ function CriticalAndLiveWidget() {
       <div style={{ padding: "14px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>Operational Intelligence</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "#fef2f2", border: "1px solid #fecaca", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
+            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)" }}>Operational Intelligence</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "var(--w-red-bg)", border: "1px solid var(--w-red-border)", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />LIVE
             </span>
           </div>
-          <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>Active critical issues and real-time event stream — RTSS · MEPS · FMS</span>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)" }}>Active critical issues and real-time event stream — RTSS · MEPS · FMS</span>
         </div>
       </div>
 
       {/* ── Section: Critical Issues ── */}
-      <div style={{ borderBottom: "1px solid #f1f5f9", padding: "12px 20px 14px", flexShrink: 0 }}>
+      <div style={{ borderBottom: "1px solid var(--w-divider)", padding: "12px 20px 14px", flexShrink: 0 }}>
         {/* Section heading */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <AlertTriangle size={14} color="#475569" />
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <AlertTriangle size={14} color="var(--w-text-4)" />
           </div>
-          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>Critical Issues</span>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "var(--w-text-1)" }}>Critical Issues</span>
         </div>
         {/* Stat tiles */}
         <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
           {/* Total */}
-          <div style={{ paddingRight: 20, marginRight: 20, borderRight: "1px solid #e2e8f0", flexShrink: 0 }}>
-            <p style={{ fontFamily: FF, fontSize: 28, fontWeight: 800, color: "#0f172a", margin: 0, lineHeight: 1 }}>12</p>
-            <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "3px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total</p>
+          <div style={{ paddingRight: 20, marginRight: 20, borderRight: "1px solid var(--w-border)", flexShrink: 0 }}>
+            <p style={{ fontFamily: FF, fontSize: 28, fontWeight: 800, color: "var(--w-text-1)", margin: 0, lineHeight: 1 }}>12</p>
+            <p style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)", margin: "3px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>Total</p>
           </div>
           {/* Individual stat tiles */}
           <div style={{ display: "flex", gap: 0, flex: 1 }}>
             {criticalItems.map((item, i) => (
-              <div key={item.label} style={{ flex: 1, paddingLeft: 16, borderLeft: i > 0 ? "1px solid #f1f5f9" : "none" }}>
+              <div key={item.label} style={{ flex: 1, paddingLeft: 16, borderLeft: i > 0 ? "1px solid var(--w-divider)" : "none" }}>
                 <p style={{ fontFamily: FF, fontSize: 20, fontWeight: 700, color: "#334155", margin: 0, lineHeight: 1 }}>{item.count}</p>
-                <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: "4px 0 0", lineHeight: "12px" }}>{item.label}</p>
+                <p style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)", margin: "4px 0 0", lineHeight: "12px" }}>{item.label}</p>
               </div>
             ))}
           </div>
@@ -662,21 +663,27 @@ function CriticalAndLiveWidget() {
       <div style={{ flexShrink: 0 }}>
         {/* Section heading */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 20px 8px" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Activity size={14} color="#475569" />
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Activity size={14} color="var(--w-text-4)" />
           </div>
-          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>Live Event Wire</span>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "var(--w-text-1)" }}>Live Event Wire</span>
           {/* Total pill */}
-          <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>
+          <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "var(--w-bg-muted)", color: "var(--w-text-4)", border: "1px solid var(--w-border)", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>
             Total = 10
           </span>
           {/* Last 30 min */}
-          <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>last 30 min</span>
-          <span style={{ marginLeft: "auto", fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#3b82f6", cursor: "pointer", padding: "3px 10px", borderRadius: 6, border: "1px solid #bfdbfe", background: "#eff6ff", whiteSpace: "nowrap" as const }}>Show All</span>
+          <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)" }}>last 30 min</span>
+          <span style={{ marginLeft: "auto", fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#3b82f6", cursor: "pointer", padding: "3px 10px", borderRadius: 6, border: "1px solid var(--w-blue-border)", background: "var(--w-blue-bg)", whiteSpace: "nowrap" as const }}>Show All</span>
         </div>
         {/* Auto-scrolling ticker + manual scrollbar */}
-        <style>{`.live-ticker::-webkit-scrollbar{height:2px}.live-ticker::-webkit-scrollbar-track{background:#f8fafc;border-radius:2px}.live-ticker::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}`}</style>
-        <div ref={tickerRef} className="live-ticker" style={{ overflowX: "auto", overflowY: "hidden", padding: "0 20px 14px", scrollbarWidth: "thin", scrollbarColor: "#cbd5e1 #f8fafc" } as React.CSSProperties}>
+        <style>{`
+          .live-ticker::-webkit-scrollbar{height:2px}
+          .live-ticker::-webkit-scrollbar-track{background:#f8fafc;border-radius:2px}
+          .live-ticker::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:2px}
+          .dark .live-ticker::-webkit-scrollbar-track{background:#0f172a}
+          .dark .live-ticker::-webkit-scrollbar-thumb{background:#475569}
+        `}</style>
+        <div ref={tickerRef} className="live-ticker" style={{ overflowX: "auto", overflowY: "hidden", padding: "0 20px 14px", scrollbarWidth: "thin", scrollbarColor: "var(--w-text-3) var(--w-bg-page)" } as React.CSSProperties}>
           <div style={{ display: "flex", gap: 10, width: "max-content", alignItems: "stretch" }}>
             {tickerEvents.map((ev, idx) => {
               // Icon per event type
@@ -692,8 +699,8 @@ function CriticalAndLiveWidget() {
 
               return (
                 <div key={`${ev.id}-${idx}`} style={{
-                  background: "#fff",
-                  border: "1px solid #e2e8f0",
+                  background: "var(--w-bg)",
+                  border: "1px solid var(--w-border)",
                   borderRadius: 10,
                   minWidth: 230,
                   maxWidth: 230,
@@ -706,20 +713,20 @@ function CriticalAndLiveWidget() {
                   <div style={{ padding: "11px 13px 12px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
                     {/* Row 1: icon box + type + time */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 7, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <TypeIcon size={13} color="#475569" />
+                      <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <TypeIcon size={13} color="var(--w-text-4)" />
                       </div>
-                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#475569", letterSpacing: "0.05em", textTransform: "uppercase" as const, flex: 1 }}>{ev.type}</span>
-                      <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", flexShrink: 0 }}>{ev.time}</span>
+                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "var(--w-text-4)", letterSpacing: "0.05em", textTransform: "uppercase" as const, flex: 1 }}>{ev.type}</span>
+                      <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)", flexShrink: 0 }}>{ev.time}</span>
                     </div>
                     {/* Row 2: context */}
-                    <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: 0, lineHeight: "15px" }}>{ev.context}</p>
+                    <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "var(--w-text-1)", margin: 0, lineHeight: "15px" }}>{ev.context}</p>
                     {/* Row 3: meta */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 0, borderTop: "1px solid #f1f5f9", paddingTop: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 0, borderTop: "1px solid var(--w-divider)", paddingTop: 8 }}>
                       {meta.map((v, i) => (
                         <React.Fragment key={v}>
-                          {i > 0 && <span style={{ color: "#e2e8f0", margin: "0 5px", fontSize: 10 }}>|</span>}
-                          <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b" }}>{v}</span>
+                          {i > 0 && <span style={{ color: "var(--w-border)", margin: "0 5px", fontSize: 10 }}>|</span>}
+                          <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-2)" }}>{v}</span>
                         </React.Fragment>
                       ))}
                     </div>
@@ -740,17 +747,17 @@ function CriticalAndLiveWidget() {
 function EffectiveCapacityWidget() {
   const ROWS = [
     {
-      icon: Truck,    iconColor: "#475569", iconBg: "#f1f5f9",
+      icon: Truck,    iconColor: "var(--w-text-4)", iconBg: "var(--w-bg-muted)",
       name: "Fleet",         sub: "Operational readiness · FMS",
       available: 59, total: 76,  segments: FLEET_SEGMENTS,
     },
     {
-      icon: Users,    iconColor: "#475569", iconBg: "#f1f5f9",
+      icon: Users,    iconColor: "var(--w-text-4)", iconBg: "var(--w-bg-muted)",
       name: "Operators",     sub: "Deployable workforce · MEPS",
       available: 29, total: 42,  segments: OPERATOR_SEGMENTS,
     },
     {
-      icon: Activity, iconColor: "#475569", iconBg: "#f1f5f9",
+      icon: Activity, iconColor: "var(--w-text-4)", iconBg: "var(--w-bg-muted)",
       name: "Live Activity", sub: "Productive mix · RTSS",
       available: 32, total: 59,  segments: PRODUCTIVE_SEGMENTS,
     },
@@ -762,12 +769,12 @@ function EffectiveCapacityWidget() {
       <div style={{ padding: "14px 20px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>Effective Capacity</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "#fef2f2", border: "1px solid #fecaca", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
+            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)" }}>Effective Capacity</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "var(--w-red-bg)", border: "1px solid var(--w-red-border)", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />LIVE
             </span>
           </div>
-          <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>Fleet · Operators · Live Activity — deployable right now · FMS · MEPS · RTSS</span>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)" }}>Fleet · Operators · Live Activity — deployable right now · FMS · MEPS · RTSS</span>
         </div>
       </div>
 
@@ -776,8 +783,8 @@ function EffectiveCapacityWidget() {
       {ROWS.map((row, i) => {
         const pct       = Math.round((row.available / row.total) * 100);
         const pctColor  = pct >= 75 ? "#16a34a"  : pct >= 60 ? "#d97706"  : "#dc2626";
-        const pctBg     = pct >= 75 ? "#f0fdf4"  : pct >= 60 ? "#fffbeb"  : "#fef2f2";
-        const pctBorder = pct >= 75 ? "#bbf7d0"  : pct >= 60 ? "#fde68a"  : "#fecaca";
+        const pctBg     = pct >= 75 ? "var(--w-green-bg)"  : pct >= 60 ? "var(--w-amber-bg)"  : "var(--w-red-bg)";
+        const pctBorder = pct >= 75 ? "var(--w-green-border)"  : pct >= 60 ? "var(--w-amber-border)"  : "var(--w-red-border)";
         const Icon      = row.icon;
 
         return (
@@ -794,31 +801,31 @@ function EffectiveCapacityWidget() {
               <div style={{ width: 170, flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                  background: "#f1f5f9",
+                  background: "var(--w-bg-muted)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <Icon size={14} color="#475569" />
+                  <Icon size={14} color="var(--w-text-4)" />
                 </div>
                 <div>
-                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>
+                  <p style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>
                     {row.name}
                   </p>
-                  <p style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8", margin: 0 }}>
+                  <p style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)", margin: 0 }}>
                     {row.sub}
                   </p>
                 </div>
               </div>
 
               {/* thin divider */}
-              <div style={{ width: 1, height: 32, background: "#e2e8f0", flexShrink: 0, margin: "0 16px" }} />
+              <div style={{ width: 1, height: 32, background: "var(--w-border)", flexShrink: 0, margin: "0 16px" }} />
 
               {/* ② Count — fixed 90px */}
               <div style={{ width: 90, flexShrink: 0, display: "flex", alignItems: "baseline", gap: 4 }}>
                 <span style={{ fontFamily: FF, fontSize: 20, fontWeight: 700, color: "#334155", lineHeight: 1 }}>
                   {row.available}
                 </span>
-                <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8" }}>/ {row.total}</span>
-                <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>avail.</span>
+                <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)" }}>/ {row.total}</span>
+                <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)" }}>avail.</span>
               </div>
 
               {/* ③ Pct badge — fixed 52px */}
@@ -834,7 +841,7 @@ function EffectiveCapacityWidget() {
               </div>
 
               {/* thin divider */}
-              <div style={{ width: 1, height: 32, background: "#e2e8f0", flexShrink: 0, margin: "0 16px" }} />
+              <div style={{ width: 1, height: 32, background: "var(--w-border)", flexShrink: 0, margin: "0 16px" }} />
 
               {/* ④ Bar + legend — flex grow */}
               <div style={{ flex: 1 }}>
@@ -850,7 +857,7 @@ function EffectiveCapacityWidget() {
                   {row.segments.map(s => (
                     <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
                       <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
-                      <span style={{ fontFamily: FF, fontSize: 12, color: "#64748b", whiteSpace: "nowrap" }}>
+                      <span style={{ fontFamily: FF, fontSize: 12, color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
                         {s.label}{" "}
                         <span style={{ fontWeight: 700, color: "#334155" }}>{s.count}</span>
                       </span>
@@ -919,9 +926,9 @@ const FLEET_UNITS = [
 ];
 
 const FLEET_CONDITION_META: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  maintenance:     { label: "MAINTENANCE",     bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
-  service_overdue: { label: "SERVICE OVERDUE", bg: "#fffbeb", color: "#92400e", border: "#fde68a" },
-  warranty_expiry: { label: "WARRANTY EXPIRY", bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
+  maintenance:     { label: "MAINTENANCE",     bg: "var(--w-red-bg)",   color: "#dc2626", border: "var(--w-red-border)" },
+  service_overdue: { label: "SERVICE OVERDUE", bg: "var(--w-amber-bg)", color: "#92400e", border: "var(--w-amber-border)" },
+  warranty_expiry: { label: "WARRANTY EXPIRY", bg: "var(--w-amber-bg)", color: "#c2410c", border: "var(--w-amber-border)" },
 };
 
 function FleetEffectiveWidget() {
@@ -931,21 +938,28 @@ function FleetEffectiveWidget() {
   const service     = FLEET_UNITS.filter(u => u.status === "service").length;
   const pct         = Math.round((available / total) * 100);
   const target      = 85;
+  const [notchTooltip, setNotchTooltip] = useState(false);
+  const { isDark } = useTheme();
 
-  const NOTCH = 2;
+  const donutGap     = isDark ? "#3b82f6" : "#dbeafe";
+  const donutRem     = isDark ? "#475569" : "#eff6ff";
+  const donutNotchFg = isDark ? "#334155" : "#ffffff";
+
+  const NOTCH = 3;
   const donutData = pct < target
     ? [
-        { value: pct,                  color: "#1b59f8" },
-        { value: target - pct - NOTCH, color: "#dbeafe" },
-        { value: NOTCH,                color: "#1e40af" },
-        { value: 100 - target,         color: "#eff6ff" },
+        { value: pct,                  color: "#1b59f8",  isNotch: false },
+        { value: target - pct - NOTCH, color: donutRem,   isNotch: false },
+        { value: NOTCH,                color: "transparent", isNotch: true  },
+        { value: 100 - target,         color: donutRem,   isNotch: false },
       ]
     : [
-        { value: target - NOTCH,       color: "#16a34a" },
-        { value: NOTCH,                color: "#1e40af" },
-        { value: pct - target,         color: "#22c55e" },
-        { value: 100 - pct,            color: "#eff6ff" },
+        { value: target - NOTCH,       color: "#16a34a",  isNotch: false },
+        { value: NOTCH,                color: "transparent", isNotch: true  },
+        { value: pct - target,         color: "#22c55e",  isNotch: false },
+        { value: 100 - pct,            color: donutRem,   isNotch: false },
       ].filter(d => d.value > 0);
+
 
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
@@ -953,8 +967,8 @@ function FleetEffectiveWidget() {
       {/* Header */}
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Fleet · Effective Available</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Total → minus maintenance, service, warranty</p>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Fleet · Effective Available</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>Total → minus maintenance, service, warranty</p>
         </div>
       </div>
 
@@ -963,36 +977,94 @@ function FleetEffectiveWidget() {
 
         {/* KPI */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-          <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{available}</span>
-          <span style={{ fontFamily: FF, fontSize: 12, color: "#94a3b8" }}>/ {total} / UNITS DEPLOYABLE</span>
+          <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "var(--w-text-1)", lineHeight: 1 }}>{available}</span>
+          <span style={{ fontFamily: FF, fontSize: 12, color: "var(--w-text-3)" }}>/ {total} / UNITS DEPLOYABLE</span>
           <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#16a34a" }}>↑ +1 vs yesterday</span>
         </div>
 
         {/* Readiness donut */}
-        <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: 0 }}>Fleet Readiness Index · operational status</p>
+        <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "var(--w-text-3)", margin: 0 }}>Fleet Readiness Index · operational status</p>
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
           {/* Donut ring */}
           <div style={{ position: "relative" as const, width: 112, height: 112, flexShrink: 0 }}>
             <PieChart width={112} height={112}>
+              {/* Layer 1 — main ring; blue slot transparent (drawn by Layer 3) */}
               <Pie
                 data={donutData}
                 dataKey="value"
-                cx={52}
-                cy={52}
-                innerRadius={40}
-                outerRadius={52}
-                startAngle={90}
-                endAngle={-270}
-                stroke="none"
-                paddingAngle={1}
-                cornerRadius={4}
+                cx={52} cy={52}
+                innerRadius={40} outerRadius={52}
+                startAngle={90} endAngle={-270}
+                stroke="none" paddingAngle={0} cornerRadius={0}
               >
-                {donutData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                {donutData.map((d: any, i: number) => (
+                  <Cell key={i} fill={(d.isNotch || (i === 0 && pct < target)) ? "transparent" : d.color} />
+                ))}
               </Pie>
+
+              {/* Layer 2 — notch only: white, rounded, light grey stroke */}
+              <Pie
+                data={donutData}
+                dataKey="value"
+                cx={52} cy={52}
+                innerRadius={39} outerRadius={53}
+                startAngle={90} endAngle={-270}
+                stroke="none" paddingAngle={0} cornerRadius={3}
+                onMouseEnter={(_: any, index: number) => { if (donutData[index]?.isNotch) setNotchTooltip(true); }}
+                onMouseLeave={() => setNotchTooltip(false)}
+              >
+                {donutData.map((d: any, i: number) => (
+                  <Cell
+                    key={i}
+                    fill={d.isNotch ? donutNotchFg : "transparent"}
+                    stroke={d.isNotch ? "var(--w-border)" : "none"}
+                    strokeWidth={d.isNotch ? 1 : 0}
+                    style={d.isNotch ? { cursor: "pointer" } : {}}
+                  />
+                ))}
+              </Pie>
+
+              {/* Layer 3 — blue arc only, cornerRadius=4 for rounded ends */}
+              {pct < target && (
+                <Pie
+                  data={donutData}
+                  dataKey="value"
+                  cx={52} cy={52}
+                  innerRadius={40} outerRadius={52}
+                  startAngle={90} endAngle={-270}
+                  stroke="none" paddingAngle={0} cornerRadius={4}
+                >
+                  {donutData.map((d: any, i: number) => (
+                    <Cell key={i} fill={i === 0 ? "#1b59f8" : "transparent"} />
+                  ))}
+                </Pie>
+              )}
             </PieChart>
+
+            {/* Notch tooltip */}
+            {notchTooltip && (
+              <div style={{
+                position: "absolute" as const,
+                bottom: "calc(100% + 8px)",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "var(--w-bg)",
+                border: "1px solid var(--w-border)",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                whiteSpace: "nowrap" as const,
+                pointerEvents: "none" as const,
+                zIndex: 20,
+              }}>
+                <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Target Threshold</p>
+                <p style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)", margin: 0 }}>Fleet readiness goal · <strong style={{ color: "#1b59f8" }}>{target}%</strong></p>
+              </div>
+            )}
+
             <div style={{ position: "absolute" as const, left: 20, top: 16, width: 80, height: 80, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
-              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{pct}%</span>
-              <span style={{ fontFamily: FF, fontSize: 8, color: "#94a3b8", marginTop: 2, letterSpacing: "0.04em" }}>READY</span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 800, color: "var(--w-text-1)", lineHeight: 1 }}>{pct}%</span>
+              <span style={{ fontFamily: FF, fontSize: 8, color: "var(--w-text-3)", marginTop: 2, letterSpacing: "0.04em" }}>READY</span>
             </div>
           </div>
 
@@ -1000,16 +1072,16 @@ function FleetEffectiveWidget() {
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
               <div style={{ width: 7, height: 7, borderRadius: 2, background: pct >= target ? "#16a34a" : "#1b59f8", flexShrink: 0 }} />
-              <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", flex: 1 }}>Current</span>
-              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{pct}%</span>
+              <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-2)", flex: 1 }}>Current</span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)" }}>{pct}%</span>
             </div>
-            <div style={{ height: 1, background: "#f1f5f9" }} />
+            <div style={{ height: 1, background: "var(--w-bg-muted)" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0" }}>
               <div style={{ width: 7, height: 7, borderRadius: 2, background: "#1e40af", flexShrink: 0 }} />
-              <span style={{ fontFamily: FF, fontSize: 11, color: "#64748b", flex: 1 }}>Target</span>
-              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{target}%</span>
+              <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-2)", flex: 1 }}>Target</span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)" }}>{target}%</span>
             </div>
-            <div style={{ height: 1, background: "#f1f5f9" }} />
+            <div style={{ height: 1, background: "var(--w-bg-muted)" }} />
             <div style={{ padding: "7px 0", display: "flex", justifyContent: "flex-end" }}>
               <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: pct >= target ? "#16a34a" : "#ef4444" }}>
                 {pct >= target ? `+${pct - target}pp above target` : `−${target - pct}pp below target`}
@@ -1022,9 +1094,9 @@ function FleetEffectiveWidget() {
         {(() => {
           const CONDITION_ORDER = ["maintenance", "service_overdue", "warranty_expiry"];
           const ICON_MAP: Record<string, React.ReactNode> = {
-            maintenance:     <AlertTriangle size={13} color="#ef4444" />,
-            service_overdue: <Clock         size={13} color="#f59e0b" />,
-            warranty_expiry: <Shield        size={13} color="#f97316" />,
+            maintenance:     <AlertTriangle size={13} color="var(--w-text-3)" />,
+            service_overdue: <Clock         size={13} color="var(--w-text-3)" />,
+            warranty_expiry: <Shield        size={13} color="var(--w-text-3)" />,
           };
           const conditionGroups = CONDITION_ORDER
             .map(c => ({
@@ -1035,30 +1107,30 @@ function FleetEffectiveWidget() {
             .filter(g => g.unitIds.length > 0);
 
           return (
-            <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 10 }}>
-              <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: "0 0 10px" }}>
+            <div style={{ borderTop: "1px solid var(--w-divider)", paddingTop: 10 }}>
+              <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "var(--w-text-3)", margin: "0 0 10px" }}>
                 Attention required · by condition :
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                 {conditionGroups.map((group, i) => (
-                  <div key={group.condition} style={{ borderTop: i === 0 ? "none" : "1px solid #f1f5f9", paddingTop: i === 0 ? 0 : 8, marginTop: i === 0 ? 0 : 2 }}>
+                  <div key={group.condition} style={{ borderTop: i === 0 ? "none" : "1px solid var(--w-divider)", paddingTop: i === 0 ? 0 : 8, marginTop: i === 0 ? 0 : 2 }}>
                     {/* Header row: icon box + label + total badge */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 28, height: 28, background: "#f1f5f9", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <div style={{ width: 28, height: 28, background: "var(--w-bg-muted)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         {ICON_MAP[group.condition]}
                       </div>
-                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#64748b", letterSpacing: "0.04em", textTransform: "uppercase" as const, flex: 1 }}>
+                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, color: "var(--w-text-2)", letterSpacing: "0.04em", textTransform: "uppercase" as const, flex: 1 }}>
                         {group.meta.label}
                       </span>
-                      <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#f1f5f9", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#475569", lineHeight: 1 }}>
+                      <div style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--w-bg-muted)", border: "1px solid var(--w-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "var(--w-text-4)", lineHeight: 1 }}>
                           {group.unitIds.length}
                         </span>
                       </div>
                     </div>
                     {/* Units row: pipe-separated plain text */}
                     <div style={{ paddingTop: 8, paddingBottom: 8, paddingLeft: 36 }}>
-                      <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 400, color: "#64748b", margin: 0 }}>
+                      <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 400, color: "var(--w-text-2)", margin: 0 }}>
                         {group.unitIds.join(" | ")}
                       </p>
                     </div>
@@ -1097,8 +1169,8 @@ function PalletWasteWidget() {
       {/* Header */}
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Pallet Waste Index</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Waste minutes carried per pallet moved · {WASTE_PALLETS} pallets today</p>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Pallet Waste Index</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>Waste minutes carried per pallet moved · {WASTE_PALLETS} pallets today</p>
         </div>
       </div>
 
@@ -1107,14 +1179,14 @@ function PalletWasteWidget() {
 
       {/* Score row */}
       <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexShrink: 0 }}>
-        <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{WASTE_VALUE}</span>
-        <span style={{ fontFamily: FF, fontSize: 12, color: "#94a3b8" }}>/ MIN / PALLET</span>
+        <span style={{ fontFamily: FF, fontSize: 32, fontWeight: 800, color: "var(--w-text-1)", lineHeight: 1 }}>{WASTE_VALUE}</span>
+        <span style={{ fontFamily: FF, fontSize: 12, color: "var(--w-text-3)" }}>/ MIN / PALLET</span>
         <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#ef4444" }}>↑ +0.15 vs yesterday</span>
       </div>
 
       {/* Waste sources */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, paddingTop: 12, paddingBottom: 12 }}>
-        <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#94a3b8", margin: 0 }}>Waste sources · ranked by impact</p>
+        <p style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "var(--w-text-3)", margin: 0 }}>Waste sources · ranked by impact</p>
 
         {/* Segmented bar with hover tooltip */}
         <div style={{ position: "relative" as const }}>
@@ -1135,23 +1207,23 @@ function PalletWasteWidget() {
             const idx = WASTE_SOURCES.indexOf(s);
             const offsetPct = WASTE_SOURCES.slice(0, idx).reduce((a, x) => a + x.minutes, 0) / WASTE_TOTAL_MIN * 100 + (s.minutes / WASTE_TOTAL_MIN * 100) / 2;
             return (
-              <div style={{ position: "absolute" as const, bottom: "calc(100% + 6px)", left: `${offsetPct}%`, transform: "translateX(-50%)", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", whiteSpace: "nowrap" as const, zIndex: 10, fontFamily: FF, pointerEvents: "none" as const }}>
+              <div style={{ position: "absolute" as const, bottom: "calc(100% + 6px)", left: `${offsetPct}%`, transform: "translateX(-50%)", background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 8, padding: "8px 12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", whiteSpace: "nowrap" as const, zIndex: 10, fontFamily: FF, pointerEvents: "none" as const }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
                   <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>{s.label}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--w-text-1)" }}>{s.label}</span>
                 </div>
                 <div style={{ display: "flex", gap: 12 }}>
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", margin: "0 0 2px" }}>MINUTES</p>
-                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0 }}>{s.minutes}</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.06em", margin: "0 0 2px" }}>MINUTES</p>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: "var(--w-text-1)", margin: 0 }}>{s.minutes}</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", margin: "0 0 2px" }}>SHARE</p>
-                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0 }}>{pct}%</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.06em", margin: "0 0 2px" }}>SHARE</p>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: "var(--w-text-1)", margin: 0 }}>{pct}%</p>
                   </div>
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", margin: "0 0 2px" }}>CONTRIB</p>
-                    <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0 }}>{s.contrib}</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.06em", margin: "0 0 2px" }}>CONTRIB</p>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: "var(--w-text-1)", margin: 0 }}>{s.contrib}</p>
                   </div>
                 </div>
               </div>
@@ -1164,7 +1236,7 @@ function PalletWasteWidget() {
           {WASTE_SOURCES.map((s) => (
             <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <div style={{ width: 7, height: 7, borderRadius: 2, background: s.color, flexShrink: 0 }} />
-              <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>{s.label}</span>
+              <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)" }}>{s.label}</span>
             </div>
           ))}
         </div>
@@ -1173,20 +1245,20 @@ function PalletWasteWidget() {
       {/* Stats row: Total min | 28-day norm | Best day */}
       <div style={{ display: "flex", alignItems: "stretch", padding: "12px 0", flexShrink: 0 }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "#94a3b8" }}>Total min</span>
-          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{WASTE_TOTAL_MIN}</span>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "var(--w-text-3)" }}>Total min</span>
+          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "var(--w-text-1)" }}>{WASTE_TOTAL_MIN}</span>
           <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#ef4444" }}>↑ +42 vs 28-day avg</span>
         </div>
-        <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
+        <div style={{ width: 1, background: "var(--w-border)", alignSelf: "stretch" }} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, paddingLeft: 20 }}>
-          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "#94a3b8" }}>28-day norm</span>
-          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{norm28}</span>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "var(--w-text-3)" }}>28-day norm</span>
+          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "var(--w-text-1)" }}>{norm28}</span>
           <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#16a34a" }}>↑ +{vsNorm} above</span>
         </div>
-        <div style={{ width: 1, background: "#e2e8f0", alignSelf: "stretch" }} />
+        <div style={{ width: 1, background: "var(--w-border)", alignSelf: "stretch" }} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, paddingLeft: 20 }}>
-          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "#94a3b8" }}>Best day</span>
-          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{bestDay}</span>
+          <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 500, color: "var(--w-text-3)" }}>Best day</span>
+          <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 700, color: "var(--w-text-1)" }}>{bestDay}</span>
           <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 500, color: "#16a34a" }}>↑ +{vsBest} above</span>
         </div>
       </div>
@@ -1195,30 +1267,30 @@ function PalletWasteWidget() {
       <div style={{ flexShrink: 0 }}>
         {/* Header: BAND label + today's reading */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#64748b", letterSpacing: "0.09em", textTransform: "uppercase" as const }}>Band</span>
-          <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b" }}>
+          <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "var(--w-text-2)", letterSpacing: "0.09em", textTransform: "uppercase" as const }}>Band</span>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)" }}>
             today's reading: <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: "#f97316" }}>Normal — waste rising</span>
           </span>
         </div>
         {/* Pill above marker */}
         <div style={{ position: "relative" as const, height: 22, marginBottom: 2 }}>
-          <div style={{ position: "absolute" as const, left: "36.75%", transform: "translateX(-50%)", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap" as const, display: "flex", alignItems: "center" }}>
+          <div style={{ position: "absolute" as const, left: "36.75%", transform: "translateX(-50%)", background: "var(--w-amber-bg)", border: "1px solid var(--w-amber-border)", borderRadius: 4, padding: "1px 6px", whiteSpace: "nowrap" as const, display: "flex", alignItems: "center" }}>
             <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#d97706" }}>{WASTE_VALUE}</span>
           </div>
         </div>
         {/* Gradient bar + marker */}
         <div style={{ position: "relative" as const, height: 7, borderRadius: 4, background: "linear-gradient(to right, #22c55e 0%, #a3e635 20%, #facc15 40%, #fb923c 68%, #ef4444 85%, #dc2626 100%)" }}>
-          <div style={{ position: "absolute" as const, left: "36.75%", top: -3, bottom: -3, width: 4, background: "#fff", borderRadius: 8, transform: "translateX(-50%)", boxShadow: "0 0 0 1px #e2e8f0" }} />
+          <div style={{ position: "absolute" as const, left: "36.75%", top: -3, bottom: -3, width: 4, background: "var(--w-bg)", borderRadius: 8, transform: "translateX(-50%)", boxShadow: "0 0 0 1px #e2e8f0" }} />
         </div>
         {/* Scale labels */}
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
           {["0", "1.0", "2.0", "3.5", "4+"].map(t => (
-            <span key={t} style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{t}</span>
+            <span key={t} style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)" }}>{t}</span>
           ))}
         </div>
         {/* Formula — below scale */}
         <div style={{ marginTop: 8, textAlign: "right" as const }}>
-          <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>
+          <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)" }}>
             {WASTE_TOTAL_MIN} min waste ÷ {WASTE_PALLETS} pallets &nbsp;
             <span style={{ fontWeight: 700, color: "#334155" }}>= {WASTE_VALUE} min / pallet</span>
           </span>
@@ -1278,6 +1350,7 @@ const QD_LEGEND = [
 ];
 
 function OperatorQuadrantWidget() {
+  const { isDark } = useTheme();
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [hoveredDot, setHoveredDot] = useState<string | null>(null);
 
@@ -1286,27 +1359,27 @@ function OperatorQuadrantWidget() {
       {/* Header */}
       <div style={{ padding: "16px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Operator Quadrant · Risk × Performance</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>X = productivity · Y = safety</p>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Operator Quadrant · Risk × Performance</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)", margin: 0 }}>X = productivity · Y = safety</p>
         </div>
-        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>Operator = {QUADRANT_DATA.length}</span>
+        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "var(--w-bg-muted)", color: "var(--w-text-4)", border: "1px solid var(--w-border)", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>Operator = {QUADRANT_DATA.length}</span>
       </div>
 
       {/* Chart */}
       <div style={{ flex: 1, minHeight: 0, padding: "8px 8px 0 4px" }}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 4, right: 4, left: 0, bottom: 4 }}>
-            <ReferenceArea x1={0}  x2={50} y1={50} y2={100} fill="#fffbeb" fillOpacity={1} />
-            <ReferenceArea x1={50} x2={100} y1={50} y2={100} fill="#f0fdf4" fillOpacity={1} />
-            <ReferenceArea x1={0}  x2={50} y1={0}  y2={50}  fill="#fff1f2" fillOpacity={1} />
-            <ReferenceArea x1={50} x2={100} y1={0}  y2={50}  fill="#fff1f2" fillOpacity={1} />
+            <ReferenceArea x1={0}  x2={50} y1={50} y2={100} fill={isDark ? "#451a03" : "#fffbeb"} fillOpacity={1} />
+            <ReferenceArea x1={50} x2={100} y1={50} y2={100} fill={isDark ? "#052e16" : "#f0fdf4"} fillOpacity={1} />
+            <ReferenceArea x1={0}  x2={50} y1={0}  y2={50}  fill={isDark ? "#450a0a" : "#fff1f2"} fillOpacity={1} />
+            <ReferenceArea x1={50} x2={100} y1={0}  y2={50}  fill={isDark ? "#450a0a" : "#fff1f2"} fillOpacity={1} />
             <XAxis type="number" dataKey="x" domain={[0, 100]} name="Productivity"
-              tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              tick={{ fontFamily: FF, fontSize: 9, fill: "var(--w-text-3)" }} axisLine={false} tickLine={false} />
             <YAxis type="number" dataKey="y" domain={[0, 100]} name="Safety"
-              tick={{ fontFamily: FF, fontSize: 9, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+              tick={{ fontFamily: FF, fontSize: 9, fill: "var(--w-text-3)" }} axisLine={false} tickLine={false} />
             <ZAxis type="number" dataKey="z" range={[1, 1]} />
-            <ReferenceLine x={50} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4 3" />
-            <ReferenceLine y={50} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4 3" />
+            <ReferenceLine x={50} stroke="var(--w-text-5)" strokeWidth={1} strokeDasharray="4 3" />
+            <ReferenceLine y={50} stroke="var(--w-text-5)" strokeWidth={1} strokeDasharray="4 3" />
             <Customized component={QuadrantLabels} />
             <ReTooltip content={<QuadrantTooltip />} cursor={false} />
             <Scatter data={QUADRANT_DATA} shape={(p: any) => <QuadrantDot {...p} hoveredCategory={hoveredCategory} hoveredDot={hoveredDot} setHoveredDot={setHoveredDot} />} />
@@ -1318,7 +1391,7 @@ function OperatorQuadrantWidget() {
       <div style={{ display: "flex", gap: 16, padding: "10px 20px 16px", flexShrink: 0, flexWrap: "wrap" as const, justifyContent: "center" }}>
         {QD_LEGEND.map(({ key, label, color }) => (
           <span key={key}
-            style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: FF, fontSize: 11, color: hoveredCategory === null || hoveredCategory === key ? "#64748b" : "#cbd5e1", cursor: "default", transition: "color 0.15s" }}
+            style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: FF, fontSize: 11, color: hoveredCategory === null || hoveredCategory === key ? "var(--w-text-2)" : "var(--w-text-5)", cursor: "default", transition: "color 0.15s" }}
             onMouseEnter={() => setHoveredCategory(key)}
             onMouseLeave={() => setHoveredCategory(null)}
           >
@@ -1334,17 +1407,17 @@ function OperatorQuadrantWidget() {
 // ─── Widget: Notifications ────────────────────────────────────────────────────
 function NotificationsWidget() {
   const unreadCount = NOTIFICATIONS.filter(n => n.unread).length;
-  const DOT_COLORS = ["#475569", "#94a3b8", "#cbd5e1"];
+  const DOT_COLORS = ["var(--w-text-4)", "var(--w-text-3)", "var(--w-text-5)"];
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
 
       {/* Header */}
       <div style={{ padding: "16px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Notifications</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Operator events · license · warranty · service due · RED findings</p>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Notifications</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)", margin: 0 }}>Operator events · license · warranty · service due · RED findings</p>
         </div>
-        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>
+        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 600, padding: "0 8px", height: 22, lineHeight: "22px", borderRadius: 20, background: "var(--w-bg-muted)", color: "var(--w-text-4)", border: "1px solid var(--w-border)", whiteSpace: "nowrap" as const, display: "inline-flex", alignItems: "center" }}>
           Total = 14
         </span>
       </div>
@@ -1355,22 +1428,21 @@ function NotificationsWidget() {
           const Icon = n.icon;
           return (
             <div key={n.id}
-              style={{ border: "1px solid #e2e8f0", borderRadius: 8, padding: "11px 13px", background: "#fff", display: "flex", flexDirection: "column", gap: 5, cursor: "default", transition: "background 0.12s" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
-              onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+              style={{ border: "1px solid var(--w-border)", borderRadius: 8, padding: "11px 13px", background: "var(--w-bg)", display: "flex", flexDirection: "column", gap: 5, cursor: "default", transition: "background 0.12s" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "var(--w-bg-page)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "var(--w-bg)")}
             >
-              {/* Row 1: icon + category + time + badge */}
+              {/* Row 1: icon + category + time + count badge */}
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <Icon size={11} color="#64748b" style={{ flexShrink: 0 }} />
-                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.07em", textTransform: "uppercase" as const }}>{n.category}</span>
-                <span style={{ color: "#e2e8f0", fontSize: 9 }}>·</span>
-                <span style={{ fontFamily: FF, fontSize: 9, color: "#94a3b8" }}>{n.time}</span>
-                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", marginLeft: "auto" }}>{n.badge}</span>
+                <Icon size={11} color="var(--w-text-2)" style={{ flexShrink: 0 }} />
+                <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.07em", textTransform: "uppercase" as const }}>{n.category}</span>
+                <span style={{ color: "var(--w-border)", fontSize: 9 }}>·</span>
+                <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-3)" }}>{n.time}</span>
               </div>
-              {/* Row 2: title — aligned to icon left */}
-              <p style={{ fontFamily: FF, fontSize: 11, fontWeight: n.unread ? 600 : 500, color: "#0f172a", margin: 0, lineHeight: "15px" }}>{n.title}</p>
-              {/* Row 3: footer — aligned to icon left */}
-              <p style={{ fontFamily: FF, fontSize: 9.5, color: "#94a3b8", margin: 0, lineHeight: "13px" }}>{n.footerLeft} · {n.footerRight}</p>
+              {/* Row 2: title */}
+              <p style={{ fontFamily: FF, fontSize: 11, fontWeight: n.unread ? 600 : 500, color: "var(--w-text-1)", margin: 0, lineHeight: "15px" }}>{n.title}</p>
+              {/* Row 3: footer */}
+              <p style={{ fontFamily: FF, fontSize: 9.5, color: "var(--w-text-3)", margin: 0, lineHeight: "13px" }}>{n.footerLeft} · {n.footerRight}</p>
             </div>
           );
         })}
@@ -1386,9 +1458,9 @@ function StarRating({ value }: { value: number }) {
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <span key={i} style={{ color: i <= rounded ? "#f59e0b" : "#e2e8f0", fontSize: 12, lineHeight: 1 }}>★</span>
+        <span key={i} style={{ color: i <= rounded ? "#f59e0b" : "var(--w-border)", fontSize: 12, lineHeight: 1 }}>★</span>
       ))}
-      <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#94a3b8", marginLeft: 4 }}>{value.toFixed(1)}</span>
+      <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "var(--w-text-3)", marginLeft: 4 }}>{value.toFixed(1)}</span>
     </span>
   );
 }
@@ -1397,15 +1469,15 @@ function StarRating({ value }: { value: number }) {
 function RollCallPagination({ total }: { total: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, padding: "10px 16px", borderTop: DIV_LIGHT, flexShrink: 0 }}>
-      <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>Rows per page:</span>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 3, border: "1px solid #e2e8f0", borderRadius: 5, padding: "2px 7px" }}>
-        <span style={{ fontFamily: FF, fontSize: 10, color: "#475569" }}>10</span>
-        <ChevronRight size={9} color="#94a3b8" style={{ transform: "rotate(90deg)" }} />
+      <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)" }}>Rows per page:</span>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 3, border: "1px solid var(--w-border)", borderRadius: 5, padding: "2px 7px" }}>
+        <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-4)" }}>10</span>
+        <ChevronRight size={9} color="var(--w-text-3)" style={{ transform: "rotate(90deg)" }} />
       </div>
-      <span style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8" }}>1 – 1 of {total}</span>
+      <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)" }}>1 – 1 of {total}</span>
       {[180, 0].map(deg => (
-        <button key={deg} style={{ width: 24, height: 24, borderRadius: 5, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ChevronRight size={11} color="#94a3b8" style={{ transform: `rotate(${deg}deg)` }} />
+        <button key={deg} style={{ width: 24, height: 24, borderRadius: 5, border: "1px solid var(--w-border)", background: "var(--w-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <ChevronRight size={11} color="var(--w-text-3)" style={{ transform: `rotate(${deg}deg)` }} />
         </button>
       ))}
     </div>
@@ -1423,8 +1495,8 @@ function RollCallWidget() {
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
-            <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Roll-Call</p>
-            <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>Reliability scores — incidents, safety, utilization & compliance</p>
+            <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Roll-Call</p>
+            <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)", margin: 0 }}>Reliability scores — incidents, safety, utilization & compliance</p>
           </div>
           <button style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#1b59f8", background: "none", border: "none", cursor: "pointer", padding: 0, marginTop: 2 }}>
             View All <ChevronRight size={11} />
@@ -1434,7 +1506,7 @@ function RollCallWidget() {
 
       {/* Tab strip */}
       <div style={{ padding: "10px 12px 0", flexShrink: 0 }}>
-        <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: "3px", gap: 2 }}>
+        <div style={{ display: "flex", background: "var(--w-bg-muted)", borderRadius: 8, padding: "3px", gap: 2 }}>
           {([
             { id: "equipment" as const, label: "Equipment", count: EQUIP_ROLLCALL.length },
             { id: "operators" as const, label: "Operators", count: OPR_ROLLCALL.length  },
@@ -1443,14 +1515,14 @@ function RollCallWidget() {
             return (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
                 flex: 1, padding: "6px 4px", borderRadius: 6,
-                border: active ? "1px solid #e2e8f0" : "1px solid transparent",
-                background: active ? "#ffffff" : "transparent",
+                border: active ? "1px solid var(--w-border)" : "1px solid transparent",
+                background: active ? "var(--w-bg)" : "transparent",
                 cursor: "pointer", transition: "all 0.12s",
                 boxShadow: active ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
                 display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4,
               }}>
-                <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: active ? "#475569" : "#94a3b8", lineHeight: 1 }}>{t.count}</span>
-                <span style={{ fontFamily: FF, fontSize: 10, fontWeight: active ? 600 : 400, color: active ? "#475569" : "#94a3b8" }}>{t.label}</span>
+                <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: active ? "var(--w-text-4)" : "var(--w-text-3)", lineHeight: 1 }}>{t.count}</span>
+                <span style={{ fontFamily: FF, fontSize: 10, fontWeight: active ? 600 : 400, color: active ? "var(--w-text-4)" : "var(--w-text-3)" }}>{t.label}</span>
               </button>
             );
           })}
@@ -1471,28 +1543,28 @@ function RollCallWidget() {
                 {/* Square icon badge */}
                 <div style={{
                   width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                  background: "#f1f5f9",
+                  background: "var(--w-bg-muted)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <Truck size={15} color="#475569" />
+                  <Truck size={15} color="var(--w-text-4)" />
                 </div>
 
                 {/* Identity + chips */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-                    <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: 0 }}>{row.id}</p>
+                    <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "var(--w-text-1)", margin: 0 }}>{row.id}</p>
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                    <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b", background: "#f1f5f9", padding: "2px 7px", borderRadius: 5 }}>{row.type}</span>
-                    <span style={{ fontFamily: FF, fontSize: 9, color: "#475569", background: "#f8fafc", padding: "2px 7px", borderRadius: 5 }}>Util {row.util}%</span>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-2)", background: "var(--w-bg-muted)", padding: "2px 7px", borderRadius: 5 }}>{row.type}</span>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-4)", background: "var(--w-bg-page)", padding: "2px 7px", borderRadius: 5 }}>Util {row.util}%</span>
                     <span style={{
                       fontFamily: FF, fontSize: 9, padding: "2px 7px", borderRadius: 5,
-                      color: row.incidents > 3 ? "#dc2626" : "#475569",
-                      background: row.incidents > 3 ? "#fef2f2" : "#f8fafc",
-                      border: row.incidents > 3 ? "1px solid #fecaca" : "1px solid transparent",
+                      color: row.incidents > 3 ? "#dc2626" : "var(--w-text-4)",
+                      background: row.incidents > 3 ? "var(--w-red-bg)" : "var(--w-bg-page)",
+                      border: row.incidents > 3 ? "1px solid var(--w-red-border)" : "1px solid transparent",
                     }}>{row.incidents} incidents</span>
                     {row.redFindings > 0 && (
-                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 5, color: "#dc2626", background: "#fef2f2", border: "1px solid #fecaca" }}>
+                      <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 5, color: "#dc2626", background: "var(--w-red-bg)", border: "1px solid var(--w-red-border)" }}>
                         {row.redFindings} RED
                       </span>
                     )}
@@ -1505,7 +1577,7 @@ function RollCallWidget() {
                 </div>
 
               </div>
-              {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
+              {i < arr.length - 1 && <div style={{ height: 1, background: "var(--w-bg-muted)", margin: "0 18px" }} />}
             </div>
           );
         })}
@@ -1514,7 +1586,7 @@ function RollCallWidget() {
           const band = scoreToBand(row.score);
           const bs   = scoreBandStyle(band);
           const TI   = row.trend === "up" ? TrendingUp : row.trend === "down" ? TrendingDown : Minus;
-          const tc   = row.trend === "up" ? "#16a34a" : row.trend === "down" ? "#dc2626" : "#94a3b8";
+          const tc   = row.trend === "up" ? "#16a34a" : row.trend === "down" ? "#dc2626" : "var(--w-text-3)";
           return (
             <div key={row.id}>
               <div
@@ -1524,30 +1596,30 @@ function RollCallWidget() {
                 {/* Square icon badge */}
                 <div style={{
                   width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                  background: "#f1f5f9",
+                  background: "var(--w-bg-muted)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  <Users size={15} color="#475569" />
+                  <Users size={15} color="var(--w-text-4)" />
                 </div>
 
                 {/* Identity + chips */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
-                    <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: 0 }}>{row.name}</p>
+                    <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "var(--w-text-1)", margin: 0 }}>{row.name}</p>
                     {row.fatigue && (
-                      <span style={{ fontFamily: FF, fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a" }}>FATIGUE</span>
+                      <span style={{ fontFamily: FF, fontSize: 8, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: "var(--w-amber-bg)", color: "#92400e", border: "1px solid var(--w-amber-border)" }}>FATIGUE</span>
                     )}
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                    <span style={{ fontFamily: FF, fontSize: 9, color: "#64748b", background: "#f1f5f9", padding: "2px 7px", borderRadius: 5 }}>{row.id} · {row.exp}yr exp</span>
-                    <span style={{ fontFamily: FF, fontSize: 9, color: "#475569", background: "#f8fafc", padding: "2px 7px", borderRadius: 5 }}>Util {row.util}%</span>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-2)", background: "var(--w-bg-muted)", padding: "2px 7px", borderRadius: 5 }}>{row.id} · {row.exp}yr exp</span>
+                    <span style={{ fontFamily: FF, fontSize: 9, color: "var(--w-text-4)", background: "var(--w-bg-page)", padding: "2px 7px", borderRadius: 5 }}>Util {row.util}%</span>
                     <span style={{
                       fontFamily: FF, fontSize: 9, padding: "2px 7px", borderRadius: 5,
-                      color: row.incidents > 2 ? "#dc2626" : "#475569",
-                      background: row.incidents > 2 ? "#fef2f2" : "#f8fafc",
-                      border: row.incidents > 2 ? "1px solid #fecaca" : "1px solid transparent",
+                      color: row.incidents > 2 ? "#dc2626" : "var(--w-text-4)",
+                      background: row.incidents > 2 ? "var(--w-red-bg)" : "var(--w-bg-page)",
+                      border: row.incidents > 2 ? "1px solid var(--w-red-border)" : "1px solid transparent",
                     }}>{row.incidents} incidents</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: FF, fontSize: 9, color: "#475569", background: "#f8fafc", padding: "2px 7px", borderRadius: 5 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: FF, fontSize: 9, color: "var(--w-text-4)", background: "var(--w-bg-page)", padding: "2px 7px", borderRadius: 5 }}>
                       <TI size={9} color={tc} /> Safety {row.safetyRating}
                     </span>
                   </div>
@@ -1559,7 +1631,7 @@ function RollCallWidget() {
                 </div>
 
               </div>
-              {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
+              {i < arr.length - 1 && <div style={{ height: 1, background: "var(--w-bg-muted)", margin: "0 18px" }} />}
             </div>
           );
         })}
@@ -1574,16 +1646,16 @@ function RollCallWidget() {
 function TablePagination({ total, rowsPerPage = 10 }: { total: number; rowsPerPage?: number }) {
   const pages = Math.ceil(total / rowsPerPage);
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, padding: "10px 16px", borderTop: "1px solid #f1f5f9", flexShrink: 0 }}>
-      <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8" }}>Rows per page:</span>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "1px solid #e2e8f0", borderRadius: 5, padding: "3px 8px", cursor: "default" }}>
-        <span style={{ fontFamily: FF, fontSize: 11, color: "#475569" }}>{rowsPerPage}</span>
-        <ChevronRight size={9} color="#94a3b8" style={{ transform: "rotate(90deg)" }} />
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, padding: "10px 16px", borderTop: "1px solid var(--w-divider)", flexShrink: 0 }}>
+      <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)" }}>Rows per page:</span>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "1px solid var(--w-border)", borderRadius: 5, padding: "3px 8px", cursor: "default" }}>
+        <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-4)" }}>{rowsPerPage}</span>
+        <ChevronRight size={9} color="var(--w-text-3)" style={{ transform: "rotate(90deg)" }} />
       </div>
-      <span style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8" }}>1 – 1 of {total}</span>
+      <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)" }}>1 – 1 of {total}</span>
       {[180, 0].map(deg => (
-        <button key={deg} style={{ width: 26, height: 26, borderRadius: 5, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ChevronRight size={11} color="#94a3b8" style={{ transform: `rotate(${deg}deg)` }} />
+        <button key={deg} style={{ width: 26, height: 26, borderRadius: 5, border: "1px solid var(--w-border)", background: "var(--w-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <ChevronRight size={11} color="var(--w-text-3)" style={{ transform: `rotate(${deg}deg)` }} />
         </button>
       ))}
     </div>
@@ -1598,14 +1670,14 @@ function EquipmentRollCallWidget() {
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
-        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Equipment Roll-Call</p>
-        <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Reliability rating · incidents &amp; RED findings</p>
+        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Equipment Roll-Call</p>
+        <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>Reliability rating · incidents &amp; RED findings</p>
       </div>
 
       {/* Column headers */}
-      <div style={{ display: "grid", gridTemplateColumns: EQUIP_COLS, alignItems: "center", padding: "8px 18px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: EQUIP_COLS, alignItems: "center", padding: "8px 18px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0 }}>
         {["MHE", "Util", "Incd 7d", "RED Findings", "Reliability"].map(h => (
-          <span key={h} style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#94a3b8", textAlign: h === "MHE" ? "left" : "right" as const }}>{h}</span>
+          <span key={h} style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "var(--w-text-3)", textAlign: h === "MHE" ? "left" : "right" as const }}>{h}</span>
         ))}
       </div>
 
@@ -1613,12 +1685,12 @@ function EquipmentRollCallWidget() {
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
         {EQUIP_RC.map((row, i) => (
           <div key={row.id}
-            style={{ ...rowGrid, borderBottom: i < EQUIP_RC.length - 1 ? "1px solid #f1f5f9" : "none", cursor: "default", transition: "background 0.12s" }}
+            style={{ ...rowGrid, borderBottom: i < EQUIP_RC.length - 1 ? "1px solid var(--w-divider)" : "none", cursor: "default", transition: "background 0.12s" }}
             onMouseEnter={hoverIn} onMouseLeave={hoverOut}
           >
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>{row.id}</p>
-              <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{row.model}</p>
+              <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>{row.id}</p>
+              <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>{row.model}</p>
             </div>
             <span style={{ fontFamily: FF, fontSize: 12, color: "#334155", textAlign: "right" as const }}>{row.util}%</span>
             <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 3 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.incd7d > 3 ? 700 : 400 }}>{row.incd7d}</span>
@@ -1642,14 +1714,14 @@ function OperatorRollCallWidget() {
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
-        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Operator Roll-Call</p>
-        <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>Safety rating · incidents in last 7 days</p>
+        <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Operator Roll-Call</p>
+        <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>Safety rating · incidents in last 7 days</p>
       </div>
 
       {/* Column headers */}
-      <div style={{ display: "grid", gridTemplateColumns: OPR_COLS, alignItems: "center", padding: "8px 18px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: OPR_COLS, alignItems: "center", padding: "8px 18px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0 }}>
         {["Operator", "Util", "Incd 7d", "Safety"].map(h => (
-          <span key={h} style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "#94a3b8", textAlign: h === "Operator" ? "left" : "right" as const }}>{h}</span>
+          <span key={h} style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: "var(--w-text-3)", textAlign: h === "Operator" ? "left" : "right" as const }}>{h}</span>
         ))}
       </div>
 
@@ -1657,12 +1729,12 @@ function OperatorRollCallWidget() {
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
         {OPR_RC.map((row, i) => (
           <div key={row.uid}
-            style={{ ...rowGrid, borderBottom: i < OPR_RC.length - 1 ? "1px solid #f1f5f9" : "none", cursor: "default", transition: "background 0.12s" }}
+            style={{ ...rowGrid, borderBottom: i < OPR_RC.length - 1 ? "1px solid var(--w-divider)" : "none", cursor: "default", transition: "background 0.12s" }}
             onMouseEnter={hoverIn} onMouseLeave={hoverOut}
           >
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>{row.name}</p>
-              <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{row.uid}</p>
+              <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>{row.name}</p>
+              <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>{row.uid}</p>
             </div>
             <span style={{ fontFamily: FF, fontSize: 12, color: "#334155", textAlign: "right" as const }}>{row.util}%</span>
             <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 10 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.incd7d > 10 ? 700 : 400 }}>{row.incd7d}</span>
@@ -1700,11 +1772,11 @@ function WarehousePerformanceBanner() {
       {/* Header row */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", paddingBottom: 14 }}>
         <div>
-          <p style={{ fontFamily: FF, fontSize: 18, fontWeight: 800, color: "#0f172a", margin: "0 0 4px" }}>Warehouse Performance</p>
-          <p style={{ fontFamily: FF, fontSize: 11, color: "#94a3b8", margin: 0 }}>{dateStr} · Rams</p>
+          <p style={{ fontFamily: FF, fontSize: 18, fontWeight: 800, color: "var(--w-text-1)", margin: "0 0 4px" }}>Warehouse Performance</p>
+          <p style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)", margin: 0 }}>{dateStr} · Rams</p>
         </div>
         {/* LIVE pill — matches widget style */}
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "#fef2f2", border: "1px solid #fecaca", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 20, background: "var(--w-red-bg)", border: "1px solid var(--w-red-border)", fontFamily: FF, fontSize: 9, fontWeight: 600, color: "#dc2626" }}>
           <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block", flexShrink: 0 }} />
           LIVE <span style={{ fontWeight: 700 }}>0 / 5</span> MHE active
         </span>
@@ -1712,7 +1784,7 @@ function WarehousePerformanceBanner() {
 
       {/* Section label */}
       <div style={{ paddingBottom: 10 }}>
-        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>
+        <span style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>
           Operational Health
         </span>
       </div>
@@ -1722,18 +1794,18 @@ function WarehousePerformanceBanner() {
         {kpis.map(k => {
           const Icon = k.icon;
           return (
-            <div key={k.title} style={{ border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 16px", background: "#fff" }}>
+            <div key={k.title} style={{ border: "1px solid var(--w-border)", borderRadius: 10, padding: "14px 16px", background: "var(--w-bg)" }}>
               {/* Icon + title row */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Icon size={14} color="#475569" />
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon size={14} color="var(--w-text-4)" />
                 </div>
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "#64748b" }}>{k.title}</span>
+                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: "var(--w-text-2)" }}>{k.title}</span>
               </div>
               {/* Value */}
-              <p style={{ fontFamily: FF, fontSize: 26, fontWeight: 700, color: "#0f172a", margin: "0 0 3px", lineHeight: 1 }}>{k.value}</p>
+              <p style={{ fontFamily: FF, fontSize: 26, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: 1 }}>{k.value}</p>
               {/* Description */}
-              <p style={{ fontFamily: FF, fontSize: 10, color: "#94a3b8", margin: 0 }}>{k.description}</p>
+              <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>{k.description}</p>
             </div>
           );
         })}

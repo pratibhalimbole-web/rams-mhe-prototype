@@ -29,7 +29,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
         fontSize: 11,
         letterSpacing: "0.08em",
         textTransform: "uppercase" as const,
-        color: "#64748b",
+        color: "var(--w-text-2)",
       }}>
         {children}
       </span>
@@ -42,10 +42,10 @@ function IssueCard({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 12,
-      border: "1px solid #e2e8f0",
+      border: "1px solid var(--w-border)",
       borderRadius: 10,
       padding: "12px 16px",
-      background: "#ffffff",
+      background: "var(--w-bg)",
     }}>
       {children}
     </div>
@@ -71,8 +71,8 @@ function SevChip({ color, label, value }: { color: string; label: string; value:
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 4,
       padding: "2px 7px", borderRadius: 999,
-      background: "#f1f5f9",
-      fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 10, color: "#64748b",
+      background: "var(--w-bg-muted)",
+      fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 10, color: "var(--w-text-2)",
       whiteSpace: "nowrap",
     }}>
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block" }} />
@@ -113,8 +113,8 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#ffffff",
-          border: "1px solid #e2e8f0",
+          background: "var(--w-bg)",
+          border: "1px solid var(--w-border)",
           borderRadius: 12,
           width: "100%",
           maxWidth: 820,
@@ -130,7 +130,7 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "16px 20px",
-          borderBottom: "1px solid #e2e8f0",
+          borderBottom: "1px solid var(--w-border)",
           flexShrink: 0,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -141,23 +141,23 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{
                   fontFamily: "Inter, sans-serif", fontWeight: 700,
-                  fontSize: 12, color: "#0f172a", lineHeight: "18px",
+                  fontSize: 12, color: "var(--w-text-1)", lineHeight: "18px",
                 }}>
                   Critical Issues
                 </span>
                 <span style={{
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                   height: 20, padding: "0 8px", borderRadius: 6,
-                  background: "#f1f5f9",
+                  background: "var(--w-bg-muted)",
                   fontFamily: "Inter, sans-serif", fontWeight: 600,
-                  fontSize: 11, color: "#64748b",
+                  fontSize: 11, color: "var(--w-text-2)",
                 }}>
                   {totalCount} total
                 </span>
               </div>
               <span style={{
                 fontFamily: "Inter, sans-serif", fontWeight: 400,
-                fontSize: 10, color: "#64748b", lineHeight: "15px",
+                fontSize: 10, color: "var(--w-text-2)", lineHeight: "15px",
               }}>
                 Expired warranty, license & high severity inspections
               </span>
@@ -168,18 +168,18 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
               onClick={onClose}
               style={{
                 width: 28, height: 28, borderRadius: 6,
-                border: "1px solid #e2e8f0",
-                background: "#ffffff", cursor: "pointer",
+                border: "1px solid var(--w-border)",
+                background: "var(--w-bg)", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
-              <X style={{ width: 13, height: 13, color: "#64748b" }} />
+              <X style={{ width: 13, height: 13, color: "var(--w-text-2)" }} />
             </button>
           </div>
         </div>
 
         {/* ── Body ── */}
-        <div style={{ overflowY: "auto", flex: 1, background: "#ffffff" }}>
+        <div style={{ overflowY: "auto", flex: 1, background: "var(--w-bg)" }}>
 
           {/* MHE Warranty Expiry */}
           <SectionLabel>
@@ -194,7 +194,7 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
                 </IconCircle>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, color: "#0f172a" }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, color: "var(--w-text-1)" }}>
                       {row.mheType}
                     </span>
                     <span style={{ fontFamily: "monospace", fontWeight: 600, fontSize: 11, color: "#2563eb" }}>
@@ -202,7 +202,7 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
                     </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>
                       <Calendar style={{ width: 9, height: 9 }} />
                       Expired {fmt(row.licenseExpiry)}
                     </span>
@@ -214,7 +214,7 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
           </div>
 
           {/* Operator License Expiry */}
-          <div style={{ borderTop: "1px solid #e2e8f0" }}>
+          <div style={{ borderTop: "1px solid var(--w-border)" }}>
             <SectionLabel>
               <User style={{ width: 11, height: 11, display: "inline", marginRight: 4 }} />
               Operator License Expiry · {criticalLicense.length}
@@ -227,7 +227,7 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
                   </IconCircle>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, color: "#0f172a" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, color: "var(--w-text-1)" }}>
                         {row.operator}
                       </span>
                       <span style={{ fontFamily: "monospace", fontWeight: 600, fontSize: 11, color: "#2563eb" }}>
@@ -235,13 +235,13 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>
                         <Calendar style={{ width: 9, height: 9 }} />
                         Expired {fmt(row.licenseExpiry)}
                       </span>
                       <OverdueBadge days={Math.abs(row.daysRemaining)} />
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8" }}>
-                        Assigned: <b style={{ color: "#64748b" }}>{row.assignedMhe}</b>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>
+                        Assigned: <b style={{ color: "var(--w-text-2)" }}>{row.assignedMhe}</b>
                       </span>
                     </div>
                   </div>
@@ -251,7 +251,7 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
           </div>
 
           {/* High Severity Inspection Findings */}
-          <div style={{ borderTop: "1px solid #e2e8f0" }}>
+          <div style={{ borderTop: "1px solid var(--w-border)" }}>
             <SectionLabel>
               <ClipboardX style={{ width: 11, height: 11, display: "inline", marginRight: 4 }} />
               High Severity Inspection Findings · {criticalInspection.length}
@@ -264,10 +264,10 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
                   </IconCircle>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                      <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#0f172a" }}>
+                      <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "var(--w-text-1)" }}>
                         {row.mheId}
                       </span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#64748b" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
                         {row.equipmentType}
                       </span>
                     </div>
@@ -275,11 +275,11 @@ export function CriticalIssuesModal({ isOpen, onClose }: CriticalIssuesModalProp
                       {row.redFindings > 0 && <SevChip color="#ef4444" label="Red" value={row.redFindings} />}
                       {row.amberFindings > 0 && <SevChip color="#f59e0b" label="Amber" value={row.amberFindings} />}
                       {row.part_issues[0] && (
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8" }}>
-                          Top issue: <b style={{ color: "#0f172a" }}>{row.part_issues[0].part_name}</b>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>
+                          Top issue: <b style={{ color: "var(--w-text-1)" }}>{row.part_issues[0].part_name}</b>
                         </span>
                       )}
-                      <span style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8", marginLeft: "auto" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3, fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)", marginLeft: "auto" }}>
                         <Calendar style={{ width: 9, height: 9 }} />
                         {fmt(row.lastInspection)}
                       </span>

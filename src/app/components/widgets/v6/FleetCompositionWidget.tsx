@@ -48,12 +48,12 @@ const OEM_LABELS: Record<string, string> = {
 const filterStyle: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: FF,
   fontWeight: 400,
 };
@@ -64,13 +64,13 @@ export function FleetCompositionWidget() {
   const total = data.reduce((s, d) => s + d.value, 0);
 
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #e2e8f0", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--w-border)", flexShrink: 0 }}>
         <div>
-          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Fleet Composition</p>
-          <p style={{ fontFamily: FF, fontSize: 10, color: "#64748b", margin: 0 }}>
+          <p style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Fleet Composition</p>
+          <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)", margin: 0 }}>
             MHEs by type · {OEM_LABELS[oem]}
           </p>
         </div>
@@ -101,7 +101,7 @@ export function FleetCompositionWidget() {
               outerRadius={76}
               startAngle={90}
               endAngle={-270}
-              stroke="#ffffff"
+              stroke="var(--w-bg)"
               strokeWidth={2}
               paddingAngle={2}
             >
@@ -110,8 +110,8 @@ export function FleetCompositionWidget() {
           </PieChart>
           {/* Centre */}
           <div style={{ position: "absolute" as const, inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" as const }}>
-            <span style={{ fontFamily: FF, fontSize: 26, fontWeight: 600, color: "#0f172a", lineHeight: 1 }}>{total}</span>
-            <span style={{ fontFamily: FF, fontSize: 10, color: "#64748b", marginTop: 4 }}>Total MHEs</span>
+            <span style={{ fontFamily: FF, fontSize: 26, fontWeight: 600, color: "var(--w-text-1)", lineHeight: 1 }}>{total}</span>
+            <span style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-2)", marginTop: 4 }}>Total MHEs</span>
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export function FleetCompositionWidget() {
             <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
               <span style={{ fontFamily: FF, fontSize: 13, color: "#334155", flex: 1 }}>{d.name}</span>
-              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{d.value}</span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: "var(--w-text-1)" }}>{d.value}</span>
             </div>
           ))}
         </div>

@@ -14,7 +14,6 @@ import { LicenseRenewDrawer, OperatorLicenseExpiryDrawer } from "./FMSDashboard"
 import { Variation1Tab } from "./Variation1Tab";
 import { Variation3Tab } from "./Variation3Tab";
 import { Variation4Tab } from "./Variation4Tab";
-import { Variation5Tab } from "./Variation5Tab";
 import { Variation6Tab } from "./Variation6Tab";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
 
@@ -22,9 +21,8 @@ const TABS = [
   { id: "variation1", label: "Variation 1" },
   { id: "variation2", label: "Variation 2" },
   { id: "variation3", label: "Variation 3" },
-  { id: "variation4", label: "Variation 4" },
-  { id: "variation5", label: "Variation 5" },
-  { id: "variation6", label: "Variation 6" },
+  { id: "variation4", label: "Common Dashboard" },
+  { id: "variation6", label: "FMS Dashboard" },
 ];
 
 export function CommandDashboard() {
@@ -52,7 +50,7 @@ export function CommandDashboard() {
               fontSize: "13px",
               fontWeight: activeTab === tab.id ? 600 : 400,
               fontFamily: "'Inter', sans-serif",
-              color: activeTab === tab.id ? "#1b59f8" : "#64748b",
+              color: activeTab === tab.id ? "#1b59f8" : "var(--w-text-2)",
               background: "none",
               border: "none",
               borderBottom: activeTab === tab.id ? "2px solid #1b59f8" : "2px solid transparent",
@@ -64,16 +62,14 @@ export function CommandDashboard() {
             {tab.label}
           </button>
         ))}
+
       </div>
+
 
       {/* Tab Content */}
       {activeTab === "variation6" ? (
         <div className="flex-1 overflow-y-auto">
           <Variation6Tab />
-        </div>
-      ) : activeTab === "variation5" ? (
-        <div className="flex-1 overflow-y-auto">
-          <Variation5Tab />
         </div>
       ) : activeTab === "variation4" ? (
         <div className="flex-1 overflow-y-auto">
@@ -102,7 +98,7 @@ export function CommandDashboard() {
 
         {/* Section — Command Center KPIs */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             FMS · COMMAND CENTER
           </span>
         </div>
@@ -122,14 +118,14 @@ export function CommandDashboard() {
 
         {/* Section — MEPS Monitoring Strip */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             FMS · MEPS
           </span>
         </div>
 
         <div className="col-span-12">
-          <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden", height: "154px" }}>
-            <div className="grid grid-cols-1 xl:grid-cols-4 divide-y xl:divide-y-0 xl:divide-x" style={{ height: "100%", borderColor: "#e2e8f0" }}>
+          <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", overflow: "hidden", height: "154px" }}>
+            <div className="grid grid-cols-1 xl:grid-cols-4 divide-y xl:divide-y-0 xl:divide-x" style={{ height: "100%", borderColor: "var(--w-border)" }}>
               <MonitoringSplitCardV3
                 icon={ShieldAlert}
                 title="Expiry Monitoring"
@@ -172,7 +168,7 @@ export function CommandDashboard() {
 
         {/* Section — RTSS Charts */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             FMS · RTSS
           </span>
         </div>
@@ -186,7 +182,7 @@ export function CommandDashboard() {
 
         {/* Section — Operational Widgets */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             COMMAND CENTER · RTSS · IMDS
           </span>
         </div>
@@ -203,7 +199,7 @@ export function CommandDashboard() {
 
         {/* Section — Warranty / License Table */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             COMMAND CENTER · IMDS
           </span>
         </div>

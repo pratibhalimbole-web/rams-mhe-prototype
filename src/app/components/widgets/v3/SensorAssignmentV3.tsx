@@ -44,12 +44,12 @@ const TYPE_COLOR: Record<string, string> = {
 const filterStyle: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif",
   fontWeight: 400,
 };
@@ -66,13 +66,13 @@ export function SensorAssignmentV3() {
   const pct = Math.round((assignedList.length / (filtered.length || 1)) * 100);
 
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>MHE Sensor Assignment</span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Sensor coverage across fleet</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>MHE Sensor Assignment</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Sensor coverage across fleet</span>
         </div>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger style={filterStyle}><SelectValue placeholder="All Types" /></SelectTrigger>
@@ -87,30 +87,30 @@ export function SensorAssignmentV3() {
       </div>
 
       {/* Summary bar */}
-      <div style={{ padding: "12px 16px 10px", flexShrink: 0, borderBottom: "1px solid #f1f5f9" }}>
+      <div style={{ padding: "12px 16px 10px", flexShrink: 0, borderBottom: "1px solid var(--w-divider)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", color: "#64748b" }}>Assigned</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>{assignedList.length}</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", color: "var(--w-text-2)" }}>Assigned</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--w-text-1)" }}>{assignedList.length}</span>
             </div>
-            <div style={{ width: "1px", height: "14px", background: "#e2e8f0" }} />
+            <div style={{ width: "1px", height: "14px", background: "var(--w-border)" }} />
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", color: "#64748b" }}>Unassigned</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>{unassignedList.length}</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", color: "var(--w-text-2)" }}>Unassigned</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--w-text-1)" }}>{unassignedList.length}</span>
             </div>
           </div>
           <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", fontWeight: 700, color: "#16a34a" }}>{pct}% coverage</span>
         </div>
-        <div style={{ display: "flex", height: "3px", borderRadius: "3px", overflow: "hidden", background: "#f1f5f9" }}>
+        <div style={{ display: "flex", height: "3px", borderRadius: "3px", overflow: "hidden", background: "var(--w-bg-muted)" }}>
           <div style={{ width: `${pct}%`, height: "100%", background: "#16a34a", borderRadius: "3px", transition: "width 0.3s ease" }} />
         </div>
       </div>
 
       {/* Type breakdown bars */}
-      <div style={{ padding: "12px 16px", flexShrink: 0, borderBottom: "1px solid #f1f5f9" }}>
+      <div style={{ padding: "12px 16px", flexShrink: 0, borderBottom: "1px solid var(--w-divider)" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
           {TYPES.map((type) => {
             const mhes = filtered.filter((m) => m.type === type);
@@ -123,11 +123,11 @@ export function SensorAssignmentV3() {
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <div style={{ width: "3px", height: "12px", borderRadius: "2px", background: TYPE_COLOR[type], flexShrink: 0 }} />
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{type}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)" }}>{type}</span>
                   </div>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#94a3b8" }}>{a}/{mhes.length}</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-3)" }}>{a}/{mhes.length}</span>
                 </div>
-                <div style={{ width: "100%", height: "3px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
+                <div style={{ width: "100%", height: "3px", background: "var(--w-bg-muted)", borderRadius: "3px", overflow: "hidden" }}>
                   <div style={{ width: `${typePct}%`, height: "100%", background: TYPE_COLOR[type], borderRadius: "3px" }} />
                 </div>
                 {u > 0 && (
@@ -151,19 +151,19 @@ export function SensorAssignmentV3() {
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 12px" }}>
             {assignedList.map((mhe, i) => (
-              <div key={mhe.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < assignedList.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+              <div key={mhe.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < assignedList.length - 1 ? "1px solid var(--w-divider)" : "none" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", fontWeight: 600, color: "#0f172a" }}>{mhe.id}</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", fontWeight: 600, color: "var(--w-text-1)" }}>{mhe.id}</span>
                   <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 500, color: TYPE_COLOR[mhe.type], background: `${TYPE_COLOR[mhe.type]}15`, borderRadius: "3px", padding: "1px 5px" }}>{mhe.type.split(" ")[0]}</span>
                 </div>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{mhe.sensorId}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>{mhe.sensorId}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Divider */}
-        <div style={{ background: "#f1f5f9" }} />
+        <div style={{ background: "var(--w-bg-muted)" }} />
 
         {/* Unassigned panel */}
         <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -174,12 +174,12 @@ export function SensorAssignmentV3() {
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 12px" }}>
             {unassignedList.length === 0 ? (
-              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", color: "#94a3b8", marginTop: "12px" }}>All MHEs have sensors assigned.</p>
+              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", color: "var(--w-text-3)", marginTop: "12px" }}>All MHEs have sensors assigned.</p>
             ) : (
               unassignedList.map((mhe, i) => (
-                <div key={mhe.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < unassignedList.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                <div key={mhe.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 0", borderBottom: i < unassignedList.length - 1 ? "1px solid var(--w-divider)" : "none" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", fontWeight: 600, color: "#0f172a" }}>{mhe.id}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", fontWeight: 600, color: "var(--w-text-1)" }}>{mhe.id}</span>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 500, color: TYPE_COLOR[mhe.type], background: `${TYPE_COLOR[mhe.type]}15`, borderRadius: "3px", padding: "1px 5px" }}>{mhe.type.split(" ")[0]}</span>
                   </div>
                   <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 500, color: "#ef4444", background: "#fef2f2", borderRadius: "4px", padding: "2px 6px" }}>No sensor</span>
@@ -191,9 +191,9 @@ export function SensorAssignmentV3() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+      <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {unassignedList.length} MHE{unassignedList.length !== 1 ? "s" : ""} require sensor assignment
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

@@ -88,7 +88,7 @@ function CustomTooltip({ active, payload, selectedMhe }: any) {
   const d = payload[0].payload;
   return (
     <div style={{
-      background: "#ffffff",
+      background: "var(--w-bg)",
       border: "1px solid #e8e8e8",
       borderRadius: "6px",
       padding: "12px 16px",
@@ -114,7 +114,7 @@ function CustomTooltip({ active, payload, selectedMhe }: any) {
         ))}
       </div>
 
-      <div style={{ height: "0.64px", background: "#e2e8f0", marginBottom: "6px" }} />
+      <div style={{ height: "0.64px", background: "var(--w-border)", marginBottom: "6px" }} />
 
       {/* Severity breakdown */}
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -133,12 +133,12 @@ function CustomTooltip({ active, payload, selectedMhe }: any) {
 const filterStyle: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif",
   fontWeight: 400,
 };
@@ -158,8 +158,8 @@ export function SeverityTrendLineV3({ hideInsight }: { hideInsight?: boolean } =
 
   return (
     <div style={{
-      background: "#ffffff",
-      border: "1px solid #e2e8f0",
+      background: "var(--w-bg)",
+      border: "1px solid var(--w-border)",
       borderRadius: "12px",
       padding: "1px",
       display: "flex",
@@ -173,16 +173,16 @@ export function SeverityTrendLineV3({ hideInsight }: { hideInsight?: boolean } =
         alignItems: "center",
         justifyContent: "space-between",
         padding: "13px 16px 14px 16px",
-        borderBottom: "1px solid #f1f5f9",
+        borderBottom: "1px solid var(--w-divider)",
         flexShrink: 0,
         height: "81px",
         boxSizing: "border-box",
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>
             MHE Inspection Severity Timeline
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
             Inspection severity patterns across recent MHE inspections.
           </span>
         </div>
@@ -217,10 +217,10 @@ export function SeverityTrendLineV3({ hideInsight }: { hideInsight?: boolean } =
           <div style={{ width: "100%", minWidth: chartMinWidth, height: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }}
                   axisLine={false}
                   tickLine={false}
                   dy={6}
@@ -229,14 +229,14 @@ export function SeverityTrendLineV3({ hideInsight }: { hideInsight?: boolean } =
                 <YAxis
                   domain={[0, 20]}
                   ticks={[0, 5, 10, 15, 20]}
-                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }}
                   axisLine={false}
                   tickLine={false}
                   dx={-4}
                 />
                 <Tooltip
                   content={<CustomTooltip selectedMhe={selectedMhe} />}
-                  cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
+                  cursor={{ stroke: "var(--w-border)", strokeWidth: 1 }}
                 />
                 <Line
                   type="monotone"
@@ -256,7 +256,7 @@ export function SeverityTrendLineV3({ hideInsight }: { hideInsight?: boolean } =
 
       {!hideInsight && (
         <div style={{
-          borderTop: "1px solid #f1f5f9",
+          borderTop: "1px solid var(--w-divider)",
           padding: "11px 16px 0 16px",
           flexShrink: 0,
           height: "59.5px",
@@ -264,7 +264,7 @@ export function SeverityTrendLineV3({ hideInsight }: { hideInsight?: boolean } =
           overflow: "hidden",
         }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {selectedMhe} reported most, mainly has red severity = 06
             </span>
             <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

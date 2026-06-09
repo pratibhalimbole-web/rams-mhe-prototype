@@ -34,7 +34,7 @@ function renderActiveShape(props: any) {
         cx={cx} cy={cy}
         innerRadius={innerRadius} outerRadius={outerRadius}
         startAngle={startAngle} endAngle={endAngle}
-        fill={fill} stroke="#ffffff" strokeWidth={3}
+        fill={fill} stroke="var(--w-bg)" strokeWidth={3}
       />
     </g>
   );
@@ -44,12 +44,12 @@ function renderActiveShape(props: any) {
 const filterStyle: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif",
   fontWeight: 400,
 };
@@ -62,8 +62,8 @@ export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter
 
   return (
     <div style={{
-      background: "#ffffff",
-      border: "1px solid #e2e8f0",
+      background: "var(--w-bg)",
+      border: "1px solid var(--w-border)",
       borderRadius: "12px",
       padding: "1px",
       display: "flex",
@@ -77,16 +77,16 @@ export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter
         gap: "10px",
         alignItems: "flex-start",
         padding: "16px 20px",
-        borderBottom: "1px solid #e2e8f0",
+        borderBottom: "1px solid var(--w-border)",
         flexShrink: 0,
         height: "80px",
         boxSizing: "border-box",
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>
             {title ?? "MHE Impact Responsibility Analysis"}
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
             {description ?? "Stacked impact events by severity level"}
           </span>
         </div>
@@ -141,7 +141,7 @@ export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter
                 paddingAngle={3}
                 dataKey="value"
                 nameKey="name"
-                stroke="#ffffff"
+                stroke="var(--w-bg)"
                 strokeWidth={3}
                 startAngle={90}
                 endAngle={-270}
@@ -168,10 +168,10 @@ export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter
             gap: "4px",
             pointerEvents: "none",
           }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "30px", lineHeight: "45px", color: "#0f172a" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "30px", lineHeight: "45px", color: "var(--w-text-1)" }}>
               42
             </span>
-            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", lineHeight: "18px", color: "#64748b", whiteSpace: "nowrap" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
               Total MHEs
             </span>
           </div>
@@ -184,7 +184,7 @@ export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter
           {donutData.map((item) => (
             <div key={item.name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "8px", height: "8px", backgroundColor: item.fill, borderRadius: "2px" }} />
-              <span style={{ fontSize: "11px", color: "#64748b" }}>{item.name}</span>
+              <span style={{ fontSize: "11px", color: "var(--w-text-2)" }}>{item.name}</span>
             </div>
           ))}
         </div>
@@ -192,7 +192,7 @@ export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter
 
       {/* Insight footer */}
       <div style={{
-        borderTop: "1px solid #f1f5f9",
+        borderTop: "1px solid var(--w-divider)",
         padding: "11px 16px 0 16px",
         flexShrink: 0,
         height: "59.5px",
@@ -200,7 +200,7 @@ export function ImpactDonutV3({ title, description, hideZoneFilter, useOemFilter
         overflow: "hidden",
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             4 units at Critical severity; 8 at Medium — 12 units remain at Low risk
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

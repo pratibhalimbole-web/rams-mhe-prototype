@@ -43,7 +43,7 @@ export function MonitoringSplitCardV3({ title, metrics, actionLabel, footerCapti
             fontWeight: 500,
             fontSize: "10px",
             lineHeight: "15px",
-            color: "#64748b",
+            color: "var(--w-text-2)",
             whiteSpace: "nowrap",
           }}
         >
@@ -60,7 +60,7 @@ export function MonitoringSplitCardV3({ title, metrics, actionLabel, footerCapti
                 style={{
                   width: "1px",
                   height: "44px",
-                  background: "#e2e8f0",
+                  background: "var(--w-border)",
                   flexShrink: 0,
                 }}
               />
@@ -73,7 +73,7 @@ export function MonitoringSplitCardV3({ title, metrics, actionLabel, footerCapti
                     fontWeight: 800,
                     fontSize: "30px",
                     lineHeight: "30px",
-                    color: "#0f172a",
+                    color: "var(--w-text-1)",
                     letterSpacing: "-0.75px",
                   }}
                 >
@@ -86,7 +86,7 @@ export function MonitoringSplitCardV3({ title, metrics, actionLabel, footerCapti
                       fontWeight: 400,
                       fontSize: "12px",
                       lineHeight: "16px",
-                      color: "#64748b",
+                      color: "var(--w-text-2)",
                       marginLeft: "2px",
                     }}
                   >
@@ -100,7 +100,7 @@ export function MonitoringSplitCardV3({ title, metrics, actionLabel, footerCapti
                   fontWeight: 600,
                   fontSize: "12px",
                   lineHeight: "15px",
-                  color: "#64748b",
+                  color: "var(--w-text-2)",
                 }}
               >
                 {metric.label}
@@ -119,12 +119,12 @@ export function MonitoringSplitCardV3({ title, metrics, actionLabel, footerCapti
               fontWeight: 500,
               fontSize: "10px",
               lineHeight: "15px",
-              color: "#64748b",
+              color: "var(--w-text-2)",
             }}
           >
             {actionLabel}
           </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", color: "#64748b" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "12px", color: "var(--w-text-2)" }}>
             ›
           </span>
         </div>

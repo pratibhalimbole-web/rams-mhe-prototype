@@ -1,6 +1,28 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Status badge tokens */
+  --w-red-bg:      rgba(254, 242, 242, 1);  /* #fef2f2 */
+  --w-red-border:  rgba(254, 202, 202, 1);  /* #fecaca */
+  --w-green-bg:    rgba(240, 253, 244, 1);  /* #f0fdf4 */
+  --w-green-border:rgba(187, 247, 208, 1);  /* #bbf7d0 */
+  --w-amber-bg:    rgba(255, 251, 235, 1);  /* #fffbeb */
+  --w-amber-border:rgba(253, 230, 138, 1);  /* #fde68a */
+  --w-blue-bg:     rgba(239, 246, 255, 1);  /* #eff6ff */
+  --w-blue-border: rgba(191, 219, 254, 1);  /* #bfdbfe */
+
+  /* Widget color tokens — used in inline styles so they auto-respond to .dark */
+  --w-bg:        rgba(255, 255, 255, 1);   /* #ffffff  card background      */
+  --w-bg-page:   rgba(248, 250, 252, 1);   /* #f8fafc  page background      */
+  --w-bg-muted:  rgba(241, 245, 249, 1);   /* #f1f5f9  chips / dividers     */
+  --w-border:    rgba(226, 232, 240, 1);   /* #e2e8f0  main borders         */
+  --w-divider:   rgba(241, 245, 249, 1);   /* #f1f5f9  internal dividers    */
+  --w-text-1:    rgba(15, 23, 42, 1);      /* #0f172a  primary text         */
+  --w-text-2:    rgba(100, 116, 139, 1);   /* #64748b  secondary text       */
+  --w-text-3:    rgba(148, 163, 184, 1);   /* #94a3b8  tertiary text        */
+  --w-text-4:    rgba(71, 85, 105, 1);     /* #475569  medium text          */
+  --w-text-5:    rgba(203, 213, 225, 1);   /* #cbd5e1  light text           */
+
   --font-size: 16px;
   /* Typography font sizes */
   --text-4xl: 48px;
@@ -128,6 +150,28 @@
 }
 
 .dark {
+  /* Status badge tokens — dark */
+  --w-red-bg:      rgba(69, 10, 10, 1);    /* #450a0a */
+  --w-red-border:  rgba(127, 29, 29, 1);   /* #7f1d1d */
+  --w-green-bg:    rgba(5, 46, 22, 1);     /* #052e16 */
+  --w-green-border:rgba(20, 83, 45, 1);    /* #14532d */
+  --w-amber-bg:    rgba(69, 26, 3, 1);     /* #451a03 */
+  --w-amber-border:rgba(113, 63, 18, 1);   /* #713f12 */
+  --w-blue-bg:     rgba(30, 58, 95, 1);    /* #1e3a5f */
+  --w-blue-border: rgba(30, 58, 138, 1);   /* #1e3a8a */
+
+  /* Widget color tokens — dark overrides */
+  --w-bg:        rgba(30, 41, 59, 1);      /* #1e293b  card background            */
+  --w-bg-page:   rgba(15, 23, 42, 1);      /* #0f172a  page background            */
+  --w-bg-muted:  rgba(51, 65, 85, 1);      /* #334155  chips — must contrast card */
+  --w-border:    rgba(51, 65, 85, 1);      /* #334155  main borders               */
+  --w-divider:   rgba(37, 48, 71, 1);      /* #253047  subtle internal dividers   */
+  --w-text-1:    rgba(248, 250, 252, 1);   /* #f8fafc  primary text               */
+  --w-text-2:    rgba(226, 232, 240, 1);   /* #e2e8f0  secondary text             */
+  --w-text-3:    rgba(203, 213, 225, 1);   /* #cbd5e1  tertiary text              */
+  --w-text-4:    rgba(148, 163, 184, 1);   /* #94a3b8  muted text                 */
+  --w-text-5:    rgba(100, 116, 139, 1);   /* #64748b  subtle text (was #475569)  */
+
   --background: rgba(15, 23, 42, 1.00);
   --foreground: rgba(255, 255, 255, 1.00);
   --card: rgba(30, 41, 59, 1.00);
@@ -297,4 +341,67 @@
 
 html {
   font-size: var(--font-size);
+}
+
+/* ─── Dark mode structural overrides ─────────────────────────────────────── */
+
+/* Page & layout backgrounds */
+.dark body,
+.dark .bg-background,
+.dark [class*="bg-background"] {
+  background-color: #0f172a;
+}
+
+/* Tab bar in CommandDashboard */
+.dark .bg-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Active tab underline text */
+.dark [style*="color: rgb(27, 89, 248)"] {
+  color: #60a5fa !important;
+}
+
+/* Section label text (e.g. "FMS · COMMAND CENTER") */
+.dark [style*="color: rgb(100, 116, 139)"],
+.dark [style*="color: #64748B"] {
+  color: #94a3b8 !important;
+}
+
+/* Status badge colours — light backgrounds → dark equivalents */
+.dark [style*="background: rgb(254, 242, 242)"],
+.dark [style*="background-color: rgb(254, 242, 242)"],
+.dark [style*="background: #fef2f2"] { background: #450a0a !important; }
+
+.dark [style*="background: rgb(240, 253, 244)"],
+.dark [style*="background-color: rgb(240, 253, 244)"],
+.dark [style*="background: #f0fdf4"] { background: #052e16 !important; }
+
+.dark [style*="background: rgb(255, 251, 235)"],
+.dark [style*="background-color: rgb(255, 251, 235)"],
+.dark [style*="background: #fffbeb"] { background: #451a03 !important; }
+
+.dark [style*="background: rgb(239, 246, 255)"],
+.dark [style*="background: #eff6ff"]  { background: #1e3a5f !important; }
+
+.dark [style*="background: rgb(219, 234, 254)"],
+.dark [style*="background: #dbeafe"]  { background: #1e3a8a !important; }
+
+/* Status badge border colours */
+.dark [style*="border-color: rgb(254, 202, 202)"],
+.dark [style*="border: 1px solid #fecaca"]  { border-color: #7f1d1d !important; }
+
+.dark [style*="border-color: rgb(187, 247, 208)"],
+.dark [style*="border: 1px solid #bbf7d0"]  { border-color: #14532d !important; }
+
+.dark [style*="border-color: rgb(253, 230, 138)"],
+.dark [style*="border: 1px solid #fde68a"]  { border-color: #713f12 !important; }
+
+/* Chart tooltip backgrounds — Recharts renders portals outside the styled tree */
+.recharts-tooltip-wrapper .recharts-default-tooltip,
+.dark .recharts-tooltip-wrapper * {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
 }

@@ -810,8 +810,8 @@ export function OperatorLicenseExpiryDrawer({
 // 4 light-card operational pulse cards — Fleet Readiness · Operator Safety · Utilization · Inspection
 
 const DSL_CARD: React.CSSProperties = {
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: 12,
   display: "flex",
   flexDirection: "column",
@@ -822,19 +822,19 @@ const DSL_CARD: React.CSSProperties = {
 
 const DSL_DIVIDER: React.CSSProperties = {
   height: 1,
-  background: "#f1f5f9",
+  background: "var(--w-bg-muted)",
 };
 
 type DarkBadgeVariant = "low" | "medium" | "high" | "healthy" | "warning" | "critical" | "info";
 
 const DARK_BADGE_STYLES: Record<DarkBadgeVariant, { bg: string; text: string; border: string; label: string }> = {
-  low:      { bg: "#f0fdf4", text: "#16a34a", border: "#86efac", label: "LOW RISK"    },
-  medium:   { bg: "#fef3c7", text: "#92400e", border: "#fde68a", label: "MEDIUM RISK" },
-  high:     { bg: "#fef2f2", text: "#dc2626", border: "#fecaca", label: "HIGH RISK"   },
-  healthy:  { bg: "#f0fdf4", text: "#16a34a", border: "#86efac", label: "HEALTHY"     },
-  warning:  { bg: "#fef3c7", text: "#92400e", border: "#fde68a", label: "WARNING"     },
-  critical: { bg: "#fef2f2", text: "#dc2626", border: "#fecaca", label: "CRITICAL"    },
-  info:     { bg: "#f1f5f9", text: "#475569", border: "#e2e8f0", label: "INFO"        },
+  low:      { bg: "var(--w-green-bg)", text: "#16a34a", border: "var(--w-green-border)", label: "LOW RISK"    },
+  medium:   { bg: "var(--w-amber-bg)", text: "#92400e", border: "var(--w-amber-border)", label: "MEDIUM RISK" },
+  high:     { bg: "var(--w-red-bg)",   text: "#dc2626", border: "var(--w-red-border)",   label: "HIGH RISK"   },
+  healthy:  { bg: "var(--w-green-bg)", text: "#16a34a", border: "var(--w-green-border)", label: "HEALTHY"     },
+  warning:  { bg: "var(--w-amber-bg)", text: "#92400e", border: "var(--w-amber-border)", label: "WARNING"     },
+  critical: { bg: "var(--w-red-bg)",   text: "#dc2626", border: "var(--w-red-border)",   label: "CRITICAL"    },
+  info:     { bg: "var(--w-bg-muted)", text: "var(--w-text-4)", border: "var(--w-border)", label: "INFO"        },
 };
 
 function DarkStatusBadge({ variant }: { variant: DarkBadgeVariant }) {
@@ -856,11 +856,11 @@ export function OperationalStatusLayer() {
       {/* ── Section label ── */}
       <div className="col-span-12">
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: -2 }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#64748b", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
             Operational Status Layer
           </span>
-          <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8", whiteSpace: "nowrap" }}>FMS · RTSS · MEPS · IMDS</span>
+          <div style={{ flex: 1, height: 1, background: "var(--w-border)" }} />
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)", whiteSpace: "nowrap" }}>FMS · RTSS · MEPS · IMDS</span>
         </div>
       </div>
 
@@ -870,26 +870,26 @@ export function OperationalStatusLayer() {
 
           {/* Header */}
           <div style={{ padding: "16px 18px 13px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Fleet Operational Readiness</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Operational availability of active warehouse fleet</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: "17px" }}>Fleet Operational Readiness</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>Operational availability of active warehouse fleet</p>
           </div>
           <div style={{ ...DSL_DIVIDER }} />
 
           {/* 3-metric icon row */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", padding: "18px 0 16px" }}>
             {([
-              { label: "ACTIVE",      value: "42", color: "#1b59f8", bg: "#eff6ff", icon: CheckCircle2 },
-              { label: "READY",       value: "36", color: "#16a34a", bg: "#f0fdf4", icon: ShieldCheck  },
-              { label: "MAINTENANCE", value: "06", color: "#dc2626", bg: "#fef2f2", icon: Wrench       },
+              { label: "ACTIVE",      value: "42", color: "#1b59f8", bg: "var(--w-blue-bg)",  icon: CheckCircle2 },
+              { label: "READY",       value: "36", color: "#16a34a", bg: "var(--w-green-bg)", icon: ShieldCheck  },
+              { label: "MAINTENANCE", value: "06", color: "#dc2626", bg: "var(--w-red-bg)",   icon: Wrench       },
             ] as { label: string; value: string; color: string; bg: string; icon: React.ElementType }[]).flatMap((item, i, arr) => [
               <div key={item.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "0 6px" }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, background: item.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <item.icon size={13} color={item.color} />
                 </div>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{item.value}</p>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#94a3b8", margin: 0, letterSpacing: "0.07em", textAlign: "center" as const, lineHeight: "11px" }}>{item.label}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "var(--w-text-1)", margin: 0, lineHeight: 1 }}>{item.value}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "var(--w-text-3)", margin: 0, letterSpacing: "0.07em", textAlign: "center" as const, lineHeight: "11px" }}>{item.label}</p>
               </div>,
-              ...(i < arr.length - 1 ? [<div key={`dv${i}`} style={{ width: 1, background: "#f1f5f9", alignSelf: "stretch" }} />] : []),
+              ...(i < arr.length - 1 ? [<div key={`dv${i}`} style={{ width: 1, background: "var(--w-bg-muted)", alignSelf: "stretch" }} />] : []),
             ])}
           </div>
 
@@ -898,18 +898,18 @@ export function OperationalStatusLayer() {
           {/* Progress section */}
           <div style={{ padding: "13px 18px 14px", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 500, color: "#64748b" }}>Fleet Readiness</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 500, color: "var(--w-text-2)" }}>Fleet Readiness</span>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: "#1b59f8" }}>86%</span>
             </div>
-            <div style={{ height: 4, background: "#e2e8f0", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ height: 4, background: "var(--w-border)", borderRadius: 3, overflow: "hidden" }}>
               <div style={{ width: "86%", height: "100%", background: "linear-gradient(90deg,#1b59f8 0%,#3b82f6 100%)", borderRadius: 3 }} />
             </div>
           </div>
 
           {/* Footer */}
-          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · MEPS · IMDS</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>12% of fleet unavailable due to unresolved inspection findings.</p>
+          <div style={{ borderTop: "1px solid var(--w-divider)", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · MEPS · IMDS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>12% of fleet unavailable due to unresolved inspection findings.</p>
           </div>
         </div>
       </div>
@@ -920,32 +920,32 @@ export function OperationalStatusLayer() {
 
           {/* Header */}
           <div style={{ padding: "16px 18px 13px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Operator Safety Status</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Live operator safety compliance overview</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: "17px" }}>Operator Safety Status</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>Live operator safety compliance overview</p>
           </div>
           <div style={{ ...DSL_DIVIDER }} />
 
           {/* Operator rows */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 0" }}>
             {([
-              { initials: "RJ", name: "R. Johnson", score: 92, violations: "01", badge: "low"    as DarkBadgeVariant, avatarBg: "#f0fdf4", avatarColor: "#16a34a" },
-              { initials: "MK", name: "M. Kumar",   score: 74, violations: "05", badge: "medium" as DarkBadgeVariant, avatarBg: "#fef3c7", avatarColor: "#92400e" },
-              { initials: "AS", name: "A. Sharma",  score: 58, violations: "09", badge: "high"   as DarkBadgeVariant, avatarBg: "#fef2f2", avatarColor: "#dc2626" },
+              { initials: "RJ", name: "R. Johnson", score: 92, violations: "01", badge: "low"    as DarkBadgeVariant, avatarBg: "var(--w-green-bg)", avatarColor: "#16a34a" },
+              { initials: "MK", name: "M. Kumar",   score: 74, violations: "05", badge: "medium" as DarkBadgeVariant, avatarBg: "var(--w-amber-bg)", avatarColor: "#92400e" },
+              { initials: "AS", name: "A. Sharma",  score: 58, violations: "09", badge: "high"   as DarkBadgeVariant, avatarBg: "var(--w-red-bg)",   avatarColor: "#dc2626" },
             ]).map((op, i, arr) => (
               <div key={op.initials} style={{ flex: 1 }}>
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 18px", cursor: "default", transition: "background 0.12s" }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#f8fafc"}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--w-bg-page)"}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
                 >
                   <div style={{ width: 32, height: 32, borderRadius: "50%", background: op.avatarBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, color: op.avatarColor }}>{op.initials}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "14px" }}>{op.name}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: "14px" }}>{op.name}</p>
                     <div style={{ display: "flex", gap: 10 }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Safe Score <span style={{ color: "#64748b", fontWeight: 600 }}>{op.score}</span></span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Violations <span style={{ color: op.violations !== "01" ? "#dc2626" : "#64748b", fontWeight: 600 }}>{op.violations}</span></span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>Safe Score <span style={{ color: "var(--w-text-2)", fontWeight: 600 }}>{op.score}</span></span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>Violations <span style={{ color: op.violations !== "01" ? "#dc2626" : "var(--w-text-2)", fontWeight: 600 }}>{op.violations}</span></span>
                     </div>
                   </div>
                   <DarkStatusBadge variant={op.badge} />
@@ -956,9 +956,9 @@ export function OperationalStatusLayer() {
           </div>
 
           {/* Footer */}
-          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>RTSS · MEPS</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>A. Sharma recorded highest unsafe driving frequency.</p>
+          <div style={{ borderTop: "1px solid var(--w-divider)", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", margin: "0 0 3px", letterSpacing: "0.06em" }}>RTSS · MEPS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>A. Sharma recorded highest unsafe driving frequency.</p>
           </div>
         </div>
       </div>
@@ -969,27 +969,27 @@ export function OperationalStatusLayer() {
 
           {/* Header */}
           <div style={{ padding: "16px 18px 13px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Fleet Utilization</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Current warehouse equipment utilization state</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: "17px" }}>Fleet Utilization</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>Current warehouse equipment utilization state</p>
           </div>
           <div style={{ ...DSL_DIVIDER }} />
 
           {/* Utilization status rows */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 0" }}>
             {([
-              { label: "Active Utilization",  pct: 74, barColor: "#1b59f8", barBg: "#eff6ff", valueColor: "#1b59f8" },
-              { label: "Idle with Load",       pct: 12, barColor: "#f59e0b", barBg: "#fef3c7", valueColor: "#d97706" },
-              { label: "Underutilized Fleet",  pct: 8,  barColor: "#ef4444", barBg: "#fef2f2", valueColor: "#dc2626" },
-              { label: "Congestion Loss",      pct: 6,  barColor: "#6366f1", barBg: "#eef2ff", valueColor: "#4f46e5" },
+              { label: "Active Utilization",  pct: 74, barColor: "#1b59f8", barBg: "var(--w-blue-bg)",  valueColor: "#1b59f8" },
+              { label: "Idle with Load",       pct: 12, barColor: "#f59e0b", barBg: "var(--w-amber-bg)", valueColor: "#d97706" },
+              { label: "Underutilized Fleet",  pct: 8,  barColor: "#ef4444", barBg: "var(--w-red-bg)",   valueColor: "#dc2626" },
+              { label: "Congestion Loss",      pct: 6,  barColor: "#6366f1", barBg: "var(--w-blue-bg)",  valueColor: "#4f46e5" },
             ]).map((row, i, arr) => (
               <div key={row.label} style={{ flex: 1 }}>
                 <div
                   style={{ padding: "9px 18px", cursor: "default", transition: "background 0.12s" }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#f8fafc"}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--w-bg-page)"}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 500, color: "#64748b" }}>{row.label}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 500, color: "var(--w-text-2)" }}>{row.label}</span>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: row.valueColor }}>{row.pct}%</span>
                   </div>
                   <div style={{ height: 3, background: row.barBg, borderRadius: 2, overflow: "hidden" }}>
@@ -1002,9 +1002,9 @@ export function OperationalStatusLayer() {
           </div>
 
           {/* Footer */}
-          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · RTSS</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Reach trucks underutilized during Shift B.</p>
+          <div style={{ borderTop: "1px solid var(--w-divider)", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", margin: "0 0 3px", letterSpacing: "0.06em" }}>FMS · RTSS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>Reach trucks underutilized during Shift B.</p>
           </div>
         </div>
       </div>
@@ -1015,8 +1015,8 @@ export function OperationalStatusLayer() {
 
           {/* Header */}
           <div style={{ padding: "16px 18px 13px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "17px" }}>Inspection Compliance</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Inspection execution and operational readiness</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: "17px" }}>Inspection Compliance</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>Inspection execution and operational readiness</p>
           </div>
           <div style={{ ...DSL_DIVIDER }} />
 
@@ -1030,17 +1030,17 @@ export function OperationalStatusLayer() {
               <div key={row.mheId} style={{ flex: 1 }}>
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 18px", cursor: "default", transition: "background 0.12s" }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#f8fafc"}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--w-bg-page)"}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
                 >
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--w-blue-bg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, color: "#1b59f8", textAlign: "center" as const, lineHeight: 1.2 }}>{row.mheId.replace("MHE-", "")}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "14px" }}>{row.mheId}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: "14px" }}>{row.mheId}</p>
                     <div style={{ display: "flex", gap: 10 }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Completed <span style={{ color: "#64748b", fontWeight: 600 }}>{row.completed}</span></span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>Overdue <span style={{ color: row.overdue !== "00" ? "#dc2626" : "#16a34a", fontWeight: 600 }}>{row.overdue}</span></span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>Completed <span style={{ color: "var(--w-text-2)", fontWeight: 600 }}>{row.completed}</span></span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>Overdue <span style={{ color: row.overdue !== "00" ? "#dc2626" : "#16a34a", fontWeight: 600 }}>{row.overdue}</span></span>
                     </div>
                   </div>
                   <DarkStatusBadge variant={row.badge} />
@@ -1051,9 +1051,9 @@ export function OperationalStatusLayer() {
           </div>
 
           {/* Footer */}
-          <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 18px 14px" }}>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>MEPS · IMDS</p>
-            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px" }}>Forklift inspections show highest skip rate this week.</p>
+          <div style={{ borderTop: "1px solid var(--w-divider)", padding: "10px 18px 14px" }}>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", margin: "0 0 3px", letterSpacing: "0.06em" }}>MEPS · IMDS</p>
+            <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px" }}>Forklift inspections show highest skip rate this week.</p>
           </div>
         </div>
       </div>
@@ -1120,7 +1120,7 @@ export function FMSDashboard() {
           cx={cx} cy={cy}
           innerRadius={innerRadius} outerRadius={outerRadius}
           startAngle={startAngle} endAngle={endAngle}
-          fill={fill} stroke="#ffffff" strokeWidth={3}
+          fill={fill} stroke="var(--w-bg)" strokeWidth={3}
         />
       </g>
     );
@@ -1185,10 +1185,10 @@ export function FMSDashboard() {
             ] as { label: string; value: string; sub: string }[]
           ).map(({ label, value, sub }) => (
             <div key={label} className="col-span-12 md:col-span-6 xl:col-span-3">
-              <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "16px 20px 18px", height: "100%", boxSizing: "border-box" }}>
-                <p style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 10px" }}>{label}</p>
-                <p style={{ fontSize: "32px", fontWeight: 700, color: "#0f172a", margin: "0 0 6px", lineHeight: 1 }}>{value}</p>
-                <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>{sub}</p>
+              <div style={{ background: "#fff", border: "1px solid var(--w-border)", borderRadius: "12px", padding: "16px 20px 18px", height: "100%", boxSizing: "border-box" }}>
+                <p style={{ fontSize: "10px", fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 10px" }}>{label}</p>
+                <p style={{ fontSize: "32px", fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 6px", lineHeight: 1 }}>{value}</p>
+                <p style={{ fontSize: "12px", color: "var(--w-text-2)", margin: 0 }}>{sub}</p>
               </div>
             </div>
           ))}
@@ -1203,10 +1203,10 @@ export function FMSDashboard() {
 
           {/* ── TODAY'S ACTIVITY ── */}
           <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Today's Activity</span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Real-time fleet engagement</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Today's Activity</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Real-time fleet engagement</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <RefreshCw size={13} style={{ color: "#1b59f8" }} />
@@ -1217,43 +1217,43 @@ export function FMSDashboard() {
 
               {/* Section 1 — Fleet Status */}
               <div>
-                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>
-                  FLEET STATUS: <span style={{ color: "#0f172a" }}>42 total MHEs</span>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.08em", margin: "0 0 10px" }}>
+                  FLEET STATUS: <span style={{ color: "var(--w-text-1)" }}>42 total MHEs</span>
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", gap: "0" }}>
                   {([
-                    { icon: CheckCircle2, label: "ACTIVE",      value: 28, pct: "67%", iconColor: "#16a34a", iconBg: "#f0fdf4" },
-                    { icon: Wrench,       label: "MAINTENANCE", value: 4,  pct: "10%", iconColor: "#f59e0b", iconBg: "#fffbeb" },
-                    { icon: MinusCircle,  label: "IDLE",        value: 10, pct: "24%", iconColor: "#94a3b8", iconBg: "#f1f5f9" },
+                    { icon: CheckCircle2, label: "ACTIVE",      value: 28, pct: "67%", iconColor: "#16a34a", iconBg: "var(--w-green-bg)" },
+                    { icon: Wrench,       label: "MAINTENANCE", value: 4,  pct: "10%", iconColor: "#f59e0b", iconBg: "var(--w-amber-bg)" },
+                    { icon: MinusCircle,  label: "IDLE",        value: 10, pct: "24%", iconColor: "var(--w-text-3)", iconBg: "var(--w-bg-muted)" },
                   ] as { icon: React.ElementType; label: string; value: number; pct: string; iconColor: string; iconBg: string }[]).flatMap(({ icon: Icon, label, value, iconColor, iconBg }, i, arr) => [
                     <div key={label} style={{ padding: "4px 12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "10px" }}>
                         <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Icon size={13} style={{ color: iconColor }} />
                         </div>
-                        <span style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em" }}>{label}</span>
+                        <span style={{ fontSize: "10px", fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.06em" }}>{label}</span>
                       </div>
-                      <p style={{ fontSize: "20px", fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{value}</p>
+                      <p style={{ fontSize: "20px", fontWeight: 700, color: "var(--w-text-1)", margin: 0, lineHeight: 1 }}>{value}</p>
                     </div>,
-                    ...(i < arr.length - 1 ? [<div key={`sep-${i}`} style={{ background: "#e2e8f0" }} />] : []),
+                    ...(i < arr.length - 1 ? [<div key={`sep-${i}`} style={{ background: "var(--w-border)" }} />] : []),
                   ])}
                 </div>
               </div>
 
               {/* Section 2 — Productivity Metrics */}
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 12px" }}>PRODUCTIVITY METRICS</p>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.08em", margin: "0 0 12px" }}>PRODUCTIVITY METRICS</p>
                 {([
                   { label: "Trips Today",   value: "342",   sub: "↑ +18 vs yesterday" },
                   { label: "Pallets Moved", value: "1,284", sub: "Across 4 zones"      },
                   { label: "Fleet Hours",   value: "186h",  sub: "Total time logged"   },
                 ] as { label: string; value: string; sub: string }[]).map(({ label, value, sub }, i, arr) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                  <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--w-divider)" : "none" }}>
                     <div>
                       <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: 0 }}>{label}</p>
-                      <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{sub}</p>
+                      <p style={{ fontSize: "11px", color: "var(--w-text-3)", margin: "2px 0 0" }}>{sub}</p>
                     </div>
-                    <span style={{ fontSize: "15px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>{value}</span>
+                    <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--w-text-1)", letterSpacing: "-0.02em" }}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -1263,27 +1263,27 @@ export function FMSDashboard() {
 
           {/* ── TRIP LOAD BREAKDOWN ── */}
           <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Trip Load Breakdown</span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Loaded vs empty trips · last 30 days</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Trip Load Breakdown</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Loaded vs empty trips · last 30 days</span>
               </div>
             </div>
             <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col" style={{ gap: "20px" }}>
 
               {/* Section 1 — Trip Overview */}
               <div>
-                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>TRIP OVERVIEW</p>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.08em", margin: "0 0 10px" }}>TRIP OVERVIEW</p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr" }}>
                   <div style={{ paddingRight: "20px" }}>
-                    <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 8px", fontWeight: 500 }}>Total Trips</p>
-                    <p style={{ fontSize: "22px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 8px" }}>342</p>
-                    <p style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 500, margin: 0 }}>Across all zones</p>
+                    <p style={{ fontSize: "11px", color: "var(--w-text-3)", margin: "0 0 8px", fontWeight: 500 }}>Total Trips</p>
+                    <p style={{ fontSize: "22px", fontWeight: 700, color: "var(--w-text-1)", lineHeight: 1, margin: "0 0 8px" }}>342</p>
+                    <p style={{ fontSize: "10px", color: "var(--w-text-3)", fontWeight: 500, margin: 0 }}>Across all zones</p>
                   </div>
-                  <div style={{ background: "#e2e8f0" }} />
+                  <div style={{ background: "var(--w-border)" }} />
                   <div style={{ paddingLeft: "20px" }}>
-                    <p style={{ fontSize: "11px", color: "#94a3b8", margin: "0 0 8px", fontWeight: 500 }}>Load Efficiency</p>
-                    <p style={{ fontSize: "22px", fontWeight: 700, color: "#0f172a", lineHeight: 1, margin: "0 0 8px" }}>73%</p>
+                    <p style={{ fontSize: "11px", color: "var(--w-text-3)", margin: "0 0 8px", fontWeight: 500 }}>Load Efficiency</p>
+                    <p style={{ fontSize: "22px", fontWeight: 700, color: "var(--w-text-1)", lineHeight: 1, margin: "0 0 8px" }}>73%</p>
                     <p style={{ fontSize: "10px", color: "#16a34a", fontWeight: 500, margin: 0 }}>↑ Exceeds 65% target</p>
                   </div>
                 </div>
@@ -1291,7 +1291,7 @@ export function FMSDashboard() {
 
               {/* Section 2 — Load Distribution */}
               <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>LOAD DISTRIBUTION</p>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.08em", margin: "0 0 10px" }}>LOAD DISTRIBUTION</p>
 
                 {/* Stacked horizontal bar — TopFailingParts style */}
                 <div style={{ display: "flex", height: "10px", marginBottom: "8px" }}>
@@ -1308,7 +1308,7 @@ export function FMSDashboard() {
                     { pct: "18%", flex: 18 },
                   ]).map(({ pct, flex }) => (
                     <div key={pct} style={{ flex, paddingTop: "5px" }}>
-                      <span style={{ fontSize: "10px", fontWeight: 600, color: "#94a3b8" }}>{pct}</span>
+                      <span style={{ fontSize: "10px", fontWeight: 600, color: "var(--w-text-3)" }}>{pct}</span>
                     </div>
                   ))}
                 </div>
@@ -1320,14 +1320,14 @@ export function FMSDashboard() {
                     { label: "Partial",          sub: "Partially filled",     count: 64,  pct: "19%", color: COLORS.healthy  },
                     { label: "Empty (Deadhead)", sub: "No load — return run", count: 60,  pct: "18%", color: COLORS.warning  },
                   ].map(({ label, sub, count, pct, color }, i, arr) => (
-                    <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                    <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--w-divider)" : "none" }}>
                       <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0 }} />
                       <div style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div>
                           <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: 0 }}>{label}</p>
-                          <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{sub} · {count} trips</p>
+                          <p style={{ fontSize: "11px", color: "var(--w-text-3)", margin: "2px 0 0" }}>{sub} · {count} trips</p>
                         </div>
-                        <span style={{ fontSize: "15px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>{pct}</span>
+                        <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--w-text-1)", letterSpacing: "-0.02em" }}>{pct}</span>
                       </div>
                     </div>
                   ))}
@@ -1340,18 +1340,18 @@ export function FMSDashboard() {
           {/* ── INSPECTION HEALTH ── */}
           <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col min-h-[422px]">
             {/* Header — common dashboard widget style */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>
                   Inspection Health
                 </span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
                   Severity distribution by MHE type
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <Select value={selectedInspectionOem} onValueChange={setSelectedInspectionOem}>
-                  <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif" }}>
+                  <SelectTrigger style={{ height: "32px", width: "auto", background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "var(--w-text-1)", fontFamily: "Inter, sans-serif" }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1364,7 +1364,7 @@ export function FMSDashboard() {
                   </SelectContent>
                 </Select>
                 <Select value={selectedInspectionMhe} onValueChange={setSelectedInspectionMhe}>
-                  <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif" }}>
+                  <SelectTrigger style={{ height: "32px", width: "auto", background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "var(--w-text-1)", fontFamily: "Inter, sans-serif" }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1386,15 +1386,15 @@ export function FMSDashboard() {
                     <Forklift size={16} style={{ color: "#2563eb" }} />
                   </div>
                   <div style={{ padding: "0 6px" }}>
-                    <span style={{ fontSize: "30px", fontWeight: 700, color: "#0f172a", letterSpacing: "-0.75px", lineHeight: "36px" }}>42</span>
+                    <span style={{ fontSize: "30px", fontWeight: 700, color: "var(--w-text-1)", letterSpacing: "-0.75px", lineHeight: "36px" }}>42</span>
                   </div>
-                  <span style={{ fontSize: "12px", color: "#64748b", fontWeight: 400 }}>
+                  <span style={{ fontSize: "12px", color: "var(--w-text-2)", fontWeight: 400 }}>
                     {selectedInspectionMhe} MHEs{selectedInspectionOem !== "all" ? ` · ${selectedInspectionOem === "toyota-industries" ? "Toyota Industries" : selectedInspectionOem.charAt(0).toUpperCase() + selectedInspectionOem.slice(1)}` : ""}
                   </span>
                 </div>
                 {/* Parts Comparison */}
                 <div>
-                  <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: "0 0 10px" }}>PARTS COMPARISON</p>
+                  <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.08em", margin: "0 0 10px" }}>PARTS COMPARISON</p>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", rowGap: "10px", columnGap: "8px" }}>
                     {([
                       { sub: "Most Red",   value: "Battery", dot: "#ef4444" },
@@ -1404,9 +1404,9 @@ export function FMSDashboard() {
                       <div key={sub}>
                         <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "2px" }}>
                           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: dot, flexShrink: 0 }} />
-                          <p style={{ fontSize: "10px", color: "#94a3b8", margin: 0 }}>{sub}</p>
+                          <p style={{ fontSize: "10px", color: "var(--w-text-3)", margin: 0 }}>{sub}</p>
                         </div>
-                        <p style={{ fontSize: "12px", fontWeight: 600, color: "#0f172a", margin: 0 }}>{value}</p>
+                        <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--w-text-1)", margin: 0 }}>{value}</p>
                       </div>
                     ))}
                   </div>
@@ -1415,7 +1415,7 @@ export function FMSDashboard() {
 
               {/* Section 2 — Severity Distribution */}
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
-                <p style={{ fontSize: "10px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", margin: 0 }}>SEVERITY DISTRIBUTION</p>
+                <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.08em", margin: 0 }}>SEVERITY DISTRIBUTION</p>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 {([
                   { label: "RED",   insight: { mheId: "MHE0015", part: "Battery" }, count: 120, color: "#ef4444", Icon: AlertCircle   },
@@ -1426,20 +1426,20 @@ export function FMSDashboard() {
                     {/* Top: icon+label | count */}
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <div style={{ flex: 1, display: "flex", gap: "8px", alignItems: "center" }}>
-                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                           <Icon size={13} style={{ color }} />
                         </div>
-                        <span style={{ fontSize: "9px", fontWeight: 600, color: "#64748b", letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</span>
+                        <span style={{ fontSize: "9px", fontWeight: 600, color: "var(--w-text-2)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</span>
                       </div>
-                      <span style={{ fontSize: "16px", fontWeight: 700, color: "#64748b", letterSpacing: "-0.027em" }}>{count}</span>
+                      <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--w-text-2)", letterSpacing: "-0.027em" }}>{count}</span>
                     </div>
                     {/* Insight: MHE ID | Part inline */}
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 400 }}>MHE ID: </span>
-                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{insight.mheId}</span>
-                      <span style={{ fontSize: "10px", color: "#64748b" }}>|</span>
-                      <span style={{ fontSize: "10px", color: "#64748b", fontWeight: 400 }}>Part: </span>
-                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{insight.part}</span>
+                      <span style={{ fontSize: "10px", color: "var(--w-text-2)", fontWeight: 400 }}>MHE ID: </span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--w-text-1)" }}>{insight.mheId}</span>
+                      <span style={{ fontSize: "10px", color: "var(--w-text-2)" }}>|</span>
+                      <span style={{ fontSize: "10px", color: "var(--w-text-2)", fontWeight: 400 }}>Part: </span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--w-text-1)" }}>{insight.part}</span>
                     </div>
                   </div>
                 ))}
@@ -1476,7 +1476,7 @@ export function FMSDashboard() {
             const d       = IMPACT_DATA[key] ?? IMPACT_DATA[`all|${impactOem}`] ?? IMPACT_DATA["all|all"];
             const pieData = d.types.map(({ label, count, color }) => ({ name: label, value: count, color }));
             const topType = pieData[0];
-            const fsImpact: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
+            const fsImpact: React.CSSProperties = { height: "32px", width: "auto", background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "var(--w-text-1)", fontFamily: "Inter, sans-serif", fontWeight: 400 };
 
             function PieTooltip({ active, payload }: any) {
               if (!active || !payload?.length) return null;
@@ -1486,12 +1486,12 @@ export function FMSDashboard() {
                 <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "140px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
                     <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: color, flexShrink: 0, display: "inline-block" }} />
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a" }}>{name}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)" }}>{name}</span>
                   </div>
                   {([["Count", value], ["Share", `${pct}%`]] as [string, string | number][]).map(([l, v]) => (
                     <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "2px" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{l}</span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{v}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>{l}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)" }}>{v}</span>
                     </div>
                   ))}
                 </div>
@@ -1500,12 +1500,12 @@ export function FMSDashboard() {
 
             return (
               <div className="col-span-12 xl:col-span-4 flex flex-col" style={{ minHeight: "422px" }}>
-                <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+                <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
                   {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Fleet Composition</span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>MHEs by type · {d.oemLabel}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Fleet Composition</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>MHEs by type · {d.oemLabel}</span>
                     </div>
                     <div style={{ display: "flex", gap: "6px" }}>
                       <Select value={impactOem} onValueChange={setImpactOem}>
@@ -1548,8 +1548,8 @@ export function FMSDashboard() {
                           </PieChart>
                         </ResponsiveContainer>
                         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", pointerEvents: "none" }}>
-                          <div style={{ fontFamily: "Inter, sans-serif", fontSize: "24px", fontWeight: 700, color: "#0f172a", lineHeight: 1.1 }}>{d.total}</div>
-                          <div style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8", lineHeight: 1.6 }}>Total MHEs</div>
+                          <div style={{ fontFamily: "Inter, sans-serif", fontSize: "24px", fontWeight: 700, color: "var(--w-text-1)", lineHeight: 1.1 }}>{d.total}</div>
+                          <div style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "var(--w-text-3)", lineHeight: 1.6 }}>Total MHEs</div>
                         </div>
                       </div>
 
@@ -1558,8 +1558,8 @@ export function FMSDashboard() {
                         {pieData.map(({ name, value, color }) => (
                           <div key={name} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                             <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: color, flexShrink: 0, display: "inline-block" }} />
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{name}</span>
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>· {value}</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>{name}</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)" }}>· {value}</span>
                           </div>
                         ))}
                       </div>
@@ -1567,9 +1567,9 @@ export function FMSDashboard() {
                   </div>
 
                   {/* Footer */}
-                  <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+                  <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {topType?.name} is the largest segment · {topType?.value} of {d.total} units
                       </span>
                       <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -1594,13 +1594,13 @@ export function FMSDashboard() {
             return (
               <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ height: "422px" }}>
                 {/* Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a" }}>Machines Requiring Inspection Attention</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b" }}>Inspection workload by operator</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)" }}>Machines Requiring Inspection Attention</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)" }}>Inspection workload by operator</span>
                   </div>
                   <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
-                    <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 }}><SelectValue /></SelectTrigger>
+                    <SelectTrigger style={{ height: "32px", width: "auto", background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "var(--w-text-1)", fontFamily: "Inter, sans-serif", fontWeight: 400 }}><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Electric Forklift">Forklift</SelectItem>
                       <SelectItem value="Reach Truck">Reach Truck</SelectItem>
@@ -1616,16 +1616,16 @@ export function FMSDashboard() {
                     const partWithMostIssues = getPartWithMostIssuesForMHE(row.mheId);
                     const stats = inspStats[row.mheId] ?? { reported: 10, closed: 5 };
                     return (
-                      <div key={row.mheId} style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div key={row.mheId} style={{ border: "1px solid var(--w-border)", borderRadius: "10px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                         {/* Row 1: icon + ID + date + badge */}
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
-                            <div style={{ width: "30px", height: "30px", borderRadius: "7px", background: "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <div style={{ width: "30px", height: "30px", borderRadius: "7px", background: "var(--w-blue-bg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               <Truck style={{ width: "13px", height: "13px", color: "#1b59f8" }} />
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", gap: "1px", minWidth: 0 }}>
                               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "11px", fontWeight: 700, color: "#1b59f8", fontVariantNumeric: "tabular-nums" }}>{row.mheId}</span>
-                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Last Inspection: {formattedDate}</span>
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "var(--w-text-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Last Inspection: {formattedDate}</span>
                             </div>
                           </div>
                           {partWithMostIssues ? (
@@ -1643,18 +1643,18 @@ export function FMSDashboard() {
                         {/* Row 2: Reported | Closed */}
                         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{String(stats.reported).padStart(2, "0")}</span>
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Reported</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--w-text-1)", lineHeight: 1.2 }}>{String(stats.reported).padStart(2, "0")}</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "var(--w-text-3)" }}>Reported</span>
                           </div>
-                          <div style={{ width: "1px", height: "28px", background: "#e2e8f0", flexShrink: 0 }} />
+                          <div style={{ width: "1px", height: "28px", background: "var(--w-border)", flexShrink: 0 }} />
                           <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{String(stats.closed).padStart(2, "0")}</span>
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "#94a3b8" }}>Closed</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--w-text-1)", lineHeight: 1.2 }}>{String(stats.closed).padStart(2, "0")}</span>
+                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", color: "var(--w-text-3)" }}>Closed</span>
                           </div>
                         </div>
 
                         {/* Divider */}
-                        <div style={{ height: "1px", background: "#f1f5f9" }} />
+                        <div style={{ height: "1px", background: "var(--w-bg-muted)" }} />
 
                         {/* Row 3: findings */}
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -1665,7 +1665,7 @@ export function FMSDashboard() {
                           ].map(({ label, value, color }) => (
                             <div key={label} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                               <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0, display: "inline-block" }} />
-                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{label} {value}</span>
+                              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>{label} {value}</span>
                             </div>
                           ))}
                         </div>
@@ -1675,9 +1675,9 @@ export function FMSDashboard() {
                 </div>
 
                 {/* Footer */}
-                <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+                <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       9 inspections skipped per MHE; Battery drives amber severity
                     </span>
                     <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8" }}>
@@ -1696,7 +1696,7 @@ export function FMSDashboard() {
               "last_7_days":  [{ name: "Reach Truck",  short: "Reach",   Critical: 3,  Attention: 2,  Healthy: 8  }, { name: "Forklift",     short: "Fork",    Critical: 1,  Attention: 1,  Healthy: 7  }, { name: "Pallet Jack",  short: "Pallet",  Critical: 1,  Attention: 1,  Healthy: 9  }, { name: "Stacker",      short: "Stacker", Critical: 0,  Attention: 1,  Healthy: 4  }, { name: "Order Picker", short: "Order",   Critical: 0,  Attention: 1,  Healthy: 3  }, { name: "VNA Truck",    short: "VNA",     Critical: 0,  Attention: 0,  Healthy: 2  }],
               "last_90_days": [{ name: "Reach Truck",  short: "Reach",   Critical: 22, Attention: 14, Healthy: 60 }, { name: "Forklift",     short: "Fork",    Critical: 6,  Attention: 9,  Healthy: 55 }, { name: "Pallet Jack",  short: "Pallet",  Critical: 5,  Attention: 8,  Healthy: 62 }, { name: "Stacker",      short: "Stacker", Critical: 3,  Attention: 6,  Healthy: 30 }, { name: "Order Picker", short: "Order",   Critical: 1,  Attention: 5,  Healthy: 22 }, { name: "VNA Truck",    short: "VNA",     Critical: 0,  Attention: 3,  Healthy: 14 }],
             };
-            const filterStyle: React.CSSProperties = { height: "32px", width: "auto", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "#0f172a", fontFamily: "Inter, sans-serif", fontWeight: 400 };
+            const filterStyle: React.CSSProperties = { height: "32px", width: "auto", background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "var(--w-text-1)", fontFamily: "Inter, sans-serif", fontWeight: 400 };
 
             function InspByTypeWidget() {
               const [period, setPeriod] = React.useState("all");
@@ -1712,19 +1712,19 @@ export function FMSDashboard() {
                 const h = payload.find((p: any) => p.dataKey === "Healthy")?.value   ?? 0;
                 return (
                   <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "150px" }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a", margin: "0 0 8px" }}>{fullName}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)", margin: "0 0 8px" }}>{fullName}</p>
                     {([["Red", "#1b59f8", c], ["Amber", "#7397f6", a], ["Green", "#c9dbff", h]] as [string, string, number][]).map(([l, col, v]) => (
                       <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>
                           <span style={{ width: "7px", height: "7px", borderRadius: "2px", background: col, flexShrink: 0, display: "inline-block" }} />{l}
                         </span>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>{v}</span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)" }}>{v}</span>
                       </div>
                     ))}
-                    <div style={{ height: "0.5px", background: "#e2e8f0", margin: "6px 0 4px" }} />
+                    <div style={{ height: "0.5px", background: "var(--w-border)", margin: "6px 0 4px" }} />
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>Total</span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "#0f172a" }}>{c + a + h}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>Total</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "var(--w-text-1)" }}>{c + a + h}</span>
                     </div>
                   </div>
                 );
@@ -1732,13 +1732,13 @@ export function FMSDashboard() {
 
               return (
                 <div className="col-span-12 xl:col-span-4 flex flex-col" style={{ minHeight: "422px" }}>
-                  <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+                  <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
                     {/* Header */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Inspections by MHE Type</span>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Severity findings by type · last 30 days</span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Inspections by MHE Type</span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Severity findings by type · last 30 days</span>
                       </div>
                       <div style={{ display: "flex", gap: "6px" }}>
                         <Select value={period} onValueChange={setPeriod}>
@@ -1756,20 +1756,20 @@ export function FMSDashboard() {
                     <div style={{ flex: 1, padding: "14px 16px 12px 4px", minHeight: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }} barSize={10} barCategoryGap="30%">
-                          <CartesianGrid vertical={false} stroke="#f1f5f9" strokeDasharray="" />
+                          <CartesianGrid vertical={false} stroke="var(--w-bg-muted)" strokeDasharray="" />
                           <XAxis
                             dataKey="name"
-                            tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                            tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }}
                             axisLine={false}
                             tickLine={false}
                           />
                           <YAxis
-                            tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#94a3b8" }}
+                            tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-3)" }}
                             axisLine={false}
                             tickLine={false}
                             width={32}
                           />
-                          <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f8fafc" }} />
+                          <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--w-bg-page)" }} />
                           <Bar dataKey="Critical"  fill="#1b59f8" stackId="s" radius={[0, 0, 0, 0]} />
                           <Bar dataKey="Attention" fill="#7397f6" stackId="s" radius={[0, 0, 0, 0]} />
                           <Bar dataKey="Healthy"   fill="#c9dbff" stackId="s" radius={[3, 3, 0, 0]} />
@@ -1778,9 +1778,9 @@ export function FMSDashboard() {
                     </div>
 
                     {/* Footer */}
-                    <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
+                    <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box", overflow: "hidden" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {top.name} has highest Red severity — {top.Critical} Red · {top.Attention} Amber
                         </span>
                         <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

@@ -11,8 +11,8 @@ export function KpiCardV3({ label, value, description, icon: Icon }: KpiCardV3Pr
   return (
     <div
       style={{
-        background: "#ffffff",
-        border: "1px solid #e2e8f0",
+        background: "var(--w-bg)",
+        border: "1px solid var(--w-border)",
         borderRadius: "12px",
         padding: "1px",
         display: "flex",
@@ -37,7 +37,7 @@ export function KpiCardV3({ label, value, description, icon: Icon }: KpiCardV3Pr
             fontWeight: 500,
             fontSize: "12px",
             lineHeight: "18px",
-            color: "#0f172a",
+            color: "var(--w-text-1)",
             whiteSpace: "nowrap",
           }}
         >
@@ -47,7 +47,7 @@ export function KpiCardV3({ label, value, description, icon: Icon }: KpiCardV3Pr
           style={{
             width: "12px",
             height: "12px",
-            color: "#64748b",
+            color: "var(--w-text-2)",
             flexShrink: 0,
           }}
         />
@@ -68,7 +68,7 @@ export function KpiCardV3({ label, value, description, icon: Icon }: KpiCardV3Pr
             fontWeight: 600,
             fontSize: "20px",
             lineHeight: "30px",
-            color: "#0f172a",
+            color: "var(--w-text-1)",
             whiteSpace: "nowrap",
           }}
         >
@@ -80,7 +80,7 @@ export function KpiCardV3({ label, value, description, icon: Icon }: KpiCardV3Pr
             fontWeight: 400,
             fontSize: "12px",
             lineHeight: "15px",
-            color: "#64748b",
+            color: "var(--w-text-2)",
           }}
         >
           {description}

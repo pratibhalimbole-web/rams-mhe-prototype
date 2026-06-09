@@ -52,12 +52,12 @@ function StatusBadge({ status }: { status: string }) {
 const filterStyle: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif",
   fontWeight: 400,
 };
@@ -90,7 +90,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
     lineHeight: "17px",
     letterSpacing: "0.3px",
     textTransform: "uppercase",
-    color: "#0f172a",
+    color: "var(--w-text-1)",
     padding: "15px 24px",
     whiteSpace: "nowrap",
     textAlign: "left",
@@ -102,16 +102,16 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
     fontWeight: 400,
     fontSize: 12,
     lineHeight: "20px",
-    color: "#0f172a",
+    color: "var(--w-text-1)",
     padding: "14px 24px",
     whiteSpace: "nowrap",
-    borderBottom: "1px solid #e2e8f0",
+    borderBottom: "1px solid var(--w-border)",
   };
 
   return (
     <div style={{
-      background: "#ffffff",
-      border: "1px solid #e2e8f0",
+      background: "var(--w-bg)",
+      border: "1px solid var(--w-border)",
       borderRadius: "12px",
       display: "flex",
       flexDirection: "column",
@@ -125,7 +125,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "20px 24px",
-        borderBottom: "1px solid #e2e8f0",
+        borderBottom: "1px solid var(--w-border)",
         gap: 16,
       }}>
         {/* Title + subtitle */}
@@ -135,7 +135,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
             fontWeight: 600,
             fontSize: 14,
             lineHeight: "21px",
-            color: "#0f172a",
+            color: "var(--w-text-1)",
           }}>
             Warranty &amp; License Expiry Monitor
           </span>
@@ -144,7 +144,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
             fontWeight: 400,
             fontSize: 12,
             lineHeight: "18px",
-            color: "#64748b",
+            color: "var(--w-text-2)",
           }}>
             Track MHE equipment warranties and operator licenses that have expired or are expiring soon.
           </span>
@@ -169,7 +169,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
       <div style={{ overflowX: "auto", flex: 1 }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid #e2e8f0" }}>
+            <tr style={{ borderBottom: "1px solid var(--w-border)" }}>
               <th style={thStyle}>{category === "mhe" ? "MHE Type" : "Operator Name"}</th>
               <th style={thStyle}>{category === "mhe" ? "MHE ID"   : "Operator ID"}</th>
               <th style={thStyle}>License Expiry</th>
@@ -180,7 +180,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
           <tbody>
             {pageRows.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ ...tdStyle, textAlign: "center", color: "#94a3b8", padding: "32px 24px" }}>
+                <td colSpan={5} style={{ ...tdStyle, textAlign: "center", color: "var(--w-text-3)", padding: "32px 24px" }}>
                   No records found.
                 </td>
               </tr>
@@ -205,7 +205,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
                 </td>
                 <td style={{ ...tdStyle, fontWeight: 600, color: "#2563eb" }}>{row.id}</td>
                 <td style={tdStyle}>{row.expiry}</td>
-                <td style={{ ...tdStyle, color: "#64748b" }}>{row.days} Days</td>
+                <td style={{ ...tdStyle, color: "var(--w-text-2)" }}>{row.days} Days</td>
                 <td style={tdStyle}><StatusBadge status={row.status} /></td>
               </tr>
             ))}
@@ -220,14 +220,14 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
         justifyContent: "space-between",
         padding: "0 24px",
         height: "49px",
-        borderTop: "1px solid #e2e8f0",
+        borderTop: "1px solid var(--w-border)",
         flexShrink: 0,
       }}>
         <span style={{
           fontFamily: "Inter, sans-serif",
           fontWeight: 400,
           fontSize: 12,
-          color: "#64748b",
+          color: "var(--w-text-2)",
         }}>
           {startRow}–{endRow} of {totalRows}
         </span>
@@ -235,13 +235,13 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           {/* Rows label */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#64748b" }}>Rows:</span>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "var(--w-text-2)" }}>Rows:</span>
             <div style={{
               display: "flex", alignItems: "center", justifyContent: "center",
-              height: 32, padding: "0 12px", background: "#ffffff",
-              border: "1px solid #e2e8f0", borderRadius: 6,
+              height: 32, padding: "0 12px", background: "var(--w-bg)",
+              border: "1px solid var(--w-border)", borderRadius: 6,
             }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#0f172a" }}>{ROWS_PER_PAGE}</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "var(--w-text-1)" }}>{ROWS_PER_PAGE}</span>
             </div>
           </div>
 
@@ -258,12 +258,12 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M10 12L6 8L10 4" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10 12L6 8L10 4" stroke="var(--w-text-2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
             <span style={{
               fontFamily: "Inter, sans-serif", fontSize: 12,
-              color: "#64748b", minWidth: 36, textAlign: "center",
+              color: "var(--w-text-2)", minWidth: 36, textAlign: "center",
             }}>
               {page} / {totalPages}
             </span>
@@ -278,7 +278,7 @@ export function WarrantyExpiryTableV3({ onRenew }: WarrantyExpiryTableV3Props) {
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 4L10 8L6 12" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M6 4L10 8L6 12" stroke="var(--w-text-2)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
           </div>

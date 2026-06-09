@@ -50,7 +50,7 @@ export function CriticalIssuesBanner({
             fontWeight: 400,
             fontSize: "10px",
             lineHeight: "15px",
-            color: "#64748b",
+            color: "var(--w-text-2)",
             whiteSpace: "nowrap",
           }}
         >
@@ -124,7 +124,7 @@ export function CriticalIssuesBanner({
           borderRadius: "6px",
           border: "none",
           background: "#e11d48",
-          color: "#ffffff",
+          color: "var(--w-bg)",
           fontFamily: "Inter, sans-serif",
           fontWeight: 600,
           fontSize: "11px",

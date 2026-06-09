@@ -45,12 +45,12 @@ export function MonitoringCardV3({ title, highlight, value, suffix, progress, ca
             fontWeight: 500,
             fontSize: "10px",
             lineHeight: "15px",
-            color: "#64748b",
+            color: "var(--w-text-2)",
             whiteSpace: "nowrap",
           }}
         >
           {title}{" "}
-          <span style={{ fontWeight: 600, color: "#0f172a" }}>{highlight}</span>
+          <span style={{ fontWeight: 600, color: "var(--w-text-1)" }}>{highlight}</span>
         </span>
       </div>
 
@@ -62,7 +62,7 @@ export function MonitoringCardV3({ title, highlight, value, suffix, progress, ca
             fontWeight: 800,
             fontSize: "30px",
             lineHeight: "30px",
-            color: "#0f172a",
+            color: "var(--w-text-1)",
             letterSpacing: "-0.75px",
           }}
         >
@@ -75,7 +75,7 @@ export function MonitoringCardV3({ title, highlight, value, suffix, progress, ca
               fontWeight: 400,
               fontSize: "12px",
               lineHeight: "16px",
-              color: "#64748b",
+              color: "var(--w-text-2)",
               marginLeft: "4px",
             }}
           >
@@ -91,7 +91,7 @@ export function MonitoringCardV3({ title, highlight, value, suffix, progress, ca
             style={{
               width: "100%",
               height: "3px",
-              background: "#f1f5f9",
+              background: "var(--w-bg-muted)",
               borderRadius: "3px",
               overflow: "hidden",
             }}
