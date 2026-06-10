@@ -77,7 +77,6 @@ import {
   AlertCircle,
   Forklift,
 } from "lucide-react";
-import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
 import { ImpactTrendByZoneAndMHE } from "../../components/widgets/ImpactTrendByZoneAndMHE";
 import { KpiCard } from "../../components/widgets/KpiCard";

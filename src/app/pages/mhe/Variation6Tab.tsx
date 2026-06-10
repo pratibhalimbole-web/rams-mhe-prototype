@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Truck, Activity, ShieldCheck, Wifi } from "lucide-react";
 import { KPICard, LicenseRenewDrawer, OperatorLicenseExpiryDrawer } from "./FMSDashboard";
-import { SeverityTrendLineV3 } from "../../components/widgets/v3/SeverityTrendLineV3";
+import { TopMhesWithFindingsV3 } from "../../components/widgets/v3/TopMhesWithFindingsV3";
 import { FleetCompositionWidget } from "../../components/widgets/v6/FleetCompositionWidget";
 import { TopFailingPartsWidget } from "../../components/widgets/v6/TopFailingPartsWidget";
 import { TopMhesWithFindingsWidget } from "../../components/widgets/v6/TopMhesWithFindingsWidget";
@@ -26,7 +26,7 @@ export function Variation6Tab() {
 
         {/* Section — Command Center KPIs */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             FMS · COMMAND CENTER
           </span>
         </div>
@@ -46,49 +46,21 @@ export function Variation6Tab() {
 
         {/* Section — RTSS */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             FMS · RTSS
           </span>
         </div>
 
         <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
-          <SeverityTrendLineV3 hideInsight />
+          <TopMhesWithFindingsV3 />
         </div>
         <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
           <FleetCompositionWidget />
         </div>
 
-        {/* Section — Risk & Service Signals */}
-        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-            RISK &amp; SERVICE SIGNALS
-          </span>
-        </div>
-
-        <div className="col-span-6 flex min-h-[380px]">
-          <LiabilityExposureWidget />
-        </div>
-        <div className="col-span-6 flex min-h-[380px]">
-          <AssetBurnForecastWidget />
-        </div>
-
-        {/* Section — Top Failing Parts & Top MHEs */}
-        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
-            COMMAND CENTER · FINDINGS
-          </span>
-        </div>
-
-        <div className="col-span-6 flex min-h-[422px]">
-          <TopFailingPartsWidget />
-        </div>
-        <div className="col-span-6 flex min-h-[422px]">
-          <TopMhesWithFindingsWidget />
-        </div>
-
         {/* Section — Activity & Inspection */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             COMMAND CENTER · ACTIVITY
           </span>
         </div>
@@ -103,9 +75,37 @@ export function Variation6Tab() {
           <InspectionHealthWidget />
         </div>
 
+        {/* Section — Risk & Service Signals */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
+            RISK &amp; SERVICE SIGNALS
+          </span>
+        </div>
+
+        <div className="col-span-6 flex min-h-[380px]">
+          <LiabilityExposureWidget />
+        </div>
+        <div className="col-span-6 flex min-h-[380px]">
+          <AssetBurnForecastWidget />
+        </div>
+
+        {/* Section — Top Failing Parts & Top MHEs */}
+        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
+            COMMAND CENTER · FINDINGS
+          </span>
+        </div>
+
+        <div className="col-span-6 flex min-h-[422px]">
+          <TopFailingPartsWidget />
+        </div>
+        <div className="col-span-6 flex min-h-[422px]">
+          <TopMhesWithFindingsWidget />
+        </div>
+
         {/* Section — Warranty / License Table */}
         <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#64748B" }}>
+          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
             COMMAND CENTER · WARRANTY
           </span>
         </div>

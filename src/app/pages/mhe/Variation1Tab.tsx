@@ -14,7 +14,7 @@ import {
 } from "../../components/ui/table";
 import { PieChart, Pie, Cell, Sector, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Truck, Activity, ShieldCheck, Wifi, ChevronLeft, ChevronRight, AlertTriangle, User } from "lucide-react";
-import { MheInspectionSeverityTimeline } from "../../components/widgets/MheInspectionSeverityTimeline";
+import { TopMhesWithFindingsV3 } from "../../components/widgets/v3/TopMhesWithFindingsV3";
 import { MheImpactResponsibilityAnalysis } from "../../components/widgets/MheImpactResponsibilityAnalysis";
 import { ImpactTrendByZoneAndMHE } from "../../components/widgets/ImpactTrendByZoneAndMHE";
 import { MachinesRequiringInspectionAttention } from "../../components/widgets/MachinesRequiringInspectionAttention";
@@ -310,8 +310,8 @@ export function Variation1Tab() {
             </div>
           </CardContent>
         </Card>
-        <div className="col-span-6 w-full overflow-auto" style={{ height: "448px" }}>
-          <MheInspectionSeverityTimeline />
+        <div className="col-span-6 flex min-h-[448px]">
+          <TopMhesWithFindingsV3 />
         </div>
       </div>
 

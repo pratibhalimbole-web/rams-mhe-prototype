@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Truck, Activity, ShieldCheck, Wifi, ShieldAlert, ClipboardCheck, Trophy, Award } from "lucide-react";
 import { CriticalIssuesBanner } from "../../components/widgets/CriticalIssuesBanner";
 import { KpiCardV3 } from "../../components/widgets/v3/KpiCardV3";
-import { SeverityTrendLineV3 } from "../../components/widgets/v3/SeverityTrendLineV3";
+import { TopMhesWithFindingsV3 } from "../../components/widgets/v3/TopMhesWithFindingsV3";
 import { ImpactDonutV3 } from "../../components/widgets/v3/ImpactDonutV3";
 import { MachinesAttentionV3 } from "../../components/widgets/v3/MachinesAttentionV3";
 import { EquipmentHealthCardV3 } from "../../components/widgets/v3/EquipmentHealthCardV3";
@@ -174,7 +174,7 @@ export function CommandDashboard() {
         </div>
 
         <div className="col-span-12 xl:col-span-8 flex min-h-[422px]">
-          <SeverityTrendLineV3 />
+          <TopMhesWithFindingsV3 />
         </div>
         <div className="col-span-12 xl:col-span-4 flex min-h-[422px]">
           <ImpactDonutV3 />
