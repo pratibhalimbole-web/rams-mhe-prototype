@@ -23,6 +23,9 @@ import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
 import { FMSDashboard } from "./pages/mhe/FMSDashboard";
 import { CommandDashboard } from "./pages/mhe/CommandDashboard";
+import { IMDSInspectionFindings } from "./pages/mhe/IMDSInspectionFindings";
+import { IMDSRulesAndAction } from "./pages/mhe/IMDSRulesAndAction";
+import { IMDSManageChecklists } from "./pages/mhe/IMDSManageChecklists";
 
 // Create a placeholder component for pages not yet implemented
 function PlaceholderPage({ title }: { title: string }) {
@@ -258,32 +261,16 @@ export const router = createBrowserRouter([
 
       // MHE → IMDS routes
       {
-        path: "mhe/imds/checklist-config-imds",
-        element: <PlaceholderPage title="Checklist Configuration" />,
-      },
-      {
         path: "mhe/imds/inspection-findings-imds",
-        element: <PlaceholderPage title="Inspection Findings" />,
+        element: <IMDSInspectionFindings />,
       },
       {
-        path: "mhe/imds/mhe-analytics-imds",
-        element: <PlaceholderPage title="MHE Analytics" />,
+        path: "mhe/imds/rules-action-imds",
+        element: <IMDSRulesAndAction />,
       },
       {
-        path: "mhe/imds/cta-imds",
-        element: <PlaceholderPage title="Call To Action" />,
-      },
-      {
-        path: "mhe/imds/insights-imds",
-        element: <PlaceholderPage title="Insights" />,
-      },
-      {
-        path: "mhe/imds/inventory-imds",
-        element: <PlaceholderPage title="Inventory" />,
-      },
-      {
-        path: "mhe/imds/report-imds",
-        element: <PlaceholderPage title="Report" />,
+        path: "mhe/imds/rules-action-imds/:typeId",
+        element: <IMDSManageChecklists />,
       },
 
       // MHE → Shared Features (not under any suite)
