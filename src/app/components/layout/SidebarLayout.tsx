@@ -21,6 +21,7 @@ type SidebarContextType = {
   subPageTitle: string | null;
   setHeaderActions: (actions: React.ReactNode | null) => void;
   headerActions: React.ReactNode | null;
+  setSubPageBack: (fn: (() => void) | null) => void;
   activeDomainId: string;
   activeSuiteId: string | null;
   activeFeatureId: string | null;
@@ -98,7 +99,8 @@ export function SidebarLayout() {
 
   // Sub-page Breadcrumb State
   const [subPageTitle, setSubPageTitle] = useState<string | null>(null);
-  
+  const [subPageBack, setSubPageBack] = useState<(() => void) | null>(null);
+
   // Header Actions State
   const [headerActions, setHeaderActions] = useState<React.ReactNode | null>(null);
 
@@ -130,6 +132,7 @@ export function SidebarLayout() {
   useEffect(() => {
     setSubPageTitle(null);
     setHeaderActions(null);
+    setSubPageBack(null);
   }, [location.pathname]);
 
   // Ensure sidebar is visible when switching to pinned mode
@@ -205,13 +208,14 @@ export function SidebarLayout() {
     subPageTitle,
     setHeaderActions,
     headerActions,
+    setSubPageBack: (fn) => setSubPageBack(() => fn),
     activeDomainId,
     activeSuiteId,
     activeFeatureId
   };
 
   // Determine the page title
-  const pageTitle = subPageTitle || activeFeature?.label || activeSuite?.label || activeDomain.label;
+  const pageTitle = activeFeature?.label || activeSuite?.label || activeDomain.label;
 
   return (
     <SidebarContext.Provider value={contextValue}>
@@ -279,67 +283,83 @@ export function SidebarLayout() {
               </div>
               <Breadcrumb>
                 <BreadcrumbList>
-                  <BreadcrumbItem>
-                    {!activeSuite && !activeFeature ? (
-                      <BreadcrumbPage>{activeDomain.label}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          // Navigate to first feature of domain
-                          if (activeDomain.type === "suite" || activeDomain.type === "mixed") {
-                            const firstSuite = (activeDomain.content as Suite[])[0];
-                            if (firstSuite && firstSuite.items.length > 0) {
-                              const firstFeature = firstSuite.items[0];
-                              navigate(`/${activeDomainId}/${firstSuite.id}/${firstFeature.id}`);
-                            }
-                          } else {
-                            const firstFeature = (activeDomain.content as Feature[])[0];
-                            if (firstFeature) {
-                              navigate(`/${activeDomainId}/${firstFeature.id}`);
-                            }
-                          }
-                        }}
-                        className="hover:text-foreground cursor-pointer transition-colors"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
-                      >
-                        {activeDomain.label}
-                      </BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
-                  
-                  {activeSuite && (
+                  {subPageTitle ? (
                     <>
-                      <BreadcrumbSeparator />
                       <BreadcrumbItem>
-                        {!activeFeature ? (
-                          <BreadcrumbPage style={{ fontFamily: "'Inter', sans-serif" }}>{activeSuite.label}</BreadcrumbPage>
-                        ) : (
-                          <BreadcrumbLink 
-                            href="#" 
-                            onClick={(e) => { 
-                              e.preventDefault(); 
-                              // Navigate to suite level (first feature in suite)
-                              if (activeSuite.items.length > 0) {
-                                navigate(`/${activeDomainId}/${activeSuiteId}/${activeSuite.items[0].id}`);
-                              }
-                            }}
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                          >
-                            {activeSuite.label}
-                          </BreadcrumbLink>
-                        )}
+                        <BreadcrumbLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (subPageBack) {
+                              subPageBack();
+                            } else if (activeFeature && activeSuiteId) {
+                              navigate(`/${activeDomainId}/${activeSuiteId}/${activeFeatureId}`);
+                            } else if (activeFeature) {
+                              navigate(`/${activeDomainId}/${activeFeatureId}`);
+                            }
+                          }}
+                          className="hover:text-foreground cursor-pointer transition-colors"
+                          style={{ fontFamily: "'Inter', sans-serif" }}
+                        >
+                          {activeFeature?.label ?? activeSuite?.label ?? activeDomain.label}
+                        </BreadcrumbLink>
                       </BreadcrumbItem>
-                    </>
-                  )}
-
-                  {subPageTitle && (
-                    <>
                       <BreadcrumbSeparator />
                       <BreadcrumbItem>
                         <BreadcrumbPage style={{ fontFamily: "'Inter', sans-serif" }}>{subPageTitle}</BreadcrumbPage>
                       </BreadcrumbItem>
+                    </>
+                  ) : (
+                    <>
+                      <BreadcrumbItem>
+                        {!activeSuite && !activeFeature ? (
+                          <BreadcrumbPage>{activeDomain.label}</BreadcrumbPage>
+                        ) : (
+                          <BreadcrumbLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (activeDomain.type === "suite" || activeDomain.type === "mixed") {
+                                const firstSuite = (activeDomain.content as Suite[])[0];
+                                if (firstSuite && firstSuite.items.length > 0) {
+                                  navigate(`/${activeDomainId}/${firstSuite.id}/${firstSuite.items[0].id}`);
+                                }
+                              } else {
+                                const firstFeature = (activeDomain.content as Feature[])[0];
+                                if (firstFeature) navigate(`/${activeDomainId}/${firstFeature.id}`);
+                              }
+                            }}
+                            className="hover:text-foreground cursor-pointer transition-colors"
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                          >
+                            {activeDomain.label}
+                          </BreadcrumbLink>
+                        )}
+                      </BreadcrumbItem>
+
+                      {activeSuite && (
+                        <>
+                          <BreadcrumbSeparator />
+                          <BreadcrumbItem>
+                            {!activeFeature ? (
+                              <BreadcrumbPage style={{ fontFamily: "'Inter', sans-serif" }}>{activeSuite.label}</BreadcrumbPage>
+                            ) : (
+                              <BreadcrumbLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (activeSuite.items.length > 0) {
+                                    navigate(`/${activeDomainId}/${activeSuiteId}/${activeSuite.items[0].id}`);
+                                  }
+                                }}
+                                style={{ fontFamily: "'Inter', sans-serif" }}
+                              >
+                                {activeSuite.label}
+                              </BreadcrumbLink>
+                            )}
+                          </BreadcrumbItem>
+                        </>
+                      )}
                     </>
                   )}
                 </BreadcrumbList>

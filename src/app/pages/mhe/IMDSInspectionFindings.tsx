@@ -1,18 +1,20 @@
 "use client"
 
 import * as React from "react"
+import { useEffect } from "react"
 import {
   Search,
-  MoreHorizontal,
-  ArrowUpDown,
-  Eye,
-  Pencil,
-  Trash2,
-  ClipboardList,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  XCircle,
+  Camera,
+  Mic,
+  PlayCircle,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  Maximize2,
 } from "lucide-react"
 import {
   ColumnDef,
@@ -22,19 +24,12 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
   useReactTable,
+  flexRender,
 } from "@tanstack/react-table"
-import { useEffect } from "react"
 import { useSidebar } from "../../components/layout/SidebarLayout"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Badge } from "../../components/ui/badge"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "../../components/ui/dropdown-menu"
 import {
   Select,
   SelectContent,
@@ -43,108 +38,685 @@ import {
   SelectValue,
 } from "../../components/ui/select"
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "../../components/ui/sheet"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog"
-import { toast } from "sonner"
-import { DashboardTable } from "../../components/dashboard/DashboardTable"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table"
 
 // --- Types ---
 
-type Severity = "Critical" | "High" | "Medium" | "Low"
-type FindingStatus = "Open" | "In Progress" | "Resolved" | "Closed"
-type AssetType = "Forklift" | "Reach Truck" | "Pallet Jack" | "Order Picker" | "Counterbalance"
+type InspectionSeverity = "Red" | "Amber" | "Green" | "No Issue"
+type InspectionStatus = "Open" | "Reported" | "Closed"
 
-type Finding = {
+type TimelineEvent = {
+  time: string
+  severity: InspectionSeverity
+  userId: string
+  evidenceCount?: number
+  note?: string
+  isActive?: boolean
+}
+
+type InspectionFinding = {
   id: string
-  assetId: string
-  assetType: AssetType
-  component: string
-  finding: string
-  severity: Severity
-  status: FindingStatus
-  dateFound: string
-  inspector: string
+  mheName: string
+  mheId: string
+  partName: string
+  checklist: string
+  reportedBy: string
+  reportedByInitials: string
+  severity: InspectionSeverity
+  status: InspectionStatus
+  createdAt: string
+  lastUpdated: string
+  transactionId: string
   notes?: string
+  imageCount?: number
+  videoCount?: number
+  timeline: TimelineEvent[]
 }
 
 // --- Mock Data ---
 
-const mockFindings: Finding[] = [
-  { id: "FIND-MHE-001", assetId: "FLT-014", assetType: "Forklift", component: "Forks", finding: "Fork tip crack detected on left tine", severity: "Critical", status: "Open", dateFound: "2026-06-08", inspector: "J. Santos" },
-  { id: "FIND-MHE-002", assetId: "RT-007", assetType: "Reach Truck", component: "Battery", finding: "Battery not holding charge above 40%", severity: "High", status: "In Progress", dateFound: "2026-06-07", inspector: "M. Patel", notes: "Replacement battery ordered, ETA Jun 12" },
-  { id: "FIND-MHE-003", assetId: "PJ-023", assetType: "Pallet Jack", component: "Hydraulics", finding: "Hydraulic fluid leak under pump unit", severity: "High", status: "Open", dateFound: "2026-06-07", inspector: "R. Nguyen" },
-  { id: "FIND-MHE-004", assetId: "FLT-002", assetType: "Forklift", component: "Tires", finding: "Front left tire worn below 20% tread depth", severity: "Medium", status: "Resolved", dateFound: "2026-06-05", inspector: "J. Santos", notes: "Tire replaced on Jun 06" },
-  { id: "FIND-MHE-005", assetId: "OP-011", assetType: "Order Picker", component: "Safety Horn", finding: "Horn non-functional during pre-shift check", severity: "Critical", status: "In Progress", dateFound: "2026-06-06", inspector: "A. Lee" },
-  { id: "FIND-MHE-006", assetId: "CB-005", assetType: "Counterbalance", component: "Seatbelt", finding: "Seatbelt retractor mechanism jammed", severity: "Critical", status: "Open", dateFound: "2026-06-09", inspector: "M. Patel" },
-  { id: "FIND-MHE-007", assetId: "RT-019", assetType: "Reach Truck", component: "Mast", finding: "Mast chain showing visible wear on inner link", severity: "High", status: "Open", dateFound: "2026-06-08", inspector: "R. Nguyen" },
-  { id: "FIND-MHE-008", assetId: "FLT-031", assetType: "Forklift", component: "Overhead Guard", finding: "Overhead guard mounting bolt loose", severity: "High", status: "Resolved", dateFound: "2026-06-04", inspector: "J. Santos", notes: "Bolts tightened and torqued to spec" },
-  { id: "FIND-MHE-009", assetId: "PJ-008", assetType: "Pallet Jack", component: "Wheels", finding: "Right drive wheel has flat spot causing vibration", severity: "Medium", status: "In Progress", dateFound: "2026-06-06", inspector: "A. Lee" },
-  { id: "FIND-MHE-010", assetId: "OP-003", assetType: "Order Picker", component: "Platform Gate", finding: "Platform safety gate latch not engaging fully", severity: "Critical", status: "Open", dateFound: "2026-06-09", inspector: "R. Nguyen" },
-  { id: "FIND-MHE-011", assetId: "FLT-009", assetType: "Forklift", component: "Lights", finding: "Front headlights dim, probable wiring fault", severity: "Low", status: "Resolved", dateFound: "2026-06-02", inspector: "M. Patel", notes: "Wiring connection reseated" },
-  { id: "FIND-MHE-012", assetId: "CB-012", assetType: "Counterbalance", component: "Brakes", finding: "Service brakes require excessive pedal pressure", severity: "High", status: "Open", dateFound: "2026-06-08", inspector: "J. Santos" },
-  { id: "FIND-MHE-013", assetId: "RT-004", assetType: "Reach Truck", component: "Load Backrest", finding: "Load backrest extension has hairline crack", severity: "Medium", status: "Closed", dateFound: "2026-05-28", inspector: "A. Lee", notes: "Part replaced, verified by supervisor" },
-  { id: "FIND-MHE-014", assetId: "FLT-022", assetType: "Forklift", component: "Engine", finding: "Engine oil level critically low", severity: "High", status: "Resolved", dateFound: "2026-06-05", inspector: "R. Nguyen", notes: "Oil topped up, leak source investigated" },
-  { id: "FIND-MHE-015", assetId: "PJ-016", assetType: "Pallet Jack", component: "Handle", finding: "Emergency lowering valve stiff operation", severity: "Medium", status: "Open", dateFound: "2026-06-07", inspector: "M. Patel" },
-  { id: "FIND-MHE-016", assetId: "OP-007", assetType: "Order Picker", component: "Battery", finding: "Battery connector pins showing corrosion", severity: "Medium", status: "In Progress", dateFound: "2026-06-06", inspector: "J. Santos" },
-  { id: "FIND-MHE-017", assetId: "CB-021", assetType: "Counterbalance", component: "Steering", finding: "Excessive play detected in steering wheel", severity: "High", status: "Open", dateFound: "2026-06-09", inspector: "A. Lee" },
-  { id: "FIND-MHE-018", assetId: "FLT-017", assetType: "Forklift", component: "Forks", finding: "Fork heel wear at 85% of allowable limit", severity: "Medium", status: "Open", dateFound: "2026-06-08", inspector: "R. Nguyen" },
-  { id: "FIND-MHE-019", assetId: "RT-025", assetType: "Reach Truck", component: "Outrigger", finding: "Outrigger wheel bearing noise during operation", severity: "Low", status: "Closed", dateFound: "2026-05-30", inspector: "M. Patel", notes: "Bearing replaced" },
-  { id: "FIND-MHE-020", assetId: "FLT-005", assetType: "Forklift", component: "Exhaust", finding: "Exhaust emissions above permissible indoor limit", severity: "High", status: "Open", dateFound: "2026-06-09", inspector: "J. Santos" },
-  { id: "FIND-MHE-021", assetId: "PJ-031", assetType: "Pallet Jack", component: "Frame", finding: "Minor frame weld crack near rear axle mount", severity: "Medium", status: "In Progress", dateFound: "2026-06-07", inspector: "A. Lee" },
-  { id: "FIND-MHE-022", assetId: "OP-015", assetType: "Order Picker", component: "Deadman Pedal", finding: "Deadman pedal return spring weak", severity: "High", status: "Open", dateFound: "2026-06-08", inspector: "R. Nguyen" },
-  { id: "FIND-MHE-023", assetId: "CB-003", assetType: "Counterbalance", component: "Tyres", finding: "Rear tyre showing sidewall bulge", severity: "Critical", status: "Open", dateFound: "2026-06-09", inspector: "M. Patel" },
-  { id: "FIND-MHE-024", assetId: "RT-011", assetType: "Reach Truck", component: "Controls", finding: "Lift control lever intermittently unresponsive", severity: "High", status: "In Progress", dateFound: "2026-06-06", inspector: "J. Santos" },
-  { id: "FIND-MHE-025", assetId: "FLT-028", assetType: "Forklift", component: "Camera", finding: "Rear-view camera lens cracked", severity: "Low", status: "Open", dateFound: "2026-06-08", inspector: "A. Lee" },
+const mockFindings: InspectionFinding[] = [
+  {
+    id: "MIFUSU4BN8-QZNHYX13",
+    mheName: "MHE 05", mheId: "OE2BQ63OX8TSGTT",
+    partName: "Tyre", checklist: "Check physical body condition.",
+    reportedBy: "Vivek Deshmukh", reportedByInitials: "VD",
+    severity: "Red", status: "Reported",
+    createdAt: "2026-06-09 09:14", lastUpdated: "2026-06-09 11:30",
+    transactionId: "TXN-20260609-0041",
+    imageCount: 3, videoCount: 1,
+    timeline: [
+      { time: "2026-06-09 11:30", severity: "Red",   userId: "VKD4BN8", evidenceCount: 1, isActive: true },
+      { time: "2026-06-09 11:00", severity: "Amber", userId: "VKD4BN8", evidenceCount: 1 },
+      { time: "2026-06-09 09:14", severity: "Red",   userId: "VKD4BN8", evidenceCount: 1 },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-RTLMKQ72",
+    mheName: "MHE 02", mheId: "P1WTZXKS9ANQBCJ",
+    partName: "Battery", checklist: "Inspect battery charge level and terminals.",
+    reportedBy: "Arjun Mehta", reportedByInitials: "AM",
+    severity: "Amber", status: "Open",
+    createdAt: "2026-06-10 08:22", lastUpdated: "2026-06-10 08:22",
+    transactionId: "TXN-20260610-0017",
+    timeline: [
+      { time: "2026-06-10 08:22", severity: "Amber", userId: "ARM5BN8", isActive: true },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-JXKP9WN5",
+    mheName: "MHE 07", mheId: "BKRT4HQNCM2GYXV",
+    partName: "Lights", checklist: "Verify all lights are functional.",
+    reportedBy: "Sneha Patil", reportedByInitials: "SP",
+    severity: "Green", status: "Closed",
+    createdAt: "2026-06-08 14:05", lastUpdated: "2026-06-08 16:40",
+    transactionId: "TXN-20260608-0093",
+    timeline: [
+      { time: "2026-06-08 16:40", severity: "Green", userId: "SNP3BN8", evidenceCount: 2, isActive: true },
+      { time: "2026-06-08 15:30", severity: "Amber", userId: "SNP3BN8", evidenceCount: 1 },
+      { time: "2026-06-08 14:05", severity: "Green", userId: "SNP3BN8" },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-HVQZLR81",
+    mheName: "MHE 01", mheId: "Y8ZJNAKO7AIVM1H",
+    partName: "Forks", checklist: "Check fork alignment and wear.",
+    reportedBy: "Vivek Deshmukh", reportedByInitials: "VD",
+    severity: "Red", status: "Open",
+    createdAt: "2026-06-11 07:55", lastUpdated: "2026-06-11 07:55",
+    transactionId: "TXN-20260611-0003",
+    imageCount: 2,
+    timeline: [
+      { time: "2026-06-11 07:55", severity: "Red", userId: "VKD4BN8", evidenceCount: 1, isActive: true },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-CZWN4MT6",
+    mheName: "MHE 03", mheId: "EJPSLTSFAOTF4LD",
+    partName: "Horn", checklist: "Test horn functionality during pre-shift check.",
+    reportedBy: "Arjun Mehta", reportedByInitials: "AM",
+    severity: "Red", status: "Reported",
+    createdAt: "2026-06-09 10:30", lastUpdated: "2026-06-09 12:00",
+    transactionId: "TXN-20260609-0058",
+    timeline: [
+      { time: "2026-06-09 12:00", severity: "Red",   userId: "ARM5BN8", evidenceCount: 1, isActive: true },
+      { time: "2026-06-09 10:30", severity: "Amber", userId: "ARM5BN8" },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-KNRXBP90",
+    mheName: "MHE 08", mheId: "KRGTL1NKXNBWR6Y",
+    partName: "Frame", checklist: "Inspect frame welds and structural integrity.",
+    reportedBy: "Sneha Patil", reportedByInitials: "SP",
+    severity: "Amber", status: "Reported",
+    createdAt: "2026-06-10 11:15", lastUpdated: "2026-06-10 13:45",
+    transactionId: "TXN-20260610-0034",
+    timeline: [
+      { time: "2026-06-10 13:45", severity: "Amber", userId: "SNP3BN8", evidenceCount: 1, isActive: true },
+      { time: "2026-06-10 11:15", severity: "Green", userId: "SNP3BN8" },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-LPWKQR47",
+    mheName: "MHE 05", mheId: "OE2BQ63OX8TSGTT",
+    partName: "Seatbelt", checklist: "Check seatbelt retraction and buckle lock.",
+    reportedBy: "Vivek Deshmukh", reportedByInitials: "VD",
+    severity: "Red", status: "Open",
+    createdAt: "2026-06-11 08:40", lastUpdated: "2026-06-11 08:40",
+    transactionId: "TXN-20260611-0009",
+    timeline: [
+      { time: "2026-06-11 08:40", severity: "Red", userId: "VKD4BN8", isActive: true },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-GXZMTP28",
+    mheName: "MHE 04", mheId: "WQ9CVSX4ARCCYA8",
+    partName: "Hydraulics", checklist: "Check hydraulic fluid level and leak points.",
+    reportedBy: "Arjun Mehta", reportedByInitials: "AM",
+    severity: "Green", status: "Closed",
+    createdAt: "2026-06-07 09:00", lastUpdated: "2026-06-07 15:00",
+    transactionId: "TXN-20260607-0071",
+    timeline: [
+      { time: "2026-06-07 15:00", severity: "Green", userId: "ARM5BN8", evidenceCount: 2, isActive: true },
+      { time: "2026-06-07 13:30", severity: "Amber", userId: "ARM5BN8", evidenceCount: 1 },
+      { time: "2026-06-07 11:00", severity: "Green", userId: "ARM5BN8" },
+      { time: "2026-06-07 09:00", severity: "Green", userId: "ARM5BN8" },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-TQJYBZ63",
+    mheName: "MHE 06", mheId: "M3QD9DNMDM9CBSF",
+    partName: "Steering", checklist: "Test steering response and alignment.",
+    reportedBy: "Sneha Patil", reportedByInitials: "SP",
+    severity: "Amber", status: "Open",
+    createdAt: "2026-06-10 14:20", lastUpdated: "2026-06-10 14:20",
+    transactionId: "TXN-20260610-0049",
+    timeline: [
+      { time: "2026-06-10 14:20", severity: "Amber", userId: "SNP3BN8", isActive: true },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-RWNXKL55",
+    mheName: "MHE 02", mheId: "P1WTZXKS9ANQBCJ",
+    partName: "Brakes", checklist: "Check brake pad thickness and response.",
+    reportedBy: "Vivek Deshmukh", reportedByInitials: "VD",
+    severity: "No Issue", status: "Closed",
+    createdAt: "2026-06-06 10:00", lastUpdated: "2026-06-06 14:00",
+    transactionId: "TXN-20260606-0082",
+    timeline: [
+      { time: "2026-06-06 14:00", severity: "No Issue", userId: "VKD4BN8", isActive: true },
+      { time: "2026-06-06 12:00", severity: "Green",    userId: "VKD4BN8" },
+      { time: "2026-06-06 10:00", severity: "No Issue", userId: "VKD4BN8" },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-BMXQYL19",
+    mheName: "MHE 09", mheId: "C016YCUTYUO6MRY",
+    partName: "Tyre", checklist: "Inspect tyre tread depth and sidewall condition.",
+    reportedBy: "Arjun Mehta", reportedByInitials: "AM",
+    severity: "Amber", status: "Reported",
+    createdAt: "2026-06-11 07:10", lastUpdated: "2026-06-11 09:00",
+    transactionId: "TXN-20260611-0001",
+    timeline: [
+      { time: "2026-06-11 09:00", severity: "Amber", userId: "ARM5BN8", evidenceCount: 1, isActive: true },
+      { time: "2026-06-11 07:10", severity: "Green", userId: "ARM5BN8" },
+    ],
+  },
+  {
+    id: "MIFUSU4BN8-DQCNFK36",
+    mheName: "MHE 10", mheId: "307NDKTMPALKX0Y",
+    partName: "Battery", checklist: "Check battery connectors and charge indicator.",
+    reportedBy: "Sneha Patil", reportedByInitials: "SP",
+    severity: "Green", status: "Closed",
+    createdAt: "2026-06-05 11:30", lastUpdated: "2026-06-05 16:00",
+    transactionId: "TXN-20260605-0067",
+    timeline: [
+      { time: "2026-06-05 16:00", severity: "Green",    userId: "SNP3BN8", evidenceCount: 1, isActive: true },
+      { time: "2026-06-05 14:00", severity: "Green",    userId: "SNP3BN8" },
+      { time: "2026-06-05 12:30", severity: "Amber",    userId: "SNP3BN8", evidenceCount: 1 },
+      { time: "2026-06-05 11:30", severity: "No Issue", userId: "SNP3BN8" },
+    ],
+  },
 ]
 
-// --- Severity Helpers ---
+// --- Badge helpers ---
 
-function severityBadge(severity: Severity) {
-  const map: Record<Severity, string> = {
-    Critical: "bg-[var(--destructive)]/15 text-[var(--destructive)]",
-    High: "bg-orange-500/15 text-orange-500",
-    Medium: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
-    Low: "bg-[var(--chart-2)]/15 text-[var(--chart-2)]",
+function severityBadge(s: InspectionSeverity): React.ReactNode {
+  const map: Record<InspectionSeverity, { bg: string; color: string }> = {
+    Red:      { bg: "rgba(239,68,68,0.12)",   color: "#ef4444" },
+    Amber:    { bg: "rgba(245,158,11,0.12)",  color: "#f59e0b" },
+    Green:    { bg: "rgba(16,185,129,0.12)",  color: "#10b981" },
+    "No Issue": { bg: "rgba(100,116,139,0.12)", color: "var(--muted-foreground)" },
   }
-  return map[severity]
-}
-
-function statusBadge(status: FindingStatus) {
-  const map: Record<FindingStatus, string> = {
-    Open: "bg-[var(--destructive)]/10 text-[var(--destructive)]",
-    "In Progress": "bg-[var(--chart-1)]/15 text-[var(--chart-1)]",
-    Resolved: "bg-[var(--chart-2)]/15 text-[var(--chart-2)]",
-    Closed: "bg-[var(--muted)] text-[var(--muted-foreground)]",
-  }
-  return map[status]
-}
-
-// --- KPI Card ---
-
-function KpiCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number; color: string }) {
+  const { bg, color } = map[s]
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)]">
-      <div className={`p-2 rounded-[var(--radius-sm)] ${color}`}>
-        <Icon className="h-4 w-4" />
+    <span
+      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+      style={{ backgroundColor: bg, color }}
+    >
+      {s}
+    </span>
+  )
+}
+
+function statusBadge(s: InspectionStatus): React.ReactNode {
+  const map: Record<InspectionStatus, { bg: string; color: string }> = {
+    Open:     { bg: "rgba(239,68,68,0.10)",   color: "var(--destructive)" },
+    Reported: { bg: "rgba(245,158,11,0.12)",  color: "#f59e0b" },
+    Closed:   { bg: "rgba(100,116,139,0.12)", color: "var(--muted-foreground)" },
+  }
+  const { bg, color } = map[s]
+  return (
+    <span
+      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+      style={{ backgroundColor: bg, color }}
+    >
+      {s}
+    </span>
+  )
+}
+
+// --- Avatar ---
+function Avatar({ initials, size = "sm" }: { initials: string; size?: "sm" | "md" }) {
+  const sz = size === "md" ? "h-8 w-8 text-xs" : "h-6 w-6 text-[10px]"
+  return (
+    <span
+      className={`${sz} rounded-full flex items-center justify-center font-normal shrink-0`}
+      style={{ backgroundColor: "rgba(59,130,246,0.15)", color: "var(--primary)" }}
+    >
+      {initials}
+    </span>
+  )
+}
+
+function formatTimelineDate(raw: string) {
+  const d = new Date(raw.replace(" ", "T"))
+  return d.toLocaleString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: true,
+  }).replace(",", "")
+}
+
+
+// --- Detail Page ---
+
+function ImageLightbox({
+  total,
+  index,
+  onClose,
+  onNav,
+}: {
+  total: number
+  index: number
+  onClose: () => void
+  onNav: (i: number) => void
+}) {
+  const [zoom, setZoom] = React.useState(100)
+  const [rotation, setRotation] = React.useState(0)
+
+  React.useEffect(() => {
+    setZoom(100)
+    setRotation(0)
+  }, [index])
+
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+      if (e.key === "ArrowLeft" && total > 1) onNav((index - 1 + total) % total)
+      if (e.key === "ArrowRight" && total > 1) onNav((index + 1) % total)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [index, total])
+
+  return (
+    /* Backdrop */
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      onClick={onClose}
+    >
+      {/* Modal card */}
+      <div
+        className="flex flex-col rounded-[var(--radius)] overflow-hidden shadow-2xl"
+        style={{
+          width: "min(900px, calc(100vw - 80px))",
+          height: "min(620px, calc(100vh - 80px))",
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-3 shrink-0 border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <p className="text-[length:var(--text-sm)] font-normal text-[var(--foreground)]">
+            Image {index + 1} of {total}
+          </p>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded hover:bg-[var(--muted)] transition-colors text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+            <X strokeWidth={1.5} className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Image area */}
+        <div
+          className="flex-1 relative flex items-center justify-center overflow-hidden"
+          style={{ backgroundColor: "#111118" }}
+        >
+          {total > 1 && (
+            <button
+              onClick={() => onNav((index - 1 + total) % total)}
+              className="absolute left-3 z-10 p-2 rounded-full hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.6)" }}
+            >
+              <ChevronLeft strokeWidth={1.5} className="h-5 w-5" />
+            </button>
+          )}
+
+          {/* Placeholder */}
+          <div
+            style={{
+              transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
+              transition: "transform 0.2s ease",
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Camera strokeWidth={1} className="h-20 w-20" style={{ color: "rgba(255,255,255,0.1)" }} />
+          </div>
+
+          {total > 1 && (
+            <button
+              onClick={() => onNav((index + 1) % total)}
+              className="absolute right-3 z-10 p-2 rounded-full hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.6)" }}
+            >
+              <ChevronRight strokeWidth={1.5} className="h-5 w-5" />
+            </button>
+          )}
+
+          {/* Toolbar — floats inside image area */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-0.5 px-3 py-2 rounded-xl" style={{ backgroundColor: "rgba(10,10,10,0.75)", backdropFilter: "blur(10px)" }}>
+            <button
+              onClick={() => setZoom(z => Math.max(25, z - 25))}
+              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              <ZoomOut strokeWidth={1.5} className="h-4 w-4" />
+            </button>
+            <span className="px-2 text-[length:var(--text-xs)] font-normal min-w-[46px] text-center" style={{ color: "rgba(255,255,255,0.7)" }}>
+              {zoom}%
+            </span>
+            <button
+              onClick={() => setZoom(z => Math.min(300, z + 25))}
+              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              <ZoomIn strokeWidth={1.5} className="h-4 w-4" />
+            </button>
+            <div className="w-px h-3.5 mx-1.5" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
+            <button
+              onClick={() => setRotation(r => (r + 90) % 360)}
+              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              <RotateCw strokeWidth={1.5} className="h-4 w-4" />
+            </button>
+            <button
+              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.7)" }}
+            >
+              <Maximize2 strokeWidth={1.5} className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
-      <div>
-        <p className="text-[length:var(--text-xl)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)] leading-tight">{value}</p>
-        <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] leading-tight">{label}</p>
+    </div>
+  )
+}
+
+function DetailPage({ finding }: { finding: InspectionFinding }) {
+  const [activeTab, setActiveTab] = React.useState<"observation" | "timeline">("observation")
+  const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null)
+  const imageCount = finding.imageCount ?? 1
+
+  return (
+    <div className="h-full flex flex-col bg-[var(--background)] p-6">
+      {/* Two-column body */}
+      <div className="flex-1 flex gap-4 min-h-0">
+        {/* Left — tabbed content */}
+        <div className="flex-[2] flex flex-col rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] overflow-hidden">
+
+          {/* Underline tab bar */}
+          <div className="flex border-b border-[var(--border)] shrink-0">
+            {(["observation", "timeline"] as const).map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className="relative px-6 py-3 text-[length:var(--text-sm)] font-normal capitalize transition-colors"
+                style={{
+                  color: activeTab === tab ? "var(--foreground)" : "var(--muted-foreground)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {activeTab === tab && (
+                  <span
+                    className="absolute bottom-0 left-0 right-0 h-0.5"
+                    style={{ backgroundColor: "var(--primary)" }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab content */}
+          <div className="flex-1 overflow-y-auto">
+            {activeTab === "observation" && (
+              <div className="px-6 py-5 flex flex-col gap-5">
+
+                <section>
+                  <p className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase text-[var(--muted-foreground)] tracking-wide mb-3">MHE Details</p>
+                  <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--background)] p-4">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                      <Field label="MHE Name" value={finding.mheName} />
+                      <Field label="MHE ID" value={finding.mheId} mono />
+                      <Field label="Part Name" value={finding.partName} />
+                      <div className="col-span-2"><Field label="Checklist" value={finding.checklist} /></div>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <p className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase text-[var(--muted-foreground)] tracking-wide mb-3">Finding Summary</p>
+                  <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--background)] p-4">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                      <div>
+                        <p className="text-[length:var(--text-xs)] uppercase text-[var(--muted-foreground)] mb-1">Severity</p>
+                        {severityBadge(finding.severity)}
+                      </div>
+                      <div>
+                        <p className="text-[length:var(--text-xs)] uppercase text-[var(--muted-foreground)] mb-1">Finding ID</p>
+                        <p className="text-[length:var(--text-sm)] font-normal" style={{ color: "var(--primary)" }}>{finding.id}</p>
+                      </div>
+                      <div>
+                        <p className="text-[length:var(--text-xs)] uppercase text-[var(--muted-foreground)] mb-1">Issue Status</p>
+                        {statusBadge(finding.status)}
+                      </div>
+                      <div>
+                        <p className="text-[length:var(--text-xs)] uppercase text-[var(--muted-foreground)] mb-1">Transaction ID</p>
+                        <p className="text-[length:var(--text-sm)] font-normal text-[var(--foreground)]">{finding.transactionId}</p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <p className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase text-[var(--muted-foreground)] tracking-wide mb-3">Reported Information</p>
+                  <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--background)] p-4">
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <p className="text-[length:var(--text-xs)] uppercase text-[var(--muted-foreground)] mb-1.5">Created By</p>
+                        <div className="flex items-center gap-2">
+                          <Avatar initials={finding.reportedByInitials} size="md" />
+                          <p className="text-[length:var(--text-sm)] font-normal text-[var(--foreground)]">{finding.reportedBy}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                        <Field label="Created On" value={finding.createdAt} />
+                        <Field label="Last Updated" value={finding.lastUpdated} />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+              </div>
+            )}
+
+            {activeTab === "timeline" && (
+              <div className="px-6 py-5">
+                <div className="relative flex flex-col gap-0">
+                  {/* Vertical connector line */}
+                  <div
+                    className="absolute top-3 bottom-3 w-px"
+                    style={{ left: "11px", backgroundColor: "var(--border)" }}
+                  />
+
+                  {finding.timeline.map((evt, idx) => {
+                    const isActive = evt.isActive === true || idx === 0
+                    return (
+                      <div key={idx} className="relative flex gap-3 pb-4 last:pb-0">
+                        {/* Dot */}
+                        <div className="relative z-10 shrink-0 mt-3" style={{ width: "22px" }}>
+                          {isActive ? (
+                            /* Blue hollow ring */
+                            <div
+                              className="h-[22px] w-[22px] rounded-full border-2 flex items-center justify-center"
+                              style={{ borderColor: "var(--primary)", backgroundColor: "var(--card)" }}
+                            >
+                              <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "var(--primary)" }} />
+                            </div>
+                          ) : (
+                            /* Green filled with checkmark */
+                            <div
+                              className="h-[22px] w-[22px] rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: "#10b981" }}
+                            >
+                              <Check strokeWidth={2.5} className="h-3 w-3 text-white" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card */}
+                        <div className="flex-1 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--background)] overflow-hidden">
+                          {/* Card header */}
+                          <div className="flex items-center justify-between px-4 py-2.5">
+                            <div className="flex items-center gap-2">
+                              <p className="text-[length:var(--text-xs)] font-normal" style={{ color: "var(--muted-foreground)" }}>Severity</p>
+                              {severityBadge(evt.severity)}
+                            </div>
+                            <p className="text-[10px] font-normal" style={{ color: "var(--muted-foreground)" }}>
+                              {formatTimelineDate(evt.time)}
+                            </p>
+                          </div>
+                          {/* Divider */}
+                          <div className="h-px" style={{ backgroundColor: "var(--border)" }} />
+                          {/* Card body — two columns */}
+                          <div className="grid grid-cols-2 divide-x divide-[var(--border)] px-0">
+                            <div className="px-4 py-2.5">
+                              <p className="text-[10px] uppercase tracking-wide font-normal mb-1" style={{ color: "var(--muted-foreground)" }}>BY</p>
+                              <p className="text-[length:var(--text-xs)] font-normal text-[var(--foreground)]">{evt.userId}</p>
+                            </div>
+                            <div className="px-4 py-2.5">
+                              <p className="text-[10px] uppercase tracking-wide font-normal mb-1" style={{ color: "var(--muted-foreground)" }}>NOTES / COMMENT</p>
+                              <p className="text-[length:var(--text-xs)] font-normal text-[var(--foreground)]">
+                                {evt.note
+                                  ? evt.note
+                                  : evt.evidenceCount
+                                    ? `${evt.evidenceCount} evidence file${evt.evidenceCount !== 1 ? "s" : ""} attached`
+                                    : "—"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right — Media Evidence */}
+        <div className="flex-[1] flex flex-col rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] overflow-hidden">
+          <div className="px-5 pt-5 pb-3 border-b border-[var(--border)] shrink-0">
+            <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+              Media Evidence
+            </p>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
+
+            {/* Images */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] font-normal">Images</p>
+                <span className="inline-flex items-center justify-center h-4 w-4 rounded-full text-[9px] font-normal" style={{ backgroundColor: "var(--muted)", color: "var(--muted-foreground)" }}>
+                  {finding.imageCount ?? 1}
+                </span>
+              </div>
+              <div className="flex flex-row gap-2 flex-wrap">
+                {Array.from({ length: imageCount }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setLightboxIndex(i)}
+                    className="rounded-[var(--radius)] flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
+                    style={{ width: "110px", height: "110px", backgroundColor: "var(--muted)" }}
+                  >
+                    <Camera strokeWidth={1.5} className="h-6 w-6 text-[var(--muted-foreground)]" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Videos */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] font-normal">Videos</p>
+                <span className="inline-flex items-center justify-center h-4 w-4 rounded-full text-[9px] font-normal" style={{ backgroundColor: "var(--muted)", color: "var(--muted-foreground)" }}>
+                  {finding.videoCount ?? 1}
+                </span>
+              </div>
+              <div className="flex flex-row gap-2 flex-wrap">
+                {Array.from({ length: finding.videoCount ?? 1 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-[var(--radius)] flex items-center justify-center shrink-0"
+                    style={{ width: "110px", height: "110px", backgroundColor: "var(--muted)" }}
+                  >
+                    <PlayCircle strokeWidth={1.5} className="h-6 w-6 text-[var(--muted-foreground)]" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Audio */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] font-normal">Audio</p>
+                <span className="inline-flex items-center justify-center h-4 w-4 rounded-full text-[9px] font-normal" style={{ backgroundColor: "var(--muted)", color: "var(--muted-foreground)" }}>1</span>
+              </div>
+              <div
+                className="w-full rounded-[var(--radius)] flex items-center gap-2 px-3 py-2.5"
+                style={{ backgroundColor: "var(--muted)" }}
+              >
+                <Mic strokeWidth={1.5} className="h-3.5 w-3.5 text-[var(--muted-foreground)] shrink-0" />
+                <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
+                  <div className="h-full w-1/3 rounded-full" style={{ backgroundColor: "var(--primary)" }} />
+                </div>
+                <span className="text-[10px] text-[var(--muted-foreground)] font-normal shrink-0">0:14 / 0:42</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
+
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          total={imageCount}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNav={setLightboxIndex}
+        />
+      )}
+    </div>
+  )
+}
+
+function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <p className="text-[length:var(--text-xs)] uppercase text-[var(--muted-foreground)] mb-0.5">{label}</p>
+      <p className={`text-[length:var(--text-sm)] font-normal text-[var(--foreground)] ${mono ? "font-mono" : ""}`}>{value}</p>
     </div>
   )
 }
@@ -153,177 +725,97 @@ function KpiCard({ icon: Icon, label, value, color }: { icon: React.ElementType;
 
 export function IMDSInspectionFindings() {
   const sidebar = useSidebar()
-  useEffect(() => {
-    sidebar?.setSubPageTitle("Findings")
-  }, [])
 
-  const [findings, setFindings] = React.useState<Finding[]>(mockFindings)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = React.useState("")
   const [severityFilter, setSeverityFilter] = React.useState<string>("all")
   const [statusFilter, setStatusFilter] = React.useState<string>("all")
-  const [assetTypeFilter, setAssetTypeFilter] = React.useState<string>("all")
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
-  const [itemToDelete, setItemToDelete] = React.useState<Finding | null>(null)
-  const [detailFinding, setDetailFinding] = React.useState<Finding | null>(null)
+  const [detailFinding, setDetailFinding] = React.useState<InspectionFinding | null>(null)
+
+  useEffect(() => {
+    if (detailFinding) {
+      sidebar?.setSubPageTitle("Details")
+      sidebar?.setSubPageBack(() => setDetailFinding(null))
+    } else {
+      sidebar?.setSubPageTitle(null)
+      sidebar?.setSubPageBack(null)
+    }
+    return () => {
+      sidebar?.setSubPageTitle(null)
+      sidebar?.setSubPageBack(null)
+    }
+  }, [detailFinding])
 
   const filtered = React.useMemo(() => {
-    return findings.filter(f => {
+    return mockFindings.filter(f => {
       if (severityFilter !== "all" && f.severity !== severityFilter) return false
       if (statusFilter !== "all" && f.status !== statusFilter) return false
-      if (assetTypeFilter !== "all" && f.assetType !== assetTypeFilter) return false
       return true
     })
-  }, [findings, severityFilter, statusFilter, assetTypeFilter])
+  }, [severityFilter, statusFilter])
 
-  const kpis = React.useMemo(() => ({
-    total: findings.length,
-    open: findings.filter(f => f.status === "Open").length,
-    inProgress: findings.filter(f => f.status === "In Progress").length,
-    critical: findings.filter(f => f.severity === "Critical").length,
-    resolved: findings.filter(f => f.status === "Resolved" || f.status === "Closed").length,
-  }), [findings])
-
-  const columns: ColumnDef<Finding>[] = React.useMemo(() => [
+  const columns: ColumnDef<InspectionFinding>[] = React.useMemo(() => [
     {
       accessorKey: "id",
-      header: ({ column }) => (
-        <Button variant="ghost" className="-ml-3 h-8 text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase hover:bg-transparent text-[var(--muted-foreground)]"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Finding ID <ArrowUpDown strokeWidth={1.5} className="ml-2 h-3 w-3" />
-        </Button>
-      ),
+      header: () => <ColHeader>Finding ID</ColHeader>,
       cell: ({ row }) => (
-        <span className="font-[var(--font-weight-medium)] text-[var(--foreground)] text-[length:var(--text-sm)]">
+        <button
+          type="button"
+          onClick={() => setDetailFinding(row.original)}
+          className="text-[length:var(--text-sm)] font-normal hover:underline text-left truncate max-w-[180px]"
+          style={{ color: "var(--primary)" }}
+        >
           {row.getValue("id")}
+        </button>
+      ),
+    },
+    {
+      accessorKey: "mheName",
+      header: () => <ColHeader>MHE Name</ColHeader>,
+      cell: ({ row }) => <CellText>{row.getValue("mheName")}</CellText>,
+    },
+    {
+      accessorKey: "partName",
+      header: () => <ColHeader>Part Name</ColHeader>,
+      cell: ({ row }) => <CellText>{row.getValue("partName")}</CellText>,
+    },
+    {
+      accessorKey: "checklist",
+      header: () => <ColHeader>Checklist</ColHeader>,
+      cell: ({ row }) => (
+        <span className="text-[length:var(--text-sm)] font-normal text-[var(--foreground)] line-clamp-1 max-w-[200px]">
+          {row.getValue("checklist")}
         </span>
       ),
     },
     {
-      accessorKey: "assetId",
-      header: ({ column }) => (
-        <Button variant="ghost" className="-ml-3 h-8 text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase hover:bg-transparent text-[var(--muted-foreground)]"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Asset ID <ArrowUpDown strokeWidth={1.5} className="ml-2 h-3 w-3" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="font-[var(--font-weight-medium)] text-[var(--foreground)] text-[length:var(--text-sm)]">
-          {row.getValue("assetId")}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "assetType",
-      header: ({ column }) => (
-        <Button variant="ghost" className="-ml-3 h-8 text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase hover:bg-transparent text-[var(--muted-foreground)]"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Asset Type <ArrowUpDown strokeWidth={1.5} className="ml-2 h-3 w-3" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="text-[var(--foreground)] text-[length:var(--text-sm)]">{row.getValue("assetType")}</span>
-      ),
-    },
-    {
-      accessorKey: "component",
-      header: () => (
-        <span className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase text-[var(--muted-foreground)]">Component</span>
-      ),
-      cell: ({ row }) => (
-        <span className="text-[var(--foreground)] text-[length:var(--text-sm)]">{row.getValue("component")}</span>
-      ),
-    },
-    {
-      accessorKey: "finding",
-      header: () => (
-        <span className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase text-[var(--muted-foreground)]">Finding</span>
-      ),
-      cell: ({ row }) => (
-        <span className="text-[var(--foreground)] text-[length:var(--text-sm)] line-clamp-2 max-w-[260px]">{row.getValue("finding")}</span>
-      ),
+      accessorKey: "reportedBy",
+      header: () => <ColHeader>Reported By</ColHeader>,
+      cell: ({ row }) => {
+        const f = row.original
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar initials={f.reportedByInitials} />
+            <CellText>{f.reportedBy}</CellText>
+          </div>
+        )
+      },
     },
     {
       accessorKey: "severity",
-      header: ({ column }) => (
-        <Button variant="ghost" className="-ml-3 h-8 text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase hover:bg-transparent text-[var(--muted-foreground)]"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Severity <ArrowUpDown strokeWidth={1.5} className="ml-2 h-3 w-3" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const s = row.getValue("severity") as Severity
-        return (
-          <Badge variant="outline" className={`${severityBadge(s)} border-0 shadow-none text-[length:var(--text-xs)]`}>
-            {s}
-          </Badge>
-        )
-      },
+      header: () => <ColHeader>Severity</ColHeader>,
+      cell: ({ row }) => severityBadge(row.getValue("severity")),
     },
     {
       accessorKey: "status",
-      header: ({ column }) => (
-        <Button variant="ghost" className="-ml-3 h-8 text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase hover:bg-transparent text-[var(--muted-foreground)]"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Status <ArrowUpDown strokeWidth={1.5} className="ml-2 h-3 w-3" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const s = row.getValue("status") as FindingStatus
-        return (
-          <Badge variant="outline" className={`${statusBadge(s)} border-0 shadow-none text-[length:var(--text-xs)]`}>
-            {s}
-          </Badge>
-        )
-      },
+      header: () => <ColHeader>Status</ColHeader>,
+      cell: ({ row }) => statusBadge(row.getValue("status")),
     },
     {
-      accessorKey: "dateFound",
-      header: ({ column }) => (
-        <Button variant="ghost" className="-ml-3 h-8 text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase hover:bg-transparent text-[var(--muted-foreground)]"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          Date Found <ArrowUpDown strokeWidth={1.5} className="ml-2 h-3 w-3" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="text-[var(--foreground)] text-[length:var(--text-sm)]">{row.getValue("dateFound")}</span>
-      ),
-    },
-    {
-      accessorKey: "inspector",
-      header: () => (
-        <span className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase text-[var(--muted-foreground)]">Inspector</span>
-      ),
-      cell: ({ row }) => (
-        <span className="text-[var(--foreground)] text-[length:var(--text-sm)]">{row.getValue("inspector")}</span>
-      ),
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button type="button" variant="ghost" className="h-8 w-8 p-0 hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] transition-colors" style={{ borderRadius: "var(--radius)" }}>
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal strokeWidth={1.5} className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-[var(--popover)] border-[var(--border)] shadow-none">
-            <DropdownMenuItem onClick={() => setDetailFinding(row.original)} className="focus:bg-[var(--accent)]">
-              <Eye strokeWidth={1.5} className="mr-2 h-4 w-4 text-[var(--muted-foreground)]" /> View Details
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => toast.info(`Editing ${row.original.id}`)} className="focus:bg-[var(--accent)]">
-              <Pencil strokeWidth={1.5} className="mr-2 h-4 w-4 text-[var(--muted-foreground)]" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[var(--border)]" />
-            <DropdownMenuItem className="text-[var(--destructive)] focus:text-[var(--destructive)] focus:bg-[var(--destructive)]/10"
-              onClick={() => setItemToDelete(row.original)}>
-              <Trash2 strokeWidth={1.5} className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      accessorKey: "createdAt",
+      header: () => <ColHeader>Created At</ColHeader>,
+      cell: ({ row }) => <CellText>{row.getValue("createdAt")}</CellText>,
     },
   ], [])
 
@@ -340,190 +832,162 @@ export function IMDSInspectionFindings() {
     state: { sorting, globalFilter, pagination },
   })
 
+  const { pageIndex, pageSize } = table.getState().pagination
+  const totalRows = table.getFilteredRowModel().rows.length
+  const firstRow = pageIndex * pageSize + 1
+  const lastRow = Math.min(firstRow + pageSize - 1, totalRows)
+
+  if (detailFinding) {
+    return <DetailPage finding={detailFinding} />
+  }
+
   return (
     <div className="h-full flex flex-col gap-5 p-6 bg-[var(--background)]">
-      {/* KPI Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <KpiCard icon={ClipboardList} label="Total Findings" value={kpis.total} color="bg-[var(--muted)] text-[var(--foreground)]" />
-        <KpiCard icon={XCircle} label="Open" value={kpis.open} color="bg-[var(--destructive)]/15 text-[var(--destructive)]" />
-        <KpiCard icon={Clock} label="In Progress" value={kpis.inProgress} color="bg-[var(--chart-1)]/15 text-[var(--chart-1)]" />
-        <KpiCard icon={AlertTriangle} label="Critical" value={kpis.critical} color="bg-orange-500/15 text-orange-500" />
-        <KpiCard icon={CheckCircle2} label="Resolved / Closed" value={kpis.resolved} color="bg-[var(--chart-2)]/15 text-[var(--chart-2)]" />
-      </div>
+      {/* Table Card */}
+      <div className="flex-1 flex flex-col min-h-0 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] overflow-hidden">
 
-      {/* Table */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <DashboardTable
-          table={table}
-          totalColumns={columns.length}
-          onRowClick={(row) => setDetailFinding(row.original)}
-          toolbar={
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
-              <div className="relative w-full sm:w-[280px]">
-                <Search strokeWidth={1.5} className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--muted-foreground)]" />
-                <Input
-                  placeholder="Search findings..."
-                  value={globalFilter ?? ""}
-                  onChange={e => setGlobalFilter(e.target.value)}
-                  className="pl-9 h-9 border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] shadow-none focus-visible:ring-1 focus-visible:ring-[var(--ring)]"
-                />
-              </div>
-              <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                <SelectTrigger className="h-9 w-[140px] border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] shadow-none">
-                  <SelectValue placeholder="Severity" />
-                </SelectTrigger>
-                <SelectContent className="bg-[var(--popover)] border-[var(--border)]">
-                  <SelectItem value="all">All Severities</SelectItem>
-                  <SelectItem value="Critical">Critical</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-9 w-[140px] border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] shadow-none">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-[var(--popover)] border-[var(--border)]">
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Resolved">Resolved</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={assetTypeFilter} onValueChange={setAssetTypeFilter}>
-                <SelectTrigger className="h-9 w-[160px] border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] shadow-none">
-                  <SelectValue placeholder="Asset Type" />
-                </SelectTrigger>
-                <SelectContent className="bg-[var(--popover)] border-[var(--border)]">
-                  <SelectItem value="all">All Asset Types</SelectItem>
-                  <SelectItem value="Forklift">Forklift</SelectItem>
-                  <SelectItem value="Reach Truck">Reach Truck</SelectItem>
-                  <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>
-                  <SelectItem value="Order Picker">Order Picker</SelectItem>
-                  <SelectItem value="Counterbalance">Counterbalance</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          }
-          emptyState={
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-[var(--muted)]/50 p-4 mb-4">
-                <Search strokeWidth={1.5} className="h-8 w-8 text-[var(--muted-foreground)]" />
-              </div>
-              <h3 className="text-[length:var(--text-lg)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)] mb-1">No findings found</h3>
-              <p className="text-[length:var(--text-sm)] text-[var(--muted-foreground)]">Try adjusting your filters.</p>
-            </div>
-          }
-        />
-      </div>
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[var(--border)]">
+          <div className="relative w-[260px]">
+            <Search strokeWidth={1.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--muted-foreground)]" />
+            <Input
+              placeholder="Search findings..."
+              value={globalFilter ?? ""}
+              onChange={e => setGlobalFilter(e.target.value)}
+              className="pl-9 h-9 border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] shadow-none focus-visible:ring-1 focus-visible:ring-[var(--ring)] text-[length:var(--text-sm)]"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={severityFilter} onValueChange={setSeverityFilter}>
+              <SelectTrigger className="h-9 w-[140px] border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] shadow-none text-[length:var(--text-sm)]">
+                <SelectValue placeholder="All Severity" />
+              </SelectTrigger>
+              <SelectContent className="bg-[var(--popover)] border-[var(--border)]">
+                <SelectItem value="all">All Severity</SelectItem>
+                <SelectItem value="Red">Red</SelectItem>
+                <SelectItem value="Amber">Amber</SelectItem>
+                <SelectItem value="Green">Green</SelectItem>
+                <SelectItem value="No Issue">No Issue</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="h-9 w-[140px] border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] shadow-none text-[length:var(--text-sm)]">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-[var(--popover)] border-[var(--border)]">
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Open">Open</SelectItem>
+                <SelectItem value="Reported">Reported</SelectItem>
+                <SelectItem value="Closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-      {/* Detail Sheet */}
-      <Sheet open={!!detailFinding} onOpenChange={open => !open && setDetailFinding(null)}>
-        <SheetContent className="w-[420px] sm:w-[480px] bg-[var(--card)] border-[var(--border)]">
-          {detailFinding && (
-            <>
-              <SheetHeader className="pb-4 border-b border-[var(--border)]">
-                <SheetTitle className="text-[var(--foreground)]">{detailFinding.id}</SheetTitle>
-                <SheetDescription className="text-[var(--muted-foreground)]">
-                  {detailFinding.assetId} · {detailFinding.assetType}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-4 flex flex-col gap-4">
-                <div className="flex gap-2">
-                  <Badge variant="outline" className={`${severityBadge(detailFinding.severity)} border-0 shadow-none`}>
-                    {detailFinding.severity}
-                  </Badge>
-                  <Badge variant="outline" className={`${statusBadge(detailFinding.status)} border-0 shadow-none`}>
-                    {detailFinding.status}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[length:var(--text-sm)]">
-                  <div>
-                    <p className="text-[var(--muted-foreground)] text-[length:var(--text-xs)] uppercase font-[var(--font-weight-semi-bold)]">Component</p>
-                    <p className="text-[var(--foreground)] mt-0.5">{detailFinding.component}</p>
-                  </div>
-                  <div>
-                    <p className="text-[var(--muted-foreground)] text-[length:var(--text-xs)] uppercase font-[var(--font-weight-semi-bold)]">Date Found</p>
-                    <p className="text-[var(--foreground)] mt-0.5">{detailFinding.dateFound}</p>
-                  </div>
-                  <div>
-                    <p className="text-[var(--muted-foreground)] text-[length:var(--text-xs)] uppercase font-[var(--font-weight-semi-bold)]">Inspector</p>
-                    <p className="text-[var(--foreground)] mt-0.5">{detailFinding.inspector}</p>
-                  </div>
-                  <div>
-                    <p className="text-[var(--muted-foreground)] text-[length:var(--text-xs)] uppercase font-[var(--font-weight-semi-bold)]">Asset Type</p>
-                    <p className="text-[var(--foreground)] mt-0.5">{detailFinding.assetType}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[var(--muted-foreground)] text-[length:var(--text-xs)] uppercase font-[var(--font-weight-semi-bold)] mb-1">Finding Description</p>
-                  <p className="text-[var(--foreground)] text-[length:var(--text-sm)] leading-relaxed">{detailFinding.finding}</p>
-                </div>
-
-                {detailFinding.notes && (
-                  <div>
-                    <p className="text-[var(--muted-foreground)] text-[length:var(--text-xs)] uppercase font-[var(--font-weight-semi-bold)] mb-1">Notes</p>
-                    <p className="text-[var(--foreground)] text-[length:var(--text-sm)] leading-relaxed">{detailFinding.notes}</p>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-[var(--border)] flex gap-2">
-                  <Button
-                    type="button"
-                    className="flex-1 bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]/90 shadow-none h-9"
-                    onClick={() => { toast.info(`Editing ${detailFinding.id}`); setDetailFinding(null) }}
+        {/* Table */}
+        <div className="flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map(hg => (
+                <TableRow key={hg.id} className="border-b border-[var(--border)] hover:bg-transparent">
+                  {hg.headers.map(h => (
+                    <TableHead key={h.id} className="h-10 px-4">
+                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map(row => (
+                  <TableRow
+                    key={row.id}
+                    className="border-b border-[var(--border)] hover:bg-[var(--muted)]/20 transition-colors cursor-pointer"
+                    onClick={() => setDetailFinding(row.original)}
                   >
-                    <Pencil strokeWidth={1.5} className="mr-2 h-4 w-4" /> Edit Finding
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1 border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none h-9"
-                    onClick={() => setDetailFinding(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell
+                        key={cell.id}
+                        className="px-4 py-3"
+                        onClick={e => {
+                          if ((e.target as HTMLElement).tagName === "BUTTON") e.stopPropagation()
+                        }}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={columns.length} className="h-40 text-center text-[var(--muted-foreground)] text-[length:var(--text-sm)]">
+                    No findings match the selected filters.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!itemToDelete} onOpenChange={open => !open && setItemToDelete(null)}>
-        <AlertDialogContent className="bg-[var(--card)] border-[var(--border)] shadow-none">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[var(--foreground)]">Delete Finding?</AlertDialogTitle>
-            <AlertDialogDescription className="text-[var(--muted-foreground)]">
-              This will permanently delete{" "}
-              <span className="font-[var(--font-weight-medium)] text-[var(--foreground)]">{itemToDelete?.id}</span>.
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (itemToDelete) {
-                  setFindings(prev => prev.filter(f => f.id !== itemToDelete.id))
-                  toast.success(`${itemToDelete.id} deleted`)
-                  setItemToDelete(null)
-                }
-              }}
-              className="bg-[var(--destructive)] text-white hover:bg-[var(--destructive)]/90 shadow-none"
+        {/* Pagination footer */}
+        <div className="flex items-center justify-end gap-3 px-4 py-2 border-t border-[var(--border)] bg-[var(--card)] shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="whitespace-nowrap text-[11px] font-normal text-[var(--muted-foreground)]">
+              Rows per page:
+            </span>
+            <Select
+              value={`${pageSize}`}
+              onValueChange={v => table.setPageSize(Number(v))}
             >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <SelectTrigger className="h-7 w-[60px] border-[var(--border)] bg-[var(--muted)] text-[var(--foreground)] shadow-none text-[11px] px-2 rounded-[var(--radius-sm)]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent side="top" className="bg-[var(--popover)] border-[var(--border)]">
+                {[10, 20, 50].map(s => (
+                  <SelectItem key={s} value={`${s}`} className="text-[length:var(--text-sm)]">{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <span className="text-[11px] text-[var(--muted-foreground)] font-normal">
+            {totalRows > 0 ? `${firstRow} – ${lastRow} of ${totalRows}` : "0 results"}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none disabled:opacity-30"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              <ChevronLeft strokeWidth={1.5} className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              className="h-7 w-7 p-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none disabled:opacity-30"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              <ChevronRight strokeWidth={1.5} className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
     </div>
+  )
+}
+
+// --- Small helpers ---
+function ColHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[length:var(--text-xs)] font-[var(--font-weight-semi-bold)] uppercase text-[var(--muted-foreground)]">
+      {children}
+    </span>
+  )
+}
+function CellText({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-[length:var(--text-sm)] font-normal text-[var(--foreground)]">{children}</span>
   )
 }

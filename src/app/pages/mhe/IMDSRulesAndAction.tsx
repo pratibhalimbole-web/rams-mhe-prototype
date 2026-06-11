@@ -72,7 +72,8 @@ function buildColumns(navigate: (path: string) => void): ColumnDef<MHETypeRow>[]
         <button
           type="button"
           onClick={() => navigate(`/mhe/imds/rules-action-imds/${row.getValue("typeId")}`)}
-          className="text-[length:var(--text-sm)] font-[var(--font-weight-medium)] text-blue-400 hover:text-blue-300 hover:underline transition-colors text-left"
+          className="text-[length:var(--text-sm)] font-normal hover:underline transition-colors text-left"
+          style={{ color: "var(--primary)" }}
         >
           {row.getValue("typeId")}
         </button>
@@ -102,8 +103,8 @@ function buildColumns(navigate: (path: string) => void): ColumnDef<MHETypeRow>[]
         const count = row.getValue("parts") as number
         return (
           <span
-            className="inline-flex items-center px-3 py-0.5 rounded-full text-[length:var(--text-xs)] font-[var(--font-weight-medium)] text-white"
-            style={{ backgroundColor: "#7c3aed" }}
+            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+            style={{ backgroundColor: "rgba(124, 58, 237, 0.12)", color: "#a78bfa" }}
           >
             {count} Parts
           </span>
@@ -120,7 +121,10 @@ function buildColumns(navigate: (path: string) => void): ColumnDef<MHETypeRow>[]
       cell: ({ row }) => {
         const count = row.getValue("checklists") as number
         return (
-          <span className="text-[length:var(--text-sm)] font-[var(--font-weight-medium)] text-emerald-400">
+          <span
+            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+            style={{ backgroundColor: "rgba(16, 185, 129, 0.12)", color: "#34d399" }}
+          >
             {count} Items
           </span>
         )
