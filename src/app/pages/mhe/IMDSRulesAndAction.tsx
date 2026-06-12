@@ -4,6 +4,7 @@ import * as React from "react"
 import { useEffect } from "react"
 import { useNavigate } from "react-router"
 import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { supabase } from "../../supabase-client"
 import {
   ColumnDef,
   SortingState,
@@ -42,20 +43,22 @@ type MHETypeRow = {
   checklists: number
 }
 
-// --- Mock Data (mirroring the image) ---
+// --- Base labels (order + display names) ---
 
-const mheTypeData: MHETypeRow[] = [
-  { typeId: "Y8ZJNAKO7AIVM1H", mheType: "Order Picker",       parts: 2,  checklists: 5 },
-  { typeId: "3MQ24R5DKDTCUQR", mheType: "Electric Pallet Jack", parts: 1, checklists: 1 },
-  { typeId: "EJPSLTSFAOTF4LD", mheType: "BOPT",               parts: 5,  checklists: 6 },
-  { typeId: "KRGTL1NKXNBWR6Y", mheType: "Aisle Master",       parts: 11, checklists: 8 },
-  { typeId: "KHL6EYYZNWGV6CZ", mheType: "VNA Truck",          parts: 0,  checklists: 0 },
-  { typeId: "H87JWMGA4BCAKZS", mheType: "Reach Truck",        parts: 0,  checklists: 0 },
-  { typeId: "M3QD9DNMDM9CBSF", mheType: "Stacker",            parts: 0,  checklists: 0 },
-  { typeId: "C016YCUTYUO6MRY", mheType: "Electric Forklift",  parts: 0,  checklists: 0 },
-  { typeId: "307NDKTMPALKX0Y", mheType: "Diesel Forklift",    parts: 0,  checklists: 0 },
-  { typeId: "WQ9CVSX4ARCCYA8", mheType: "Forklift",           parts: 1,  checklists: 2 },
+const mheTypeBase = [
+  { typeId: "Y8ZJNAKO7AIVM1H", mheType: "Order Picker" },
+  { typeId: "3MQ24R5DKDTCUQR", mheType: "Electric Pallet Jack" },
+  { typeId: "EJPSLTSFAOTF4LD", mheType: "BOPT" },
+  { typeId: "KRGTL1NKXNBWR6Y", mheType: "Aisle Master" },
+  { typeId: "KHL6EYYZNWGV6CZ", mheType: "VNA Truck" },
+  { typeId: "H87JWMGA4BCAKZS", mheType: "Reach Truck" },
+  { typeId: "M3QD9DNMDM9CBSF", mheType: "Stacker" },
+  { typeId: "C016YCUTYUO6MRY", mheType: "Electric Forklift" },
+  { typeId: "307NDKTMPALKX0Y", mheType: "Diesel Forklift" },
+  { typeId: "WQ9CVSX4ARCCYA8", mheType: "Forklift" },
 ]
+
+const defaultTableData: MHETypeRow[] = mheTypeBase.map(r => ({ ...r, parts: 0, checklists: 0 }))
 
 // --- Column Definitions ---
 
@@ -142,6 +145,27 @@ export function IMDSRulesAndAction() {
     sidebar?.setSubPageTitle("Rules and Action")
   }, [])
 
+  const [tableData, setTableData] = React.useState<MHETypeRow[]>(defaultTableData)
+
+  useEffect(() => {
+    async function loadCounts() {
+      const [{ data: partsData }, { data: checklistData }] = await Promise.all([
+        supabase.from("mhe_parts").select("type_id"),
+        supabase.from("mhe_checklist_items").select("type_id"),
+      ])
+      const partsMap: Record<string, number> = {}
+      for (const r of partsData ?? []) partsMap[r.type_id] = (partsMap[r.type_id] ?? 0) + 1
+      const checklistMap: Record<string, number> = {}
+      for (const r of checklistData ?? []) checklistMap[r.type_id] = (checklistMap[r.type_id] ?? 0) + 1
+      setTableData(mheTypeBase.map(r => ({
+        ...r,
+        parts: partsMap[r.typeId] ?? 0,
+        checklists: checklistMap[r.typeId] ?? 0,
+      })))
+    }
+    loadCounts()
+  }, [])
+
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = React.useState("")
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
@@ -149,7 +173,7 @@ export function IMDSRulesAndAction() {
   const columns = React.useMemo(() => buildColumns(navigate), [navigate])
 
   const table = useReactTable({
-    data: mheTypeData,
+    data: tableData,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),

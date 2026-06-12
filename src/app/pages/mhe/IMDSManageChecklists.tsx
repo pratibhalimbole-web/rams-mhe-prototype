@@ -3,7 +3,8 @@
 import * as React from "react"
 import { useEffect } from "react"
 import { useParams } from "react-router"
-import { Plus, Pencil, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react"
+import { Plus, Pencil, ChevronLeft, ChevronRight as ChevronRightIcon, Wrench, ClipboardList, Lock } from "lucide-react"
+import { supabase } from "../../supabase-client"
 import { useSidebar } from "../../components/layout/SidebarLayout"
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
@@ -150,71 +151,96 @@ function getFallbackChecklists(typeId: string): Record<string, ChecklistItem[]> 
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const conditionStyles = {
-  red: {
-    label: "Red - Critical",
-    title: "#f87171",
-    border: "1px solid rgba(185, 28, 28, 0.7)",
-    cardBg: "#2a0a0a",
-    textareaBg: "#1a0505",
+const conditionMeta = [
+  {
+    key: "red"   as const,
+    label: "Red — Critical",
+    color: "#dc2626",
+    dot: "#ef4444",
+    activeBg: "rgba(220,38,38,0.06)",
     placeholder: "Describe the critical condition...",
   },
-  amber: {
-    label: "Amber - Warning",
-    title: "#fbbf24",
-    border: "1px solid rgba(180, 83, 9, 0.7)",
-    cardBg: "#2a1503",
-    textareaBg: "#1a0e02",
+  {
+    key: "amber" as const,
+    label: "Amber — Warning",
+    color: "#b45309",
+    dot: "#f59e0b",
+    activeBg: "rgba(245,158,11,0.06)",
     placeholder: "Describe the warning condition...",
   },
-  green: {
-    label: "Green - Normal",
-    title: "#34d399",
-    border: "1px solid rgba(4, 120, 87, 0.7)",
-    cardBg: "#04201a",
-    textareaBg: "#021410",
+  {
+    key: "green" as const,
+    label: "Green — Normal",
+    color: "#059669",
+    dot: "#10b981",
+    activeBg: "rgba(16,185,129,0.06)",
     placeholder: "Describe the normal condition...",
   },
-} as const
+]
 
-function ConditionCard({
-  variant,
+const taClass = "w-full resize-none rounded-[var(--radius)] text-[var(--foreground)] text-[length:var(--text-sm)] placeholder:text-[var(--muted-foreground)] px-3 py-2.5 outline-none border border-[var(--border)] focus:border-[#9ca3af] transition-colors bg-[var(--background)]"
+
+function ConditionTabs({
   value,
   onChange,
 }: {
-  variant: keyof typeof conditionStyles
-  value: ConditionBlock
-  onChange: (v: ConditionBlock) => void
+  value: { red: ConditionBlock; amber: ConditionBlock; green: ConditionBlock }
+  onChange: (key: "red" | "amber" | "green", v: ConditionBlock) => void
 }) {
-  const s = conditionStyles[variant]
-  const taClass = "w-full resize-none rounded-[var(--radius)] text-[var(--foreground)] text-[length:var(--text-sm)] placeholder:text-[#4a4a5a] px-3 py-2.5 outline-none border border-[#3a3a3a] focus:border-[#555555] transition-colors"
+  const [active, setActive] = React.useState<"red" | "amber" | "green">("red")
+  const tab = conditionMeta.find(t => t.key === active)!
+  const cur = value[active]
+  const filled = (b: ConditionBlock) => b.description.trim().length > 0 || b.action.trim().length > 0
 
   return (
-    <div style={{ background: s.cardBg, border: s.border, borderRadius: "var(--radius-lg)", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
-      <span style={{ color: s.title, fontSize: "var(--text-sm)", fontWeight: 600 }}>{s.label}</span>
+    <div className="flex-1 flex flex-col gap-5 min-h-0">
 
-      <div className="flex flex-col gap-1.5">
-        <Label className="text-[length:var(--text-sm)] text-[var(--foreground)]">Description</Label>
-        <textarea
-          rows={4}
-          placeholder={s.placeholder}
-          value={value.description}
-          onChange={e => onChange({ ...value, description: e.target.value })}
-          style={{ background: s.textareaBg }}
-          className={taClass}
-        />
+      {/* Segmented control */}
+      <div
+        className="flex shrink-0 gap-1 p-1 rounded-[var(--radius)]"
+        style={{ background: "var(--muted)" }}
+      >
+        {conditionMeta.map(t => {
+          const isActive = t.key === active
+          return (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setActive(t.key)}
+              className="flex flex-1 items-center justify-center gap-2 py-2 px-4 rounded-[calc(var(--radius)+1px)] text-[13px] font-medium transition-all"
+              style={{
+                background: isActive ? "var(--card)" : "transparent",
+                color: isActive ? t.color : "var(--muted-foreground)",
+                boxShadow: isActive ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
+              }}
+            >
+              <span className="h-2 w-2 rounded-full shrink-0" style={{ background: t.dot }} />
+              {t.label}
+            </button>
+          )
+        })}
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label className="text-[length:var(--text-sm)] text-[var(--foreground)]">Action Required</Label>
-        <textarea
-          rows={4}
-          placeholder="What action should be taken..."
-          value={value.action}
-          onChange={e => onChange({ ...value, action: e.target.value })}
-          style={{ background: s.textareaBg }}
-          className={taClass}
-        />
+      {/* Fields — fill remaining height evenly */}
+      <div className="flex-1 flex flex-col gap-5 min-h-0">
+        <div className="flex-1 flex flex-col gap-2 min-h-0">
+          <Label className="text-[length:var(--text-sm)] text-[var(--foreground)] shrink-0">Description</Label>
+          <textarea
+            placeholder={tab.placeholder}
+            value={cur.description}
+            onChange={e => onChange(active, { ...cur, description: e.target.value })}
+            className={`${taClass} flex-1 min-h-0`}
+          />
+        </div>
+        <div className="flex-1 flex flex-col gap-2 min-h-0">
+          <Label className="text-[length:var(--text-sm)] text-[var(--foreground)] shrink-0">Action Required</Label>
+          <textarea
+            placeholder="What action should be taken..."
+            value={cur.action}
+            onChange={e => onChange(active, { ...cur, action: e.target.value })}
+            className={`${taClass} flex-1 min-h-0`}
+          />
+        </div>
       </div>
     </div>
   )
@@ -235,6 +261,92 @@ export function IMDSManageChecklists() {
   const [selectedPartId, setSelectedPartId] = React.useState<string>(
     () => getFallbackParts(typeId)[0]?.id ?? ""
   )
+
+  // ── load from Supabase on mount ──
+  useEffect(() => {
+    if (!typeId) return
+    async function load() {
+      const { data: partsData, error: partsError } = await supabase
+        .from("mhe_parts")
+        .select("*")
+        .eq("type_id", typeId)
+        .order("created_at", { ascending: true })
+
+      if (partsError) {
+        console.error("Load parts error:", partsError)
+        toast.error("Failed to load parts: " + partsError.message)
+        return
+      }
+
+      console.log("Loaded parts from Supabase:", partsData)
+
+      if (!partsData || partsData.length === 0) {
+        // First visit — seed fallback data into Supabase so it persists
+        const fallbackParts = getFallbackParts(typeId)
+        const fallbackChecklists = getFallbackChecklists(typeId)
+        if (fallbackParts.length > 0) {
+          await supabase.from("mhe_parts").insert(
+            fallbackParts.map(p => ({
+              id: p.id,
+              type_id: typeId,
+              name: p.name,
+              is_active: p.isActive,
+              requires_mhe_start: p.requiresMheStart ?? false,
+            }))
+          )
+          const allItems = Object.entries(fallbackChecklists).flatMap(([partId, items]) =>
+            items.map(item => ({
+              id: item.id,
+              part_id: partId,
+              type_id: typeId,
+              name: item.name,
+              is_active: item.isActive,
+              form_data: item.formData ?? null,
+            }))
+          )
+          if (allItems.length > 0) {
+            await supabase.from("mhe_checklist_items").insert(allItems)
+          }
+        }
+        return
+      }
+
+      const loadedParts: Part[] = partsData.map(p => ({
+        id: p.id,
+        name: p.name,
+        isActive: p.is_active,
+        requiresMheStart: p.requires_mhe_start,
+      }))
+      setParts(loadedParts)
+      setSelectedPartId(loadedParts[0]?.id ?? "")
+
+      const { data: itemsData, error: itemsError } = await supabase
+        .from("mhe_checklist_items")
+        .select("*")
+        .eq("type_id", typeId)
+        .order("created_at", { ascending: true })
+
+      if (itemsError) {
+        console.error("Load checklists error:", itemsError)
+        return
+      }
+
+      if (itemsData) {
+        const map: Record<string, ChecklistItem[]> = {}
+        for (const item of itemsData) {
+          if (!map[item.part_id]) map[item.part_id] = []
+          map[item.part_id].push({
+            id: item.id,
+            name: item.name,
+            isActive: item.is_active,
+            formData: item.form_data ?? undefined,
+          })
+        }
+        setChecklists(map)
+      }
+    }
+    load()
+  }, [typeId])
   const [pageSize, setPageSize] = React.useState(10)
   const [pageIndex, setPageIndex] = React.useState(0)
 
@@ -265,20 +377,22 @@ export function IMDSManageChecklists() {
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize))
 
   // ── handlers ──
-  function togglePart(partId: string, val: boolean) {
+  async function togglePart(partId: string, val: boolean) {
     setParts(prev => prev.map(p => p.id === partId ? { ...p, isActive: val } : p))
+    await supabase.from("mhe_parts").update({ is_active: val }).eq("id", partId)
   }
 
-  function toggleChecklist(itemId: string, val: boolean) {
+  async function toggleChecklist(itemId: string, val: boolean) {
     setChecklists(prev => ({
       ...prev,
       [selectedPartId]: (prev[selectedPartId] ?? []).map(c =>
         c.id === itemId ? { ...c, isActive: val } : c
       ),
     }))
+    await supabase.from("mhe_checklist_items").update({ is_active: val }).eq("id", itemId)
   }
 
-  function handleSaveChecklist() {
+  async function handleSaveChecklist() {
     if (!checklistForm.title.trim()) {
       toast.error("Checklist title is required")
       return
@@ -292,6 +406,10 @@ export function IMDSManageChecklists() {
             : c
         ),
       }))
+      await supabase
+        .from("mhe_checklist_items")
+        .update({ name: checklistForm.title.trim(), form_data: checklistForm })
+        .eq("id", editingChecklistId)
       toast.success("Checklist item updated")
     } else {
       const id = `c${Date.now()}`
@@ -299,6 +417,14 @@ export function IMDSManageChecklists() {
         ...prev,
         [selectedPartId]: [...(prev[selectedPartId] ?? []), { id, name: checklistForm.title.trim(), isActive: true, formData: checklistForm }],
       }))
+      await supabase.from("mhe_checklist_items").insert({
+        id,
+        part_id: selectedPartId,
+        type_id: typeId,
+        name: checklistForm.title.trim(),
+        is_active: true,
+        form_data: checklistForm,
+      })
       toast.success("Checklist item added")
     }
     setChecklistSheetOpen(false)
@@ -306,12 +432,24 @@ export function IMDSManageChecklists() {
     setEditingChecklistId(null)
   }
 
-  function handleSavePart() {
+  async function handleSavePart() {
     if (!newPartName.trim()) {
       toast.error("Part name is required")
       return
     }
     const id = `p${Date.now()}`
+    const { error } = await supabase.from("mhe_parts").insert({
+      id,
+      type_id: typeId,
+      name: newPartName.trim(),
+      is_active: true,
+      requires_mhe_start: false,
+    })
+    if (error) {
+      console.error("Insert part error:", error)
+      toast.error("Failed to save part: " + error.message)
+      return
+    }
     setParts(prev => [...prev, { id, name: newPartName.trim(), isActive: true }])
     setChecklists(prev => ({ ...prev, [id]: [] }))
     setSelectedPartId(id)
@@ -321,7 +459,7 @@ export function IMDSManageChecklists() {
     setNewPartName("")
   }
 
-  function handleUpdatePart() {
+  async function handleUpdatePart() {
     if (!editPartName.trim()) {
       toast.error("Part name is required")
       return
@@ -331,6 +469,10 @@ export function IMDSManageChecklists() {
         ? { ...p, name: editPartName.trim(), requiresMheStart: editPartRequiresMhe }
         : p
     ))
+    await supabase
+      .from("mhe_parts")
+      .update({ name: editPartName.trim(), requires_mhe_start: editPartRequiresMhe })
+      .eq("id", editingPartId)
     toast.success("Part updated")
     setEditPartDialogOpen(false)
     setEditingPartId(null)
@@ -419,7 +561,15 @@ export function IMDSManageChecklists() {
             ))}
 
             {parts.length === 0 && (
-              <p className="text-center text-[11px] text-[var(--muted-foreground)] py-4">No parts added yet</p>
+              <div className="flex flex-col items-center justify-center flex-1 py-8 gap-3">
+                <div className="flex items-center justify-center w-12 h-12 rounded-xl" style={{ backgroundColor: "var(--muted)" }}>
+                  <Wrench strokeWidth={1.5} className="h-5 w-5 text-[var(--muted-foreground)]" />
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <p className="text-[length:var(--text-sm)] font-[var(--font-weight-medium)] text-[var(--foreground)]">No parts yet</p>
+                  <p className="text-[11px] text-[var(--muted-foreground)] text-center">Add your first part to start building checklists</p>
+                </div>
+              </div>
             )}
           </div>
 
@@ -447,14 +597,26 @@ export function IMDSManageChecklists() {
             <Button
               type="button"
               onClick={() => { setChecklistForm(emptyForm()); setEditingChecklistId(null); setChecklistSheetOpen(true) }}
-              disabled={!selectedPart}
-              className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)] px-3"
+              disabled={parts.length === 0 || !selectedPart}
+              className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)] px-3 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Plus strokeWidth={1.5} className="h-3.5 w-3.5" />
               Add Checklist
             </Button>
           </div>
 
+          {parts.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl" style={{ backgroundColor: "var(--muted)" }}>
+                <Lock strokeWidth={1.5} className="h-5 w-5 text-[var(--muted-foreground)]" />
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-[length:var(--text-sm)] font-[var(--font-weight-medium)] text-[var(--foreground)]">No parts created yet</p>
+                <p className="text-[11px] text-[var(--muted-foreground)] text-center">Add a part on the left first to start creating checklists</p>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="flex-1 overflow-auto">
             <Table>
               <TableHeader>
@@ -498,8 +660,16 @@ export function IMDSManageChecklists() {
                   ))
                 ) : (
                   <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={3} className="h-40 text-center text-[length:var(--text-sm)] text-[var(--muted-foreground)]">
-                      No checklist items. Click "+ Add Checklist" to add one.
+                    <TableCell colSpan={3}>
+                      <div className="flex flex-col items-center justify-center py-12 gap-3">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-xl" style={{ backgroundColor: "var(--muted)" }}>
+                          <ClipboardList strokeWidth={1.5} className="h-5 w-5 text-[var(--muted-foreground)]" />
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <p className="text-[length:var(--text-sm)] font-[var(--font-weight-medium)] text-[var(--foreground)]">No checklist items</p>
+                          <p className="text-[11px] text-[var(--muted-foreground)] text-center">Click "+ Add Checklist" to create your first item</p>
+                        </div>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}
@@ -536,6 +706,8 @@ export function IMDSManageChecklists() {
               </Button>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
 
@@ -543,7 +715,7 @@ export function IMDSManageChecklists() {
       <Sheet open={checklistSheetOpen} onOpenChange={v => { setChecklistSheetOpen(v); if (!v) { setEditingChecklistId(null); setChecklistForm(emptyForm()) } }}>
         <SheetContent
           side="right"
-          className="w-[560px] p-0 flex flex-col bg-[var(--card)] border-l border-[var(--border)] gap-0"
+          className="w-[620px] p-0 flex flex-col bg-[var(--card)] border-l border-[var(--border)] gap-0"
         >
           {/* Header */}
           <SheetHeader className="px-5 py-4 border-b border-[var(--border)]">
@@ -552,11 +724,11 @@ export function IMDSManageChecklists() {
             </SheetTitle>
           </SheetHeader>
 
-          {/* Scrollable body */}
-          <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-6">
+          {/* Body */}
+          <div className="flex-1 overflow-hidden px-6 py-6 flex flex-col gap-8 min-h-0">
 
             {/* Checklist Details */}
-            <div className="flex flex-col gap-4">
+            <div className="shrink-0 flex flex-col gap-4">
               <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
                 Checklist Details
               </h3>
@@ -617,27 +789,14 @@ export function IMDSManageChecklists() {
             </div>
 
             {/* Condition Definitions */}
-            <div className="flex flex-col gap-4">
-              <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+            <div className="flex-1 flex flex-col gap-3 min-h-0">
+              <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)] shrink-0">
                 Condition Definitions
               </h3>
 
-              <ConditionCard
-                variant="red"
-                value={checklistForm.red}
-                onChange={v => setChecklistForm(f => ({ ...f, red: v }))}
-              />
-
-              <ConditionCard
-                variant="amber"
-                value={checklistForm.amber}
-                onChange={v => setChecklistForm(f => ({ ...f, amber: v }))}
-              />
-
-              <ConditionCard
-                variant="green"
-                value={checklistForm.green}
-                onChange={v => setChecklistForm(f => ({ ...f, green: v }))}
+              <ConditionTabs
+                value={{ red: checklistForm.red, amber: checklistForm.amber, green: checklistForm.green }}
+                onChange={(key, v) => setChecklistForm(f => ({ ...f, [key]: v }))}
               />
             </div>
           </div>

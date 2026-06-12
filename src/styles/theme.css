@@ -150,64 +150,64 @@
 }
 
 .dark {
-  /* Status badge tokens — dark (pure black theme) */
-  --w-red-bg:      rgba(40, 10, 10, 1);    /* #280a0a */
-  --w-red-border:  rgba(80, 20, 20, 1);    /* #501414 */
-  --w-green-bg:    rgba(10, 30, 15, 1);    /* #0a1e0f */
-  --w-green-border:rgba(20, 60, 30, 1);    /* #143c1e */
-  --w-amber-bg:    rgba(40, 22, 5, 1);     /* #281605 */
-  --w-amber-border:rgba(80, 50, 10, 1);    /* #50320a */
-  --w-blue-bg:     rgba(10, 25, 50, 1);    /* #0a1932 */
-  --w-blue-border: rgba(20, 45, 90, 1);    /* #142d5a */
+  /* Status badge tokens — dark (slate theme) */
+  --w-red-bg:      rgba(220, 38, 38, 0.15);
+  --w-red-border:  rgba(220, 38, 38, 0.30);
+  --w-green-bg:    rgba(22, 163, 74, 0.15);
+  --w-green-border:rgba(22, 163, 74, 0.30);
+  --w-amber-bg:    rgba(245, 158, 11, 0.15);
+  --w-amber-border:rgba(245, 158, 11, 0.30);
+  --w-blue-bg:     rgba(59, 130, 246, 0.15);
+  --w-blue-border: rgba(59, 130, 246, 0.30);
 
-  /* Widget color tokens — pure black theme */
-  --w-bg:        rgba(18, 18, 18, 1);      /* #121212  card background            */
-  --w-bg-page:   rgba(0, 0, 0, 1);         /* #000000  page background            */
-  --w-bg-muted:  rgba(30, 30, 30, 1);      /* #1e1e1e  chips — must contrast card */
-  --w-border:    rgba(58, 58, 58, 1);      /* #3a3a3a  main borders               */
-  --w-divider:   rgba(42, 42, 42, 1);      /* #2a2a2a  subtle internal dividers   */
-  --w-text-1:    rgba(255, 255, 255, 1);   /* #ffffff  primary text               */
-  --w-text-2:    rgba(210, 210, 210, 1);   /* #d2d2d2  secondary text             */
-  --w-text-3:    rgba(170, 170, 170, 1);   /* #aaaaaa  tertiary text              */
-  --w-text-4:    rgba(130, 130, 130, 1);   /* #828282  muted text                 */
-  --w-text-5:    rgba(90, 90, 90, 1);      /* #5a5a5a  subtle text                */
+  /* Widget color tokens — slate theme */
+  --w-bg:        rgba(30, 41, 59, 1);      /* slate-800  card background      */
+  --w-bg-page:   rgba(15, 23, 42, 1);      /* slate-900  page background      */
+  --w-bg-muted:  rgba(51, 65, 85, 1);      /* slate-700  chips / dividers     */
+  --w-border:    rgba(51, 65, 85, 1);      /* slate-700  main borders         */
+  --w-divider:   rgba(44, 57, 76, 1);      /* slate-750  internal dividers    */
+  --w-text-1:    rgba(255, 255, 255, 1);   /* white      primary text         */
+  --w-text-2:    rgba(203, 213, 225, 1);   /* slate-300  secondary text       */
+  --w-text-3:    rgba(148, 163, 184, 1);   /* slate-400  tertiary text        */
+  --w-text-4:    rgba(100, 116, 139, 1);   /* slate-500  muted text           */
+  --w-text-5:    rgba(71, 85, 105, 1);     /* slate-600  subtle text          */
 
-  --background: rgba(0, 0, 0, 1.00);
+  --background: rgba(15, 23, 42, 1.00);        /* slate-900 */
   --foreground: rgba(255, 255, 255, 1.00);
-  --card: rgba(18, 18, 18, 1.00);
+  --card: rgba(30, 41, 59, 1.00);              /* slate-800 */
   --card-foreground: rgba(255, 255, 255, 1.00);
-  --popover: rgba(18, 18, 18, 1.00);
+  --popover: rgba(30, 41, 59, 1.00);           /* slate-800 */
   --popover-foreground: rgba(255, 255, 255, 1.00);
-  --primary: rgba(59, 130, 246, 1.00);
+  --primary: rgba(59, 130, 246, 1.00);         /* blue-500 */
   --primary-foreground: rgba(255, 255, 255, 1.00);
-  --secondary: rgba(30, 30, 30, 1.00);
+  --secondary: rgba(51, 65, 85, 1.00);         /* slate-700 */
   --secondary-foreground: rgba(255, 255, 255, 1.00);
-  --muted: rgba(30, 30, 30, 1.00);
-  --muted-foreground: rgba(130, 130, 130, 1.00);
-  --accent: rgba(30, 30, 30, 1.00);
+  --muted: rgba(51, 65, 85, 1.00);             /* slate-700 */
+  --muted-foreground: rgba(148, 163, 184, 1.00); /* slate-400 */
+  --accent: rgba(51, 65, 85, 1.00);            /* slate-700 */
   --accent-foreground: rgba(255, 255, 255, 1.00);
-  --destructive: rgba(225, 29, 72, 1.00); /* Rose 600 */
+  --destructive: rgba(225, 29, 72, 1.00);
   --destructive-foreground: rgba(255, 255, 255, 1.00);
-  --warning: rgba(245, 158, 11, 1.00); /* Amber 500 */
-  --success: rgba(22, 163, 74, 1.00); /* Green 600 */
-  --border: rgba(58, 58, 58, 1.00);
-  --input: rgba(58, 58, 58, 1.00);
-  --input-background: rgba(18, 18, 18, 1.00);
-  --ring: rgba(59, 130, 246, 1.00);
-  /* Chart colors - Modern shadcn neutral brand palette (dark mode) */
-  --chart-1: rgba(59, 130, 246, 1.00);   /* Blue 500 */
-  --chart-2: rgba(139, 92, 246, 1.00);   /* Violet 500 */
-  --chart-3: rgba(16, 185, 129, 1.00);   /* Emerald 500 */
-  --chart-4: rgba(6, 182, 212, 1.00);    /* Cyan 500 */
-  --chart-5: rgba(99, 102, 241, 1.00);   /* Indigo 500 */
-  --sidebar: rgba(10, 10, 10, 1.00);
+  --warning: rgba(245, 158, 11, 1.00);
+  --success: rgba(22, 163, 74, 1.00);
+  --border: rgba(51, 65, 85, 1.00);            /* slate-700 */
+  --input: rgba(51, 65, 85, 1.00);             /* slate-700 */
+  --input-background: rgba(30, 41, 59, 1.00);  /* slate-800 */
+  --ring: rgba(59, 130, 246, 1.00);            /* blue-500 */
+  /* Chart colors */
+  --chart-1: rgba(59, 130, 246, 1.00);
+  --chart-2: rgba(139, 92, 246, 1.00);
+  --chart-3: rgba(16, 185, 129, 1.00);
+  --chart-4: rgba(6, 182, 212, 1.00);
+  --chart-5: rgba(99, 102, 241, 1.00);
+  --sidebar: rgba(22, 33, 56, 1.00);           /* slate-850 — distinct from bg */
   --sidebar-foreground: rgba(255, 255, 255, 1.00);
-  --sidebar-primary: rgba(59, 130, 246, 1.00);
+  --sidebar-primary: rgba(59, 130, 246, 1.00); /* blue-500 — active icon fill */
   --sidebar-primary-foreground: rgba(255, 255, 255, 1.00);
-  --sidebar-accent: rgba(25, 25, 25, 1.00);
-  --sidebar-accent-foreground: rgba(255, 255, 255, 1.00);
-  --sidebar-border: rgba(58, 58, 58, 1.00);
-  --sidebar-ring: rgba(90, 90, 90, 1.00);
+  --sidebar-accent: rgba(30, 41, 59, 1.00);    /* slate-800 — hover / active item */
+  --sidebar-accent-foreground: rgba(203, 213, 225, 1.00); /* slate-300 */
+  --sidebar-border: rgba(51, 65, 85, 1.00);    /* slate-700 */
+  --sidebar-ring: rgba(100, 116, 139, 1.00);   /* slate-500 */
 }
 
 @theme inline {
@@ -349,13 +349,19 @@ html {
 .dark body,
 .dark .bg-background,
 .dark [class*="bg-background"] {
-  background-color: #000000;
+  background-color: #0f172a; /* slate-900 */
 }
 
 /* Tab bar in CommandDashboard */
 .dark .bg-card {
-  background-color: #121212 !important;
-  border-color: #3a3a3a !important;
+  background-color: #1e293b !important; /* slate-800 */
+  border-color: #334155 !important;     /* slate-700 */
+}
+
+/* Primary & Secondary navigation sidebars */
+.dark .bg-sidebar {
+  background-color: #162138 !important; /* slate-850 — sits between bg(900) and card(800) */
+  border-color: #334155 !important;     /* slate-700 */
 }
 
 /* Active tab underline text */
@@ -366,48 +372,48 @@ html {
 /* Section label text (e.g. "FMS · COMMAND CENTER") */
 .dark [style*="color: rgb(100, 116, 139)"],
 .dark [style*="color: #64748B"] {
-  color: #828282 !important;
+  color: #94a3b8 !important; /* slate-400 */
 }
 
 /* Chart legend text — #334155 (slate-700) used in V6 widgets */
 .dark [style*="color: rgb(51, 65, 85)"],
 .dark [style*="color: #334155"] {
-  color: #aaaaaa !important;
+  color: #94a3b8 !important; /* slate-400 */
 }
 
-/* Status badge colours — light backgrounds → dark equivalents */
+/* Status badge colours — light backgrounds → slate-tinted dark equivalents */
 .dark [style*="background: rgb(254, 242, 242)"],
 .dark [style*="background-color: rgb(254, 242, 242)"],
-.dark [style*="background: #fef2f2"] { background: #280a0a !important; }
+.dark [style*="background: #fef2f2"] { background: rgba(220, 38, 38, 0.15) !important; }
 
 .dark [style*="background: rgb(240, 253, 244)"],
 .dark [style*="background-color: rgb(240, 253, 244)"],
-.dark [style*="background: #f0fdf4"] { background: #0a1e0f !important; }
+.dark [style*="background: #f0fdf4"] { background: rgba(22, 163, 74, 0.15) !important; }
 
 .dark [style*="background: rgb(255, 251, 235)"],
 .dark [style*="background-color: rgb(255, 251, 235)"],
-.dark [style*="background: #fffbeb"] { background: #281605 !important; }
+.dark [style*="background: #fffbeb"] { background: rgba(245, 158, 11, 0.15) !important; }
 
 .dark [style*="background: rgb(239, 246, 255)"],
-.dark [style*="background: #eff6ff"]  { background: #0a1932 !important; }
+.dark [style*="background: #eff6ff"]  { background: rgba(59, 130, 246, 0.15) !important; }
 
 .dark [style*="background: rgb(219, 234, 254)"],
-.dark [style*="background: #dbeafe"]  { background: #142d5a !important; }
+.dark [style*="background: #dbeafe"]  { background: rgba(59, 130, 246, 0.20) !important; }
 
 /* Status badge border colours */
 .dark [style*="border-color: rgb(254, 202, 202)"],
-.dark [style*="border: 1px solid #fecaca"]  { border-color: #501414 !important; }
+.dark [style*="border: 1px solid #fecaca"]  { border-color: rgba(220, 38, 38, 0.35) !important; }
 
 .dark [style*="border-color: rgb(187, 247, 208)"],
-.dark [style*="border: 1px solid #bbf7d0"]  { border-color: #143c1e !important; }
+.dark [style*="border: 1px solid #bbf7d0"]  { border-color: rgba(22, 163, 74, 0.35) !important; }
 
 .dark [style*="border-color: rgb(253, 230, 138)"],
-.dark [style*="border: 1px solid #fde68a"]  { border-color: #50320a !important; }
+.dark [style*="border: 1px solid #fde68a"]  { border-color: rgba(245, 158, 11, 0.35) !important; }
 
 /* Chart tooltip backgrounds — Recharts renders portals outside the styled tree */
 .recharts-tooltip-wrapper .recharts-default-tooltip,
 .dark .recharts-tooltip-wrapper * {
-  background: #121212 !important;
-  border-color: #3a3a3a !important;
-  color: #d2d2d2 !important;
+  background: #1e293b !important; /* slate-800 */
+  border-color: #334155 !important; /* slate-700 */
+  color: #cbd5e1 !important; /* slate-300 */
 }

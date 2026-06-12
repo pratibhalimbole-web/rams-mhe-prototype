@@ -7,6 +7,9 @@ import {
   Camera,
   Mic,
   PlayCircle,
+  Play,
+  Pause,
+  Volume2,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -449,9 +452,179 @@ function ImageLightbox({
   )
 }
 
+function VideoLightbox({
+  total,
+  index,
+  onClose,
+  onNav,
+}: {
+  total: number
+  index: number
+  onClose: () => void
+  onNav: (i: number) => void
+}) {
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+      if (e.key === "ArrowLeft" && total > 1) onNav((index - 1 + total) % total)
+      if (e.key === "ArrowRight" && total > 1) onNav((index + 1) % total)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [index, total])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      onClick={onClose}
+    >
+      <div
+        className="flex flex-col rounded-[var(--radius)] overflow-hidden shadow-2xl"
+        style={{
+          width: "min(900px, calc(100vw - 80px))",
+          height: "min(560px, calc(100vh - 80px))",
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-3 shrink-0 border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <p className="text-[length:var(--text-sm)] font-normal text-[var(--foreground)]">
+            Video {index + 1} of {total}
+          </p>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded hover:bg-[var(--muted)] transition-colors text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+            <X strokeWidth={1.5} className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Video area */}
+        <div
+          className="flex-1 relative flex items-center justify-center overflow-hidden"
+          style={{ backgroundColor: "#111118" }}
+        >
+          {total > 1 && (
+            <button
+              onClick={() => onNav((index - 1 + total) % total)}
+              className="absolute left-3 z-10 p-2 rounded-full hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.6)" }}
+            >
+              <ChevronLeft strokeWidth={1.5} className="h-5 w-5" />
+            </button>
+          )}
+
+          {/* Placeholder player */}
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div
+              className="rounded-full flex items-center justify-center"
+              style={{ width: 72, height: 72, backgroundColor: "rgba(255,255,255,0.08)" }}
+            >
+              <Play strokeWidth={1.5} className="h-8 w-8 ml-1" style={{ color: "rgba(255,255,255,0.5)" }} />
+            </div>
+            <span className="text-[length:var(--text-xs)] font-normal" style={{ color: "rgba(255,255,255,0.3)" }}>
+              Video {index + 1}
+            </span>
+          </div>
+
+          {total > 1 && (
+            <button
+              onClick={() => onNav((index + 1) % total)}
+              className="absolute right-3 z-10 p-2 rounded-full hover:bg-white/10 transition-colors"
+              style={{ color: "rgba(255,255,255,0.6)" }}
+            >
+              <ChevronRight strokeWidth={1.5} className="h-5 w-5" />
+            </button>
+          )}
+
+          {/* Progress bar toolbar */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "rgba(10,10,10,0.75)", backdropFilter: "blur(10px)", minWidth: 260 }}>
+            <button className="p-1 rounded hover:bg-white/10 transition-colors" style={{ color: "rgba(255,255,255,0.7)" }}>
+              <Play strokeWidth={1.5} className="h-4 w-4" />
+            </button>
+            <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+              <div className="h-full w-1/3 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.5)" }} />
+            </div>
+            <span className="text-[10px] font-normal shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>0:08 / 0:24</span>
+            <button className="p-1 rounded hover:bg-white/10 transition-colors" style={{ color: "rgba(255,255,255,0.7)" }}>
+              <Volume2 strokeWidth={1.5} className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AudioPlayer({ durationSecs = 42 }: { durationSecs?: number }) {
+  const [isPlaying, setIsPlaying] = React.useState(false)
+  const [elapsed, setElapsed] = React.useState(0)
+  const barRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!isPlaying) return
+    const id = setInterval(() => {
+      setElapsed(e => {
+        if (e >= durationSecs) { setIsPlaying(false); return durationSecs }
+        return e + 1
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [isPlaying, durationSecs])
+
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
+
+  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!barRef.current) return
+    const { left, width } = barRef.current.getBoundingClientRect()
+    const ratio = Math.max(0, Math.min(1, (e.clientX - left) / width))
+    setElapsed(Math.round(ratio * durationSecs))
+  }
+
+  return (
+    <div
+      className="w-full rounded-[var(--radius)] flex items-center gap-2 px-3 py-2.5"
+      style={{ backgroundColor: "var(--muted)" }}
+    >
+      <button
+        type="button"
+        onClick={() => { if (elapsed >= durationSecs) setElapsed(0); setIsPlaying(p => !p) }}
+        className="shrink-0 p-0.5 rounded hover:opacity-70 transition-opacity"
+        style={{ color: "var(--foreground)" }}
+      >
+        {isPlaying
+          ? <Pause strokeWidth={1.5} className="h-3.5 w-3.5" />
+          : <Play  strokeWidth={1.5} className="h-3.5 w-3.5" />
+        }
+      </button>
+      <div
+        ref={barRef}
+        onClick={seek}
+        className="flex-1 h-1 rounded-full overflow-hidden cursor-pointer"
+        style={{ backgroundColor: "var(--border)" }}
+      >
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${(elapsed / durationSecs) * 100}%`, backgroundColor: "var(--primary)" }}
+        />
+      </div>
+      <span className="text-[10px] text-[var(--muted-foreground)] font-normal shrink-0">
+        {fmt(elapsed)} / {fmt(durationSecs)}
+      </span>
+    </div>
+  )
+}
+
 function DetailPage({ finding }: { finding: InspectionFinding }) {
   const [activeTab, setActiveTab] = React.useState<"observation" | "timeline">("observation")
   const [lightboxIndex, setLightboxIndex] = React.useState<number | null>(null)
+  const [videoLightboxIndex, setVideoLightboxIndex] = React.useState<number | null>(null)
   const imageCount = finding.imageCount ?? 1
 
   return (
@@ -667,13 +840,15 @@ function DetailPage({ finding }: { finding: InspectionFinding }) {
               </div>
               <div className="flex flex-row gap-2 flex-wrap">
                 {Array.from({ length: finding.videoCount ?? 1 }).map((_, i) => (
-                  <div
+                  <button
                     key={i}
-                    className="rounded-[var(--radius)] flex items-center justify-center shrink-0"
+                    type="button"
+                    onClick={() => setVideoLightboxIndex(i)}
+                    className="rounded-[var(--radius)] flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
                     style={{ width: "110px", height: "110px", backgroundColor: "var(--muted)" }}
                   >
                     <PlayCircle strokeWidth={1.5} className="h-6 w-6 text-[var(--muted-foreground)]" />
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -684,16 +859,7 @@ function DetailPage({ finding }: { finding: InspectionFinding }) {
                 <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] font-normal">Audio</p>
                 <span className="inline-flex items-center justify-center h-4 w-4 rounded-full text-[9px] font-normal" style={{ backgroundColor: "var(--muted)", color: "var(--muted-foreground)" }}>1</span>
               </div>
-              <div
-                className="w-full rounded-[var(--radius)] flex items-center gap-2 px-3 py-2.5"
-                style={{ backgroundColor: "var(--muted)" }}
-              >
-                <Mic strokeWidth={1.5} className="h-3.5 w-3.5 text-[var(--muted-foreground)] shrink-0" />
-                <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
-                  <div className="h-full w-1/3 rounded-full" style={{ backgroundColor: "var(--primary)" }} />
-                </div>
-                <span className="text-[10px] text-[var(--muted-foreground)] font-normal shrink-0">0:14 / 0:42</span>
-              </div>
+              <AudioPlayer durationSecs={42} />
             </div>
 
           </div>
@@ -706,6 +872,14 @@ function DetailPage({ finding }: { finding: InspectionFinding }) {
           index={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onNav={setLightboxIndex}
+        />
+      )}
+      {videoLightboxIndex !== null && (
+        <VideoLightbox
+          total={finding.videoCount ?? 1}
+          index={videoLightboxIndex}
+          onClose={() => setVideoLightboxIndex(null)}
+          onNav={setVideoLightboxIndex}
         />
       )}
     </div>
