@@ -104,6 +104,7 @@ export function FleetCompositionWidget() {
               stroke="var(--w-bg)"
               strokeWidth={2}
               paddingAngle={2}
+              cornerRadius={4}
             >
               {data.map((d, i) => <Cell key={i} fill={d.color} />)}
             </Pie>
@@ -119,7 +120,7 @@ export function FleetCompositionWidget() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
           {data.map(d => (
             <div key={d.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
+              <div style={{ width: 7, height: 7, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
               <span style={{ fontFamily: FF, fontSize: 13, color: "#334155", flex: 1 }}>{d.name}</span>
               <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: "var(--w-text-1)" }}>{d.value}</span>
             </div>

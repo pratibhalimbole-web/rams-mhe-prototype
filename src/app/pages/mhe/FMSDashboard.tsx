@@ -206,22 +206,16 @@ export function KPICard({
   icon: React.ElementType;
 }) {
   return (
-    <Card className="shadow-none">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-        <CardTitle className="text-[length:var(--text-xs)] font-[var(--font-weight-medium)]">
-          {title}
-        </CardTitle>
-        <Icon className="h-3 w-3 text-[var(--muted-foreground)]" />
-      </CardHeader>
-      <CardContent className="px-4 py-2">
-        <div className="text-[length:var(--text-lg)] font-[var(--font-weight-semi-bold)]">
-          {value}
+    <div style={{ border: "1px solid var(--w-border)", borderRadius: 10, padding: "14px 16px", background: "var(--w-bg)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon size={14} strokeWidth={1.5} color="var(--w-text-4)" />
         </div>
-        <p className="text-[length:var(--text-xs)] text-[var(--muted-foreground)] leading-tight">
-          {description}
-        </p>
-      </CardContent>
-    </Card>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--w-text-2)" }}>{title}</span>
+      </div>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 26, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: 1 }}>{value}</p>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>{description}</p>
+    </div>
   );
 }
 

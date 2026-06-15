@@ -45,19 +45,21 @@ export function TodaysActivityWidget() {
         {/* Productivity Metrics */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <p style={{ fontSize: "10px", fontWeight: 700, color: "var(--w-text-3)", letterSpacing: "0.08em", margin: "0 0 12px" }}>PRODUCTIVITY METRICS</p>
-          {([
-            { label: "Trips Today",   value: "342",   sub: "↑ +18 vs yesterday" },
-            { label: "Pallets Moved", value: "1,284", sub: "Across 4 zones"      },
-            { label: "Fleet Hours",   value: "186h",  sub: "Total time logged"   },
-          ] as { label: string; value: string; sub: string }[]).map(({ label, value, sub }, i, arr) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--w-divider)" : "none" }}>
-              <div>
-                <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: 0 }}>{label}</p>
-                <p style={{ fontSize: "11px", color: "var(--w-text-3)", margin: "2px 0 0" }}>{sub}</p>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            {([
+              { label: "Trips Today",   value: "342",   sub: "↑ +18 vs yesterday" },
+              { label: "Pallets Moved", value: "1,284", sub: "Across 4 zones"      },
+              { label: "Fleet Hours",   value: "186h",  sub: "Total time logged"   },
+            ] as { label: string; value: string; sub: string }[]).map(({ label, value, sub }, i, arr) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: i < arr.length - 1 ? "1px solid var(--w-divider)" : "none" }}>
+                <div>
+                  <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--w-text-1)", margin: 0 }}>{label}</p>
+                  <p style={{ fontSize: "11px", color: "var(--w-text-3)", margin: "2px 0 0" }}>{sub}</p>
+                </div>
+                <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--w-text-1)", letterSpacing: "-0.02em" }}>{value}</span>
               </div>
-              <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--w-text-1)", letterSpacing: "-0.02em" }}>{value}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
       </CardContent>

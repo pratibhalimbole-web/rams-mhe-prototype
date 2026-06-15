@@ -8,7 +8,7 @@ export function TripLoadBreakdownWidget() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Trip Load Breakdown</span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Loaded vs empty trips · last 30 days</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Loaded vs empty trips · last 30 days</span>
         </div>
       </div>
       <CardContent className="flex-1 px-5 pt-4 pb-5 flex flex-col" style={{ gap: "20px" }}>
@@ -66,7 +66,7 @@ export function TripLoadBreakdownWidget() {
                 <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <p style={{ fontSize: "13px", fontWeight: 500, color: "#374151", margin: 0 }}>{label}</p>
+                    <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--w-text-1)", margin: 0 }}>{label}</p>
                     <p style={{ fontSize: "11px", color: "var(--w-text-3)", margin: "2px 0 0" }}>{sub} · {count} trips</p>
                   </div>
                   <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--w-text-1)", letterSpacing: "-0.02em" }}>{pct}</span>

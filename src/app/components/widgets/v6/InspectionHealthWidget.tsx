@@ -84,10 +84,10 @@ export function InspectionHealthWidget() {
           </span>
         </div>
         <Select value={selectedMhe} onValueChange={setSelectedMhe}>
-          <SelectTrigger style={{ height: "32px", width: "auto", background: "#ffffff", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "var(--w-text-1)", fontFamily: "Inter, sans-serif" }}>
+          <SelectTrigger style={{ height: "32px", width: "auto", background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "0 13px", fontSize: "10px", color: "var(--w-text-1)", fontFamily: "Inter, sans-serif" }}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent side="top" avoidCollisions={false} style={{ backgroundColor: "var(--w-bg)", border: "1px solid var(--w-border)", color: "var(--w-text-1)" }}>
             <SelectItem value="Forklift">Forklift</SelectItem>
             <SelectItem value="Reach Truck">Reach Truck</SelectItem>
             <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>

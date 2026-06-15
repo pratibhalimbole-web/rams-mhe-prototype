@@ -103,13 +103,6 @@ export function Variation6Tab() {
           <TopMhesWithFindingsWidget />
         </div>
 
-        {/* Section — Warranty / License Table */}
-        <div className="col-span-12" style={{ marginTop: "-4px", marginBottom: "-12px" }}>
-          <span className="font-semibold uppercase" style={{ fontSize: "11px", letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
-            COMMAND CENTER · WARRANTY
-          </span>
-        </div>
-
         <div className="col-span-12">
           <WarrantyExpiryTableV3
             onRenew={(id, type) => {
