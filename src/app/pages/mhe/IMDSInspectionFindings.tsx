@@ -18,6 +18,7 @@ import {
   ZoomOut,
   RotateCw,
   Maximize2,
+  ExternalLink,
 } from "lucide-react"
 import {
   ColumnDef,
@@ -937,10 +938,14 @@ export function IMDSInspectionFindings() {
         <button
           type="button"
           onClick={() => setDetailFinding(row.original)}
-          className="text-[length:var(--text-sm)] font-normal hover:underline text-left truncate max-w-[180px]"
-          style={{ color: "var(--primary)" }}
+          className="group flex items-center gap-1.5 text-[length:var(--text-sm)] font-normal text-left transition-colors"
+          style={{ color: "var(--foreground)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--primary)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--foreground)")}
         >
-          {row.getValue("id")}
+          <span className="h-1 w-1 rounded-full shrink-0 group-hover:opacity-0 transition-opacity" style={{ backgroundColor: "var(--foreground)" }} />
+          <span className="truncate max-w-[160px]">{row.getValue("id")}</span>
+          <ExternalLink strokeWidth={1.5} className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
       ),
     },
