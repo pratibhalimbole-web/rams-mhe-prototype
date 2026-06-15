@@ -943,7 +943,7 @@ export function IMDSInspectionFindings() {
           onMouseEnter={e => (e.currentTarget.style.color = "var(--primary)")}
           onMouseLeave={e => (e.currentTarget.style.color = "var(--foreground)")}
         >
-          <span className="h-1 w-1 rounded-full shrink-0 group-hover:opacity-0 transition-opacity" style={{ backgroundColor: "var(--foreground)" }} />
+          <span className="h-1 w-1 rounded-full shrink-0 group-hover:opacity-0 transition-opacity bg-slate-400 dark:bg-slate-500" />
           <span className="truncate max-w-[160px]">{row.getValue("id")}</span>
           <ExternalLink strokeWidth={1.5} className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>

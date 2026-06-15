@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react"
 import { supabase } from "../../supabase-client"
 import {
   ColumnDef,
@@ -75,10 +75,14 @@ function buildColumns(navigate: (path: string) => void): ColumnDef<MHETypeRow>[]
         <button
           type="button"
           onClick={() => navigate(`/mhe/imds/rules-action-imds/${row.getValue("typeId")}`)}
-          className="text-[length:var(--text-sm)] font-normal hover:underline transition-colors text-left"
-          style={{ color: "var(--primary)" }}
+          className="group flex items-center gap-1.5 text-[length:var(--text-sm)] font-normal text-left transition-colors"
+          style={{ color: "var(--foreground)" }}
+          onMouseEnter={e => (e.currentTarget.style.color = "var(--primary)")}
+          onMouseLeave={e => (e.currentTarget.style.color = "var(--foreground)")}
         >
-          {row.getValue("typeId")}
+          <span className="h-1 w-1 rounded-full shrink-0 group-hover:opacity-0 transition-opacity bg-slate-400 dark:bg-slate-500" />
+          <span className="truncate max-w-[180px]">{row.getValue("typeId")}</span>
+          <ExternalLink strokeWidth={1.5} className="h-3.5 w-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
       ),
     },
