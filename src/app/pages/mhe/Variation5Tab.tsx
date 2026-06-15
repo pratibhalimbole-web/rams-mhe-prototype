@@ -867,7 +867,7 @@ function QuadrantLabels({ xAxisMap, yAxisMap }: any) {
             {c.label}
           </text>
           <text x={c.ax} y={c.ay + 13} textAnchor={c.anchor}
-            style={{ fontFamily: FF, fontSize: 8.5, fontWeight: 400, fill: c.color, opacity: 0.7 }}>
+            style={{ fontFamily: FF, fontSize: 8.5, fontWeight: 400, fill: "#9ca3af", opacity: 0.85 }}>
             {c.sub}
           </text>
         </g>

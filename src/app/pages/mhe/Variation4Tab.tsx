@@ -1332,7 +1332,7 @@ function QuadrantLabels({ xAxisMap, yAxisMap }: any) {
             {z.label}
           </text>
           <text x={z.cx} y={z.cy + 16} textAnchor="middle"
-            style={{ fontFamily: FF, fontSize: 9, fontWeight: 400, fill: z.color, opacity: 0.18 }}>
+            style={{ fontFamily: FF, fontSize: 9, fontWeight: 400, fill: "#9ca3af", opacity: 0.55 }}>
             {z.sub}
           </text>
         </g>
@@ -1643,30 +1643,56 @@ function RollCallWidget() {
 }
 
 // ─── Shared table pagination ─────────────────────────────────────────────────
-function TablePagination({ total, rowsPerPage = 10 }: { total: number; rowsPerPage?: number }) {
-  const pages = Math.ceil(total / rowsPerPage);
+function TablePagination({
+  total, page, pageSize, onPageChange, onPageSizeChange,
+}: {
+  total: number; page: number; pageSize: number;
+  onPageChange: (p: number) => void;
+  onPageSizeChange: (ps: number) => void;
+}) {
+  const totalPages = Math.ceil(total / pageSize);
+  const firstRow = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const lastRow  = Math.min(page * pageSize, total);
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, padding: "10px 16px", borderTop: "1px solid var(--w-divider)", flexShrink: 0 }}>
       <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)" }}>Rows per page:</span>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "1px solid var(--w-border)", borderRadius: 5, padding: "3px 8px", cursor: "default" }}>
-        <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-4)" }}>{rowsPerPage}</span>
-        <ChevronRight size={9} color="var(--w-text-3)" style={{ transform: "rotate(90deg)" }} />
-      </div>
-      <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)" }}>1 – 1 of {total}</span>
-      {[180, 0].map(deg => (
-        <button key={deg} style={{ width: 26, height: 26, borderRadius: 5, border: "1px solid var(--w-border)", background: "var(--w-bg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ChevronRight size={11} color="var(--w-text-3)" style={{ transform: `rotate(${deg}deg)` }} />
-        </button>
-      ))}
+      <Select value={`${pageSize}`} onValueChange={v => { onPageSizeChange(Number(v)); onPageChange(1); }}>
+        <SelectTrigger style={{ ...FILTER_STYLE, width: 60 }}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent side="top" avoidCollisions={false} style={{ backgroundColor: "var(--w-bg)", border: "1px solid var(--w-border)", color: "var(--w-text-1)" }}>
+          {[10, 25, 50, 100].map(s => (
+            <SelectItem key={s} value={`${s}`} style={{ color: "var(--w-text-1)", fontSize: 10, fontFamily: FF }}>
+              {s}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <span style={{ fontFamily: FF, fontSize: 11, color: "var(--w-text-3)" }}>{firstRow} – {lastRow} of {total}</span>
+      <button
+        onClick={() => onPageChange(page - 1)} disabled={page <= 1}
+        style={{ width: 26, height: 26, borderRadius: 5, border: "1px solid var(--w-border)", background: "var(--w-bg)", cursor: page <= 1 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: page <= 1 ? 0.35 : 1 }}
+      >
+        <ChevronRight size={11} color="var(--w-text-3)" style={{ transform: "rotate(180deg)" }} />
+      </button>
+      <button
+        onClick={() => onPageChange(page + 1)} disabled={page >= totalPages}
+        style={{ width: 26, height: 26, borderRadius: 5, border: "1px solid var(--w-border)", background: "var(--w-bg)", cursor: page >= totalPages ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: page >= totalPages ? 0.35 : 1 }}
+      >
+        <ChevronRight size={11} color="var(--w-text-3)" />
+      </button>
     </div>
   );
 }
 
 // ─── Widget: Equipment Roll-Call ──────────────────────────────────────────────
-// Grid template: name takes remaining space, all data cols equal 1fr, rating col slightly wider
 const EQUIP_COLS = "1fr 1fr 1fr 1fr 1.4fr";
 function EquipmentRollCallWidget() {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const rowGrid = { display: "grid", gridTemplateColumns: EQUIP_COLS, alignItems: "center", padding: "13px 18px" };
+  const rows = EQUIP_RC.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
@@ -1683,18 +1709,18 @@ function EquipmentRollCallWidget() {
 
       {/* Rows */}
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
-        {EQUIP_RC.map((row, i) => (
+        {rows.map((row, i) => (
           <div key={row.id}
-            style={{ ...rowGrid, borderBottom: i < EQUIP_RC.length - 1 ? "1px solid var(--w-divider)" : "none", cursor: "default", transition: "background 0.12s" }}
+            style={{ ...rowGrid, borderBottom: i < rows.length - 1 ? "1px solid var(--w-divider)" : "none", cursor: "default", transition: "background 0.12s" }}
             onMouseEnter={hoverIn} onMouseLeave={hoverOut}
           >
             <div style={{ minWidth: 0 }}>
               <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>{row.id}</p>
               <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>{row.model}</p>
             </div>
-            <span style={{ fontFamily: FF, fontSize: 12, color: "#334155", textAlign: "right" as const }}>{row.util}%</span>
-            <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 3 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.incd7d > 3 ? 700 : 400 }}>{row.incd7d}</span>
-            <span style={{ fontFamily: FF, fontSize: 12, color: row.red > 0 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.red > 0 ? 700 : 400 }}>{row.red}</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: "var(--w-text-4)", textAlign: "right" as const }}>{row.util}%</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 3 ? "#dc2626" : "var(--w-text-4)", textAlign: "right" as const, fontWeight: row.incd7d > 3 ? 700 : 400 }}>{row.incd7d}</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: row.red > 0 ? "#dc2626" : "var(--w-text-4)", textAlign: "right" as const, fontWeight: row.red > 0 ? 700 : 400 }}>{row.red}</span>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <StarRating value={row.reliability} />
             </div>
@@ -1702,7 +1728,11 @@ function EquipmentRollCallWidget() {
         ))}
       </div>
 
-      <TablePagination total={EQUIP_RC.length} />
+      <TablePagination
+        total={EQUIP_RC.length} page={page} pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={ps => { setPageSize(ps); setPage(1); }}
+      />
     </div>
   );
 }
@@ -1710,7 +1740,11 @@ function EquipmentRollCallWidget() {
 // ─── Widget: Operator Roll-Call ───────────────────────────────────────────────
 const OPR_COLS = "1fr 1fr 1fr 1.4fr";
 function OperatorRollCallWidget() {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const rowGrid = { display: "grid", gridTemplateColumns: OPR_COLS, alignItems: "center", padding: "13px 18px" };
+  const rows = OPR_RC.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <div style={{ ...CARD, flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "14px 18px 12px", borderBottom: HDR_BORDER, flexShrink: 0 }}>
@@ -1727,17 +1761,17 @@ function OperatorRollCallWidget() {
 
       {/* Rows */}
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#e2e8f0 transparent" } as React.CSSProperties}>
-        {OPR_RC.map((row, i) => (
+        {rows.map((row, i) => (
           <div key={row.uid}
-            style={{ ...rowGrid, borderBottom: i < OPR_RC.length - 1 ? "1px solid var(--w-divider)" : "none", cursor: "default", transition: "background 0.12s" }}
+            style={{ ...rowGrid, borderBottom: i < rows.length - 1 ? "1px solid var(--w-divider)" : "none", cursor: "default", transition: "background 0.12s" }}
             onMouseEnter={hoverIn} onMouseLeave={hoverOut}
           >
             <div style={{ minWidth: 0 }}>
               <p style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>{row.name}</p>
               <p style={{ fontFamily: FF, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>{row.uid}</p>
             </div>
-            <span style={{ fontFamily: FF, fontSize: 12, color: "#334155", textAlign: "right" as const }}>{row.util}%</span>
-            <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 10 ? "#dc2626" : "#334155", textAlign: "right" as const, fontWeight: row.incd7d > 10 ? 700 : 400 }}>{row.incd7d}</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: "var(--w-text-4)", textAlign: "right" as const }}>{row.util}%</span>
+            <span style={{ fontFamily: FF, fontSize: 12, color: row.incd7d > 10 ? "#dc2626" : "var(--w-text-4)", textAlign: "right" as const, fontWeight: row.incd7d > 10 ? 700 : 400 }}>{row.incd7d}</span>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <StarRating value={row.safety} />
             </div>
@@ -1745,7 +1779,11 @@ function OperatorRollCallWidget() {
         ))}
       </div>
 
-      <TablePagination total={OPR_RC.length} />
+      <TablePagination
+        total={OPR_RC.length} page={page} pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={ps => { setPageSize(ps); setPage(1); }}
+      />
     </div>
   );
 }
