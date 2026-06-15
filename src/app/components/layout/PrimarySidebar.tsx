@@ -15,15 +15,22 @@ interface PrimarySidebarProps {
   domains: Domain[];
   activeDomainId: string;
   onDomainSelect: (domainId: string) => void;
+  onHoverChange?: (hovered: boolean) => void;
 }
 
 export function PrimarySidebar({
   domains,
   activeDomainId,
   onDomainSelect,
+  onHoverChange,
 }: PrimarySidebarProps) {
   return (
-    <div className="flex w-16 flex-col items-center border-r bg-sidebar h-full" style={{ borderColor: "var(--sidebar-border)" }}>
+    <div
+      className="flex w-16 flex-col items-center border-r bg-sidebar h-full"
+      style={{ borderColor: "var(--sidebar-border)" }}
+      onMouseEnter={() => onHoverChange?.(true)}
+      onMouseLeave={() => onHoverChange?.(false)}
+    >
       <TooltipProvider delayDuration={0}>
         <div className="flex-1 w-full overflow-y-auto" style={{ padding: "var(--spacing-4) var(--spacing-2)" }}>
           <div className="flex flex-col" style={{ gap: "var(--spacing-2)" }}>

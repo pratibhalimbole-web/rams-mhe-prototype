@@ -94,8 +94,20 @@ export function SidebarLayout() {
   const { domainId: activeDomainId, suiteId: activeSuiteId, featureId: activeFeatureId } = selection;
   
   // Layout State
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("pinned");
-  const [isPanelVisible, setIsPanelVisible] = useState(true);
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("floating");
+  const [isNavHovered, setIsNavHovered] = useState(false);
+  const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleNavMouseEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setIsNavHovered(true);
+  };
+
+  const handleNavMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => setIsNavHovered(false), 80);
+  };
+
+  const showSecondary = sidebarMode === "pinned" || isNavHovered;
 
   // Sub-page Breadcrumb State
   const [subPageTitle, setSubPageTitle] = useState<string | null>(null);
@@ -135,17 +147,7 @@ export function SidebarLayout() {
     setSubPageBack(null);
   }, [location.pathname]);
 
-  // Ensure sidebar is visible when switching to pinned mode
-  useEffect(() => {
-    if (sidebarMode === "pinned") {
-      setIsPanelVisible(true);
-    }
-  }, [sidebarMode]);
-
-  const handleDomainSelect = (domainId: string) => {
-    // Always show panel when user interacts with primary navigation
-    setIsPanelVisible(true);
-
+const handleDomainSelect = (domainId: string) => {
     const domain = domains.find(d => d.id === domainId);
     if (!domain) return;
 
@@ -177,30 +179,36 @@ export function SidebarLayout() {
   };
 
   const handleFeatureSelect = (featureId: string) => {
-    // Check if this is a shared feature in a mixed domain
     const isSharedFeature = activeDomain.type === "mixed" && (
       activeDomain.topSharedFeatures?.some(f => f.id === featureId) ||
       activeDomain.sharedFeatures?.some(f => f.id === featureId)
     );
 
     if (isSharedFeature) {
-      // Shared features don't have suite prefix
       navigate(`/${activeDomainId}/${featureId}`);
     } else if (activeSuiteId) {
       navigate(`/${activeDomainId}/${activeSuiteId}/${featureId}`);
     } else {
       navigate(`/${activeDomainId}/${featureId}`);
     }
+
+    // Close secondary sidebar immediately after clicking in floating mode
+    if (sidebarMode === "floating") {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      setIsNavHovered(false);
+    }
   };
 
   const toggleSidebarMode = () => {
-    if (sidebarMode === "pinned") {
-       setSidebarMode("floating");
-       setIsPanelVisible(false); // Collapse behavior
-    } else {
-       setSidebarMode("pinned");
-       // isPanelVisible becomes true via effect
-    }
+    setSidebarMode(m => {
+      if (m === "pinned") {
+        // Unpinning — immediately vanish the secondary sidebar
+        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+        setIsNavHovered(false);
+        return "floating";
+      }
+      return "pinned";
+    });
   };
 
   const contextValue: SidebarContextType = {
@@ -225,22 +233,23 @@ export function SidebarLayout() {
           domains={domains}
           activeDomainId={activeDomainId}
           onDomainSelect={handleDomainSelect}
+          onHoverChange={(h) => h ? handleNavMouseEnter() : handleNavMouseLeave()}
         />
 
         {/* Content Wrapper */}
         <div className="relative flex flex-1 flex-row min-w-0 overflow-hidden">
-          
+
           {/* Secondary Sidebar Container */}
-          <div 
+          <div
             className={cn(
               "h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out z-40",
-              // Mode-based classes
-              sidebarMode === "pinned" 
-                ? "relative flex-shrink-0" 
+              sidebarMode === "pinned"
+                ? "relative flex-shrink-0"
                 : "absolute top-0 left-0 shadow-2xl",
-              // Visibility (Width)
-              isPanelVisible ? "w-[260px] opacity-100 translate-x-0" : "w-0 opacity-0 -translate-x-full overflow-hidden border-none"
+              showSecondary ? "w-[260px] opacity-100 translate-x-0" : "w-0 opacity-0 -translate-x-full overflow-hidden border-none"
             )}
+            onMouseEnter={handleNavMouseEnter}
+            onMouseLeave={handleNavMouseLeave}
           >
             <SecondarySidebar
               activeDomain={activeDomain}
