@@ -163,7 +163,7 @@ const SelectItem = React.forwardRef<
         borderRadius: "var(--radius-sm)",
         padding: "6px var(--spacing-2)",
         paddingRight: "var(--spacing-8)",
-        fontSize: "var(--text-sm)",
+        fontSize: "10px",
         fontWeight: "var(--font-weight-normal)",
         outline: "none",
         userSelect: "none",

@@ -28,8 +28,9 @@ function CustomTooltip({ active, payload, label }: any) {
       <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)", margin: "0 0 8px" }}>{label}</p>
       {([["Red", "#ef4444", red], ["Amber", "#f59e0b", amber]] as [string, string, number][]).map(([l, c, v]) => (
         <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>
-            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: c, flexShrink: 0, display: "inline-block" }} />{l}
+          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontFamily: "Inter, sans-serif", fontSize: "10px" }}>
+            <svg width="8" height="8" viewBox="0 0 8 8" style={{ flexShrink: 0 }}><circle cx="4" cy="4" r="4" fill={c} /></svg>
+            <span style={{ color: c, fontWeight: 600 }}>{l}</span>
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)" }}>{v}</span>
         </div>
@@ -65,22 +66,22 @@ export function TopFailingPartsWidget() {
           <Select value={oem} onValueChange={setOem}>
             <SelectTrigger style={FS}><SelectValue placeholder="All OEMs" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All OEMs</SelectItem>
-              <SelectItem value="toyota">Toyota</SelectItem>
-              <SelectItem value="toyota-industries">Toyota Industries</SelectItem>
-              <SelectItem value="tata">TATA</SelectItem>
-              <SelectItem value="mahindra">Mahindra</SelectItem>
-              <SelectItem value="raymond">Raymond</SelectItem>
+              <SelectItem value="all" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>All OEMs</SelectItem>
+              <SelectItem value="toyota" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Toyota</SelectItem>
+              <SelectItem value="toyota-industries" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Toyota Industries</SelectItem>
+              <SelectItem value="tata" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>TATA</SelectItem>
+              <SelectItem value="mahindra" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Mahindra</SelectItem>
+              <SelectItem value="raymond" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Raymond</SelectItem>
             </SelectContent>
           </Select>
           <Select value={type} onValueChange={setType}>
             <SelectTrigger style={FS}><SelectValue placeholder="All Types" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="forklift">Forklift</SelectItem>
-              <SelectItem value="reach-truck">Reach Truck</SelectItem>
-              <SelectItem value="pallet-jack">Pallet Jack</SelectItem>
-              <SelectItem value="stacker">Stacker</SelectItem>
+              <SelectItem value="all" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>All Types</SelectItem>
+              <SelectItem value="forklift" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Forklift</SelectItem>
+              <SelectItem value="reach-truck" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Reach Truck</SelectItem>
+              <SelectItem value="pallet-jack" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Pallet Jack</SelectItem>
+              <SelectItem value="stacker" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Stacker</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -100,17 +101,6 @@ export function TopFailingPartsWidget() {
         </ResponsiveContainer>
       </div>
 
-      {/* Footer */}
-      <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)" }}>
-            {topPart?.name ?? "—"} leads with highest findings
-          </span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8" }}>
-            Last 30 days
-          </span>
-        </div>
-      </div>
     </div>
   );
 }

@@ -378,33 +378,34 @@ function TrendTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const items = [
     { key: "safety",     label: "Safety",     color: "#3b82f6" },
-    { key: "efficiency", label: "Efficiency", color: "#60a5fa" },
-    { key: "compliance", label: "Compliance", color: "#93c5fd" },
+    { key: "efficiency", label: "Efficiency", color: "#10b981" },
+    { key: "compliance", label: "Compliance", color: "#f59e0b" },
   ];
   return (
     <div style={{
-      background: "#fff",
-      border: "1px solid #e8e8e8",
-      borderRadius: 8,
+      background: "#1e2433",
+      border: "1px solid rgba(255,255,255,0.08)",
+      borderRadius: 10,
       padding: "12px 14px",
-      boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-      minWidth: 200,
-      maxWidth: 240,
+      boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+      minWidth: 180,
       pointerEvents: "none",
       fontFamily: FF,
     }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 8, borderBottom: "0.64px solid #e2e8f0" }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#0f172a" }}>Day {label}</span>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        {label}
       </div>
       {/* Metric rows */}
       {items.map(({ key, label: l, color }) => {
         const entry = payload.find((p: any) => p.dataKey === key);
         return entry ? (
-          <div key={key} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6 }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />
-            <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>{l}</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color }}>{entry.value}</span>
+          <div key={key} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <svg width="9" height="9" viewBox="0 0 9 9" style={{ flexShrink: 0 }}>
+              <circle cx="4.5" cy="4.5" r="4.5" fill={color} />
+            </svg>
+            <span style={{ fontSize: 11, fontWeight: 500, color: "#94a3b8", flex: 1 }}>{l}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9" }}>{entry.value}</span>
           </div>
         ) : null;
       })}
@@ -459,8 +460,8 @@ function QuadrantTooltip({ active, payload }: any) {
 // ─── Widget: Three Pillars Trend ──────────────────────────────────────────────
 const PILLAR_LINES: [string, string, string][] = [
   ["safety",     "Safety (RTSS · MEPS)",     "#3b82f6"],
-  ["efficiency", "Efficiency (FMS · RTSS)",  "#60a5fa"],
-  ["compliance", "Compliance (MEPS · IMDS)", "#93c5fd"],
+  ["efficiency", "Efficiency (FMS · RTSS)",  "#10b981"],
+  ["compliance", "Compliance (MEPS · IMDS)", "#f59e0b"],
 ];
 
 function ThreePillarTrendWidget() {
@@ -494,13 +495,13 @@ function ThreePillarTrendWidget() {
                 fill="none"
                 dot={false} activeDot={{ r: 5, fill: "#3b82f6", stroke: "#fff", strokeWidth: 2 }} />
               <Area type="monotone" dataKey="efficiency"
-                stroke="#60a5fa" strokeWidth={lineWidth("efficiency")} strokeOpacity={lineOpacity("efficiency")}
+                stroke="#10b981" strokeWidth={lineWidth("efficiency")} strokeOpacity={lineOpacity("efficiency")}
                 fill="none"
-                dot={false} activeDot={{ r: 5, fill: "#60a5fa", stroke: "#fff", strokeWidth: 2 }} />
+                dot={false} activeDot={{ r: 5, fill: "#10b981", stroke: "#fff", strokeWidth: 2 }} />
               <Area type="monotone" dataKey="compliance"
-                stroke="#93c5fd" strokeWidth={lineWidth("compliance")} strokeOpacity={lineOpacity("compliance")}
+                stroke="#f59e0b" strokeWidth={lineWidth("compliance")} strokeOpacity={lineOpacity("compliance")}
                 fill="none"
-                dot={false} activeDot={{ r: 5, fill: "#93c5fd", stroke: "#fff", strokeWidth: 2 }} />
+                dot={false} activeDot={{ r: 5, fill: "#f59e0b", stroke: "#fff", strokeWidth: 2 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

@@ -104,7 +104,9 @@ function CustomTooltip({ active, payload, label }: any) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
         {/* Red column */}
         <div>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 600, color: "#ef4444", margin: "0 0 4px", letterSpacing: "0.04em" }}>RED</p>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 600, color: "#ef4444", margin: "0 0 4px", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: "4px" }}>
+            <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ef4444", display: "block", flexShrink: 0 }} />RED
+          </p>
           {redVisible.map(([mhe, val]) => (
             <div key={mhe} style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "3px" }}>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>{mhe}</span>
@@ -114,7 +116,9 @@ function CustomTooltip({ active, payload, label }: any) {
         </div>
         {/* Amber column */}
         <div>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 600, color: "#f59e0b", margin: "0 0 4px", letterSpacing: "0.04em" }}>AMBER</p>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "9px", fontWeight: 600, color: "#f59e0b", margin: "0 0 4px", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: "4px" }}>
+            <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#f59e0b", display: "block", flexShrink: 0 }} />AMBER
+          </p>
           {amberVisible.map(([mhe, val]) => (
             <div key={mhe} style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "3px" }}>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>{mhe}</span>

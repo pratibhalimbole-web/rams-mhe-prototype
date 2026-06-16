@@ -77,11 +77,11 @@ export function FleetCompositionWidget() {
         <Select value={oem} onValueChange={setOem}>
           <SelectTrigger style={filterStyle}><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all_oems">All OEMs</SelectItem>
-            <SelectItem value="toyota">Toyota</SelectItem>
-            <SelectItem value="crown">Crown</SelectItem>
-            <SelectItem value="raymond">Raymond</SelectItem>
-            <SelectItem value="jungheinrich">Jungheinrich</SelectItem>
+            <SelectItem value="all_oems" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>All OEMs</SelectItem>
+            <SelectItem value="toyota" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Toyota</SelectItem>
+            <SelectItem value="crown" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Crown</SelectItem>
+            <SelectItem value="raymond" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Raymond</SelectItem>
+            <SelectItem value="jungheinrich" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Jungheinrich</SelectItem>
           </SelectContent>
         </Select>
       </div>

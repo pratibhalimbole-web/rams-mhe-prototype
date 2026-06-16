@@ -88,10 +88,10 @@ export function InspectionHealthWidget() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent side="top" avoidCollisions={false} style={{ backgroundColor: "var(--w-bg)", border: "1px solid var(--w-border)", color: "var(--w-text-1)" }}>
-            <SelectItem value="Forklift">Forklift</SelectItem>
-            <SelectItem value="Reach Truck">Reach Truck</SelectItem>
-            <SelectItem value="Pallet Jack">Pallet Jack</SelectItem>
-            <SelectItem value="Stacker">Stacker</SelectItem>
+            <SelectItem value="Forklift" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Forklift</SelectItem>
+            <SelectItem value="Reach Truck" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Reach Truck</SelectItem>
+            <SelectItem value="Pallet Jack" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Pallet Jack</SelectItem>
+            <SelectItem value="Stacker" style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}>Stacker</SelectItem>
           </SelectContent>
         </Select>
       </div>
