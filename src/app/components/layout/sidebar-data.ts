@@ -86,7 +86,7 @@ export const domains: Domain[] = [
         id: "mms",
         label: "FMS",
         items: [
-          { id: "dashboard", label: "Dashboard" },
+          { id: "dashboard1", label: "Dashboard" },
           { id: "mhe-asset", label: "MHE Asset Details" },
           { id: "operator-assign", label: "Operator Assignment" },
           { id: "ops-settings", label: "Operational Settings" },

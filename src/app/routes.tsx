@@ -22,6 +22,7 @@ import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
 import { FMSDashboard } from "./pages/mhe/FMSDashboard";
+import { Variation6Tab } from "./pages/mhe/Variation6Tab";
 import { CommandDashboard } from "./pages/mhe/CommandDashboard";
 import { IMDSInspectionFindings } from "./pages/mhe/IMDSInspectionFindings";
 import { IMDSRulesAndAction } from "./pages/mhe/IMDSRulesAndAction";
@@ -190,13 +191,17 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/fms",
-        element: <FMS />,
+        element: <FMSDashboard />,
       },
 
       // MHE → MMS routes
       {
         path: "mhe/mms/dashboard",
         element: <FMSDashboard />,
+      },
+      {
+        path: "mhe/mms/dashboard1",
+        element: <Variation6Tab />,
       },
       {
         path: "mhe/mms/mhe-asset",

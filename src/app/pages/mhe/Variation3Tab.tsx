@@ -233,7 +233,7 @@ function detectSafetyAlerts(_data: SafetyTimePoint[]): string[] {
 function SL({ children }: { children: React.ReactNode }) {
   return (
     <div className="col-span-12 mt-1 mb-[-8px]">
-      <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#64748B" }}>
+      <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--w-text-2)" }}>
         {children}
       </span>
     </div>
@@ -243,8 +243,8 @@ function SL({ children }: { children: React.ReactNode }) {
 function FI({ insight, sub }: { insight: string; sub?: string }) {
   return (
     <div style={{ borderTop: "1px solid var(--border)", padding: "16px 24px" }}>
-      <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", margin: 0 }}>{insight}</p>
-      {sub && <p style={{ fontSize: "12px", color: "#6B7280", margin: 0, marginTop: 2 }}>{sub}</p>}
+      <p style={{ fontSize: "13px", fontWeight: "600", color: "var(--w-text-1)", margin: 0 }}>{insight}</p>
+      {sub && <p style={{ fontSize: "12px", color: "var(--w-text-2)", margin: 0, marginTop: 2 }}>{sub}</p>}
     </div>
   );
 }
@@ -277,24 +277,24 @@ function SafetyTrendTooltip({ active, payload, label }: any) {
   const rb = RISK_BAND[risk];
   const fmt = (n: number) => String(n).padStart(2, "0");
   return (
-    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: 8, padding: "12px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)", minWidth: 224, maxWidth: 264, pointerEvents: "none" as const, fontFamily: "Inter, sans-serif" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 8, padding: "12px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.10)", minWidth: 224, maxWidth: 264, pointerEvents: "none" as const, fontFamily: "Inter, sans-serif" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 8, borderBottom: "0.64px solid #e2e8f0" }}>
-        <span style={{ fontWeight: 600, fontSize: 11, color: "#0f172a" }}>{label} · {d.shift}</span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, paddingBottom: 8, borderBottom: "0.64px solid var(--w-border)" }}>
+        <span style={{ fontWeight: 600, fontSize: 11, color: "var(--w-text-1)" }}>{label} · {d.shift}</span>
         <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}`, whiteSpace: "nowrap" as const }}>{rb.label}</span>
       </div>
       {/* Safety Violations */}
       <div style={{ marginBottom: 7 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "hsl(217, 98%, 54%)", display: "inline-block", flexShrink: 0 }} />
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>Safety Violations</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--w-text-1)", flex: 1 }}>Safety Violations</span>
           <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(217, 98%, 54%)" }}>{d.safetyViolations}</span>
         </div>
         <div style={{ paddingLeft: 12 }}>
           {([["Overspeed", d.overspeed], ["Restricted Zone", d.restrictedZone]] as [string, number][]).map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 1 }}>
-              <span style={{ fontSize: 9, color: "#94a3b8" }}>{k}</span>
-              <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b" }}>{fmt(v)}</span>
+              <span style={{ fontSize: 9, color: "var(--w-text-3)" }}>{k}</span>
+              <span style={{ fontSize: 9, fontWeight: 600, color: "var(--w-text-2)" }}>{fmt(v)}</span>
             </div>
           ))}
         </div>
@@ -303,14 +303,14 @@ function SafetyTrendTooltip({ active, payload, label }: any) {
       <div style={{ marginBottom: 7 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "hsl(222, 84%, 62%)", display: "inline-block", flexShrink: 0 }} />
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>Impact Events</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--w-text-1)", flex: 1 }}>Impact Events</span>
           <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(222, 84%, 62%)" }}>{d.impactEvents}</span>
         </div>
         <div style={{ paddingLeft: 12 }}>
           {([["Rack Impact", d.rackImpact], ["Collision", d.collision]] as [string, number][]).map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 1 }}>
-              <span style={{ fontSize: 9, color: "#94a3b8" }}>{k}</span>
-              <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b" }}>{fmt(v)}</span>
+              <span style={{ fontSize: 9, color: "var(--w-text-3)" }}>{k}</span>
+              <span style={{ fontSize: 9, fontWeight: 600, color: "var(--w-text-2)" }}>{fmt(v)}</span>
             </div>
           ))}
         </div>
@@ -319,26 +319,26 @@ function SafetyTrendTooltip({ active, payload, label }: any) {
       <div style={{ marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "hsl(226, 75%, 68%)", display: "inline-block", flexShrink: 0 }} />
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#0f172a", flex: 1 }}>Near Misses</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--w-text-1)", flex: 1 }}>Near Misses</span>
           <span style={{ fontSize: 10, fontWeight: 700, color: "hsl(226, 75%, 68%)" }}>{d.nearMisses}</span>
         </div>
         <div style={{ paddingLeft: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 9, color: "#94a3b8" }}>Pedestrian Warning</span>
-            <span style={{ fontSize: 9, fontWeight: 600, color: "#64748b" }}>{fmt(d.pedestrianWarning)}</span>
+            <span style={{ fontSize: 9, color: "var(--w-text-3)" }}>Pedestrian Warning</span>
+            <span style={{ fontSize: 9, fontWeight: 600, color: "var(--w-text-2)" }}>{fmt(d.pedestrianWarning)}</span>
           </div>
         </div>
       </div>
       {/* Operational Context */}
-      <div style={{ borderTop: "0.64px solid #e2e8f0", paddingTop: 8 }}>
-        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "#94a3b8", marginBottom: 5 }}>Operational Context</div>
+      <div style={{ borderTop: "0.64px solid var(--w-border)", paddingTop: 8 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--w-text-3)", marginBottom: 5 }}>Operational Context</div>
         {([
-          ["Active MHEs",       d.activeMhes,         "#0f172a"],
-          ["Active Operators",  d.activeOperators,    "#0f172a"],
+          ["Active MHEs",       d.activeMhes,         "var(--w-text-1)"],
+          ["Active Operators",  d.activeOperators,    "var(--w-text-1)"],
           ["Most Affected Zone",d.mostAffectedZone,   "hsl(217, 98%, 54%)"],
         ] as [string, string|number, string][]).map(([lbl, val, col]) => (
           <div key={lbl} style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-            <span style={{ fontSize: 9, color: "#94a3b8" }}>{lbl}</span>
+            <span style={{ fontSize: 9, color: "var(--w-text-3)" }}>{lbl}</span>
             <span style={{ fontSize: 9, fontWeight: 600, color: col }}>{val}</span>
           </div>
         ))}
@@ -398,17 +398,17 @@ function SafetyViolationTrendWidget() {
     : "Saturday Shift C drove the week peak — 19 violations with 8 impact events in Storage B";
 
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       <style>{`@keyframes v3SafetyPulse { 0%,100%{opacity:.5} 50%{opacity:.1} }`}</style>
 
       {/* Header */}
-      <div style={{ padding: "16px 24px 12px", borderBottom: "1px solid #e2e8f0", flexShrink: 0 }}>
+      <div style={{ padding: "16px 24px 12px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" as const }}>
           <div>
-            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", color: "#0f172a", display: "block", lineHeight: "18px" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", color: "var(--w-text-1)", display: "block", lineHeight: "18px" }}>
               Safety Violation Trend Intelligence
             </span>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>
               Safety violations · impact events · near-misses
             </span>
           </div>
@@ -448,10 +448,10 @@ function SafetyViolationTrendWidget() {
           <div style={{ width: "100%", height: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="label" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} dy={6} />
-                <YAxis tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} dx={-4} domain={[0, yStep * 4]} ticks={yTicks} />
-                <ReTooltip content={<SafetyTrendTooltip />} cursor={{ stroke: "#e2e8f0", strokeWidth: 1, strokeDasharray: "4 2" }} />
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-divider)" />
+                <XAxis dataKey="label" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6} />
+                <YAxis tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4} domain={[0, yStep * 4]} ticks={yTicks} />
+                <ReTooltip content={<SafetyTrendTooltip />} cursor={{ stroke: "var(--w-border)", strokeWidth: 1, strokeDasharray: "4 2" }} />
                 <Area type="monotone" dataKey="safetyViolations" name="Safety Violations"
                   stroke="hsl(217, 98%, 54%)" strokeWidth={strokeWidth("safetyViolations")} strokeOpacity={lineOpacity("safetyViolations")}
                   strokeDasharray="6 3"
@@ -477,7 +477,7 @@ function SafetyViolationTrendWidget() {
       <div style={{ display: "flex", gap: "16px", padding: "10px 24px", justifyContent: "center", flexWrap: "wrap" as const, flexShrink: 0 }}>
         {SAFETY_LINE_ITEMS.map(([key, label, color]) => (
           <span key={key}
-            style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "12px", color: hoveredLine === null || hoveredLine === key ? "#64748b" : "#cbd5e1", cursor: "default", transition: "color 0.15s" }}
+            style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "12px", color: hoveredLine === null || hoveredLine === key ? "var(--w-text-2)" : "var(--w-text-3)", cursor: "default", transition: "color 0.15s" }}
             onMouseEnter={() => setHoveredLine(key)}
             onMouseLeave={() => setHoveredLine(null)}
           >
@@ -488,9 +488,9 @@ function SafetyViolationTrendWidget() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+      <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {footerInsight}
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -550,7 +550,7 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: "#ffffff",
+          background: "var(--w-bg)",
           borderRadius: 16,
           width: 480,
           maxWidth: "calc(100vw - 32px)",
@@ -564,28 +564,28 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
         <div style={{ height: 4, background: accent, borderRadius: "16px 16px 0 0" }} />
 
         {/* Header */}
-        <div style={{ padding: "18px 20px 14px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ padding: "18px 20px 14px", borderBottom: "1px solid var(--w-divider)", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {/* Badges row */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}` }}>{rb.label}</span>
               <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 4, background: mod.bg, color: mod.color }}>{alert.module}</span>
-              <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 4, background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" }}>{alert.category}</span>
+              <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 4, background: "var(--w-bg-page)", color: "var(--w-text-2)", border: "1px solid var(--w-border)" }}>{alert.category}</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0f172a", lineHeight: "20px" }}>{alert.title}</h2>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--w-text-1)", lineHeight: "20px" }}>{alert.title}</h2>
           </div>
           {/* Close button */}
           <button
             onClick={onClose}
             style={{
-              width: 28, height: 28, borderRadius: 8, border: "1px solid #e2e8f0",
-              background: "#f8fafc", cursor: "pointer", flexShrink: 0,
+              width: 28, height: 28, borderRadius: 8, border: "1px solid var(--w-border)",
+              background: "var(--w-bg-page)", cursor: "pointer", flexShrink: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#64748b", fontSize: 14, fontWeight: 700, lineHeight: 1,
+              color: "var(--w-text-2)", fontSize: 14, fontWeight: 700, lineHeight: 1,
               transition: "background 0.1s, border-color 0.1s",
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f1f5f9"; (e.currentTarget as HTMLElement).style.borderColor = "#cbd5e1"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg-muted)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--w-text-5)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg-page)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--w-border)"; }}
           >×</button>
         </div>
 
@@ -594,13 +594,13 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
 
           {/* Description */}
           <div>
-            <p style={{ margin: "0 0 5px", fontSize: 10, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" }}>Description</p>
-            <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: "18px" }}>{alert.description}</p>
+            <p style={{ margin: "0 0 5px", fontSize: 10, fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Description</p>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--w-text-1)", lineHeight: "18px" }}>{alert.description}</p>
           </div>
 
           {/* Details grid */}
           <div>
-            <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" }}>Alert Details</p>
+            <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Alert Details</p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px" }}>
               {[
                 { label: "MHE Unit",    value: alert.mheId   },
@@ -610,9 +610,9 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
                 { label: "Alert ID",    value: `#${alert.id}`},
                 { label: "Category",    value: alert.category},
               ].map(({ label, value }) => (
-                <div key={label} style={{ background: "#f8fafc", borderRadius: 8, padding: "8px 10px", border: "1px solid #f1f5f9" }}>
-                  <p style={{ margin: "0 0 2px", fontSize: 9, color: "#94a3b8", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</p>
-                  <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: "#0f172a" }}>{value}</p>
+                <div key={label} style={{ background: "var(--w-bg-page)", borderRadius: 8, padding: "8px 10px", border: "1px solid var(--w-divider)" }}>
+                  <p style={{ margin: "0 0 2px", fontSize: 9, color: "var(--w-text-3)", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</p>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 600, color: "var(--w-text-1)" }}>{value}</p>
                 </div>
               ))}
             </div>
@@ -620,7 +620,7 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
 
           {/* Recommended actions */}
           <div>
-            <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.06em", textTransform: "uppercase" }}>Recommended Actions</p>
+            <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Recommended Actions</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {recs.map((rec, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
@@ -630,7 +630,7 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: 9, fontWeight: 700, color: rb.color, marginTop: 1,
                   }}>{i + 1}</div>
-                  <p style={{ margin: 0, fontSize: 11, color: "#334155", lineHeight: "17px" }}>{rec}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: "var(--w-text-1)", lineHeight: "17px" }}>{rec}</p>
                 </div>
               ))}
             </div>
@@ -638,16 +638,16 @@ function AlertDetailPopup({ alert, onClose }: { alert: AlertCard; onClose: () =>
         </div>
 
         {/* Footer actions */}
-        <div style={{ padding: "12px 20px 16px", borderTop: "1px solid #f1f5f9", display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <div style={{ padding: "12px 20px 16px", borderTop: "1px solid var(--w-divider)", display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button
             onClick={onClose}
             style={{
-              padding: "8px 16px", borderRadius: 8, border: "1px solid #e2e8f0",
-              background: "#ffffff", cursor: "pointer", fontSize: 11, fontWeight: 600,
-              color: "#475569", transition: "background 0.1s",
+              padding: "8px 16px", borderRadius: 8, border: "1px solid var(--w-border)",
+              background: "var(--w-bg)", cursor: "pointer", fontSize: 11, fontWeight: 600,
+              color: "var(--w-text-4)", transition: "background 0.1s",
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#ffffff"; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg-page)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg)"; }}
           >Dismiss</button>
           <button
             style={{
@@ -696,32 +696,32 @@ function ActiveSafetyAlertsWidget() {
 
   return (
     <>
-    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
       {/* Header */}
-      <div style={{ padding: "16px 24px 12px", borderBottom: "1px solid #e2e8f0", flexShrink: 0 }}>
-        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", color: "#0f172a", display: "block", lineHeight: "18px" }}>Active Safety Alerts</span>
-        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>Live cross-system feed — RTSS · MEPS · FMS</span>
+      <div style={{ padding: "16px 24px 12px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0 }}>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", color: "var(--w-text-1)", display: "block", lineHeight: "18px" }}>Active Safety Alerts</span>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>Live cross-system feed — RTSS · MEPS · FMS</span>
       </div>
 
       {/* MHE / Operator tab strip */}
       <div style={{ padding: "10px 12px 0", flexShrink: 0 }}>
-        <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: "3px", gap: 2 }}>
+        <div style={{ display: "flex", background: "var(--w-bg-muted)", borderRadius: 8, padding: "3px", gap: 2 }}>
           {tabs.map(({ val, label, count, critical }) => {
             const active = tab === val;
             return (
               <button key={val} onClick={() => setTab(val)} style={{
                 flex: 1, padding: "6px 4px", borderRadius: 6,
-                border: active ? "1px solid #e2e8f0" : "1px solid transparent",
-                background: active ? "#ffffff" : "transparent",
+                border: active ? "1px solid var(--w-border)" : "1px solid transparent",
+                background: active ? "var(--w-bg)" : "transparent",
                 cursor: "pointer", transition: "all 0.12s",
-                boxShadow: active ? "0 1px 3px rgba(0,0,0,0.07)" : "none",
+                boxShadow: active ? "0 1px 3px rgba(0,0,0,0.2)" : "none",
                 display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4,
               }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: active ? "#475569" : "#94a3b8", lineHeight: 1 }}>{count}</span>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: active ? 600 : 400, color: active ? "#475569" : "#94a3b8" }}>{label}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: active ? "var(--w-text-4)" : "var(--w-text-3)", lineHeight: 1 }}>{count}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: active ? 600 : 400, color: active ? "var(--w-text-4)" : "var(--w-text-3)" }}>{label}</span>
                 {critical > 0 && (
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: active ? "#fef2f2" : "#f8fafc", color: active ? "#dc2626" : "#94a3b8", border: `1px solid ${active ? "#fecaca" : "transparent"}` }}>{critical} crit</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: active ? "#fef2f2" : "var(--w-bg-page)", color: active ? "#dc2626" : "var(--w-text-3)", border: `1px solid ${active ? "#fecaca" : "transparent"}` }}>{critical} crit</span>
                 )}
               </button>
             );
@@ -730,32 +730,32 @@ function ActiveSafetyAlertsWidget() {
       </div>
 
       {/* Alert list */}
-      <div style={{ flex: 1, overflowY: "auto" as const, minHeight: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 10, scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
+      <div style={{ flex: 1, overflowY: "auto" as const, minHeight: 0, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 10, scrollbarWidth: "thin" as const, scrollbarColor: "var(--w-border) transparent" }}>
         {filtered.map((alert) => {
           const rb = RISK_BAND[alert.severity];
           return (
             <div key={alert.id}
               onClick={() => setSelected(alert)}
-              style={{ background: "#ffffff", border: "1px solid #f1f5f9", borderRadius: 10, padding: "11px 13px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", transition: "box-shadow 0.15s, border-color 0.15s", cursor: "pointer" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "#f1f5f9"; }}
+              style={{ background: "var(--w-bg)", border: "1px solid var(--w-divider)", borderRadius: 10, padding: "11px 13px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", transition: "box-shadow 0.15s, border-color 0.15s", cursor: "pointer" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--w-border)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--w-divider)"; }}
             >
               {/* Title + severity badge */}
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", lineHeight: "17px", flex: 1 }}>{alert.title}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--w-text-1)", lineHeight: "17px", flex: 1 }}>{alert.title}</span>
                 <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 4, background: rb.bg, color: rb.color, border: `1px solid ${rb.border}`, flexShrink: 0 }}>{rb.label}</span>
               </div>
               {/* Divider */}
-              <div style={{ height: 1, background: "#f1f5f9", margin: "6px 0" }} />
+              <div style={{ height: 1, background: "var(--w-divider)", margin: "6px 0" }} />
               {/* Description */}
-              <div style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: "15px", marginBottom: 8 }}>{alert.description}</div>
+              <div style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", lineHeight: "15px", marginBottom: 8 }}>{alert.description}</div>
               {/* Meta */}
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{alert.mheId}</span>
-                <span style={{ fontSize: 9, color: "#cbd5e1" }}>·</span>
-                <span style={{ fontSize: 9, color: "#64748b" }}>{alert.zone}</span>
-                <span style={{ fontSize: 9, color: "#cbd5e1" }}>·</span>
-                <span style={{ fontSize: 9, color: "#94a3b8" }}>{alert.time}</span>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>{alert.mheId}</span>
+                <span style={{ fontSize: 9, color: "var(--w-text-5)" }}>·</span>
+                <span style={{ fontSize: 9, color: "var(--w-text-2)" }}>{alert.zone}</span>
+                <span style={{ fontSize: 9, color: "var(--w-text-5)" }}>·</span>
+                <span style={{ fontSize: 9, color: "var(--w-text-3)" }}>{alert.time}</span>
               </div>
             </div>
           );
@@ -763,9 +763,9 @@ function ActiveSafetyAlertsWidget() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+      <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {footerMain}
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -879,12 +879,12 @@ function OperatorUtilizationWidget() {
 const SHIFT_FILTER_STYLE: React.CSSProperties = {
   height: "32px",
   width: "auto",
-  background: "#ffffff",
-  border: "1px solid #e2e8f0",
+  background: "var(--w-bg)",
+  border: "1px solid var(--w-border)",
   borderRadius: "6px",
   padding: "0 13px",
   fontSize: "10px",
-  color: "#0f172a",
+  color: "var(--w-text-1)",
   fontFamily: "Inter, sans-serif",
   fontWeight: 400,
 };
@@ -892,17 +892,17 @@ const SHIFT_FILTER_STYLE: React.CSSProperties = {
 function ShiftStackedTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "180px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", paddingBottom: "6px", borderBottom: "0.64px solid #e2e8f0" }}>
-        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "#0f172a" }}>{label} Session</span>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "180px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", paddingBottom: "6px", borderBottom: "0.64px solid var(--w-border)" }}>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)" }}>{label} Session</span>
       </div>
       {[...payload].reverse().map((entry: any) => (
         <div key={entry.dataKey} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "3px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: entry.color, display: "inline-block", flexShrink: 0 }} />
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "#64748b" }}>{entry.name}</span>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", color: "var(--w-text-2)" }}>{entry.name}</span>
           </div>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "#0f172a" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)" }}>
             {entry.value}%
           </span>
         </div>
@@ -930,12 +930,12 @@ function ShiftPerformanceWidget() {
   const topKey = ["compliance", "safety", "productivity"].find(visible) ?? "compliance";
 
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Shift Performance vs Operational Risk</span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>Productivity · Safety · Compliance stacked by shift session</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Shift Performance vs Operational Risk</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>Productivity · Safety · Compliance stacked by shift session</span>
         </div>
         <div style={{ display: "flex", gap: "6px" }}>
           <Select value={moduleFilter} onValueChange={setModuleFilter}>
@@ -963,17 +963,17 @@ function ShiftPerformanceWidget() {
           <div style={{ width: "100%", height: "100%" }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={SHIFT_PERFORMANCE} margin={{ top: 0, right: 10, left: 0, bottom: 0 }} barCategoryGap="45%">
-                <CartesianGrid strokeDasharray="" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-divider)" />
                 <XAxis
                   dataKey="shift"
-                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }}
                   axisLine={false}
                   tickLine={false}
                   dy={6}
                   tickFormatter={(v) => `${v} Session`}
                 />
                 <YAxis
-                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "#64748b" }}
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }}
                   axisLine={false}
                   tickLine={false}
                   dx={-4}
@@ -981,7 +981,7 @@ function ShiftPerformanceWidget() {
                   ticks={[0, 100, 200, 300]}
                   tickFormatter={(v) => v === 0 ? "0" : `${v}`}
                 />
-                <ReTooltip content={<ShiftStackedTooltip />} cursor={{ fill: "#f8fafc" }} />
+                <ReTooltip content={<ShiftStackedTooltip />} cursor={{ fill: "var(--w-bg-page)" }} />
                 {visible("productivity") && (
                   <Bar dataKey="productivity" stackId="a" fill="hsl(217, 98%, 54%)" name="Productivity (FMS)"
                     radius={topKey === "productivity" ? [3, 3, 0, 0] : [0, 0, 0, 0]} />
@@ -1003,7 +1003,7 @@ function ShiftPerformanceWidget() {
       {/* Legend */}
       <div style={{ display: "flex", gap: "16px", padding: "10px 24px", justifyContent: "center", flexWrap: "wrap" as const }}>
         {SHIFT_LEGEND_ITEMS.filter(([key]) => visible(key)).map(([, label, color]) => (
-          <span key={label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "12px", color: "#64748b" }}>
+          <span key={label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "12px", color: "var(--w-text-2)" }}>
             <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: color, display: "inline-block", flexShrink: 0 }} />
             {label}
           </span>
@@ -1011,9 +1011,9 @@ function ShiftPerformanceWidget() {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+      <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             4th Session shows 23% safety decline vs 1st — night shift is highest risk window
           </span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -1294,23 +1294,23 @@ function OperationalInboxWidget() {
 // Shared sub-components — minimal, matching reference style
 function OslCardHeader({ label, subtitle }: { label: string; subtitle: string }) {
   return (
-    <div style={{ padding: "16px 18px 11px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", lineHeight: "18px" }}>{label}</p>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8", margin: 0 }}>{subtitle}</p>
+    <div style={{ padding: "16px 18px 11px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0 }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 2px", lineHeight: "18px" }}>{label}</p>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>{subtitle}</p>
     </div>
   );
 }
 
 function OslCardFooter({ modules, insight }: { modules: string; insight: string }) {
   return (
-    <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 18px 0 18px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "#94a3b8", margin: "0 0 3px", letterSpacing: "0.06em" }}>{modules}</p>
-      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", margin: 0, lineHeight: "14px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{insight}</p>
+    <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 18px 0 18px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 700, color: "var(--w-text-3)", margin: "0 0 3px", letterSpacing: "0.06em" }}>{modules}</p>
+      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", margin: 0, lineHeight: "14px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{insight}</p>
     </div>
   );
 }
 
-const CARD_DIVIDER = { height: 1, background: "#f1f5f9" } as const;
+const CARD_DIVIDER = { height: 1, background: "var(--w-divider)" } as const;
 
 function OperationalStatusInboxLayer() {
   const [hoveredAction, setHoveredAction] = useState<string | null>(null);
@@ -1351,7 +1351,7 @@ function OperationalStatusInboxLayer() {
     { initials: "EF", type: "Electric Forklifts", zone: "All Zones",  pct: 76, status: "On Target", statusColor: "#16a34a" as const },
   ];
 
-  const hoverIn  = (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; };
+  const hoverIn  = (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg-muted)"; };
   const hoverOut = (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.background = "transparent"; };
 
   return (
@@ -1359,41 +1359,39 @@ function OperationalStatusInboxLayer() {
       {/* ── Section label ── */}
       <div className="col-span-12">
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: -2 }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#64748b", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
             Operational Action Status
           </span>
-          <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8", whiteSpace: "nowrap" }}>FMS · RTSS · MEPS · IMDS</span>
+          <div style={{ flex: 1, height: 1, background: "var(--w-border)" }} />
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)", whiteSpace: "nowrap" }}>FMS · RTSS · MEPS · IMDS</span>
         </div>
       </div>
 
       {/* ════ CARD 1 — Operators · person rows with 3-metric grid ═══════════ */}
       <div className="col-span-12 md:col-span-6 xl:col-span-3">
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
+        <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
           <OslCardHeader label="Operators" subtitle="Operator-wise safety breakdown" />
-          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "var(--w-border) transparent" }}>
             {operatorRows.map((op, i, arr) => (
               <div key={op.id}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                  {/* Profile icon + Operator ID inline */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <User style={{ width: 13, height: 13, color: "#475569" }} />
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <User style={{ width: 13, height: 13, color: "var(--w-text-4)" }} />
                     </div>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a" }}>{op.id}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--w-text-1)" }}>{op.id}</span>
                   </div>
-                  {/* 3-metric grid */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      {[
-                        { val: op.score,     lbl: "Score",         bad: op.score < 70 },
-                        { val: op.issues,    lbl: op.issueLabel,   bad: op.issues > 0 },
-                        { val: op.incidents, lbl: "Incidents",     bad: op.incidents > 0 },
-                      ].map(m => (
-                        <div key={m.lbl} style={{ textAlign: "right" as const }}>
-                          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{m.val}</p>
-                          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#94a3b8", margin: "3px 0 0", letterSpacing: "0.02em" }}>{m.lbl}</p>
-                        </div>
-                      ))}
+                    {[
+                      { val: op.score,     lbl: "Score",       bad: op.score < 70 },
+                      { val: op.issues,    lbl: op.issueLabel, bad: op.issues > 0 },
+                      { val: op.incidents, lbl: "Incidents",   bad: op.incidents > 0 },
+                    ].map(m => (
+                      <div key={m.lbl} style={{ textAlign: "right" as const }}>
+                        <p style={{ fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 700, color: "var(--w-text-1)", margin: 0, lineHeight: 1 }}>{m.val}</p>
+                        <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "var(--w-text-3)", margin: "3px 0 0", letterSpacing: "0.02em" }}>{m.lbl}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
@@ -1406,30 +1404,28 @@ function OperationalStatusInboxLayer() {
 
       {/* ════ CARD 2 — Efficiency · stat strip + progress bars ═══════════════ */}
       <div className="col-span-12 md:col-span-6 xl:col-span-3">
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
+        <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
           <OslCardHeader label="Efficiency" subtitle="Fleet & operational performance signals" />
-          {/* 3-stat strip — only problem values in red, rest dark */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr 1px 1fr", padding: "16px 0 14px", flexShrink: 0 }}>
             {effStats.flatMap((m, i, arr) => [
               <div key={m.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "0 4px" }}>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#0f172a", margin: 0, lineHeight: 1 }}>{m.value}</p>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#94a3b8", margin: "2px 0 0", letterSpacing: "0.06em", textAlign: "center" as const }}>{m.label}</p>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#cbd5e1", margin: 0, textAlign: "center" as const }}>{m.sub}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "var(--w-text-1)", margin: 0, lineHeight: 1 }}>{m.value}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "var(--w-text-3)", margin: "2px 0 0", letterSpacing: "0.06em", textAlign: "center" as const }}>{m.label}</p>
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "var(--w-text-5)", margin: 0, textAlign: "center" as const }}>{m.sub}</p>
               </div>,
-              ...(i < arr.length - 1 ? [<div key={`dv${i}`} style={{ width: 1, background: "#f1f5f9", alignSelf: "stretch" }} />] : []),
+              ...(i < arr.length - 1 ? [<div key={`dv${i}`} style={{ width: 1, background: "var(--w-divider)", alignSelf: "stretch" }} />] : []),
             ])}
           </div>
           <div style={{ ...CARD_DIVIDER, margin: "0 18px", flexShrink: 0 }} />
-          {/* Progress bars — single blue bar, only % value colored */}
-          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent", paddingTop: 2 }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "var(--w-border) transparent", paddingTop: 2 }}>
             {effBars.map((bar, i, arr) => (
               <div key={bar.label}>
                 <div style={{ padding: "10px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b" }}>{bar.label}</span>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{bar.pct}%</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)" }}>{bar.label}</span>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, fontWeight: 700, color: "var(--w-text-1)" }}>{bar.pct}%</span>
                   </div>
-                  <div style={{ height: 4, background: "#f1f5f9", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ height: 4, background: "var(--w-bg-muted)", borderRadius: 3, overflow: "hidden" }}>
                     <div style={{ width: `${bar.pct}%`, height: "100%", background: bar.belowTarget ? "#dc2626" : "#1b59f8", borderRadius: 3 }} />
                   </div>
                 </div>
@@ -1443,53 +1439,44 @@ function OperationalStatusInboxLayer() {
 
       {/* ════ CARD 3 — Safety · specific metrics + full-text alert rows ════════ */}
       <div className="col-span-12 md:col-span-6 xl:col-span-3">
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
+        <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
           <OslCardHeader label="Safety" subtitle="Live safety metrics · RTSS + MEPS" />
-          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
-
-            {/* ── Metric count rows — specific, manager-readable ── */}
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "var(--w-border) transparent" }}>
             {safetyCounts.map((row, i, arr) => (
               <div key={row.label}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", lineHeight: "15px" }}>{row.label}</p>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8", margin: 0, lineHeight: "13px" }}>{row.sub}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 2px", lineHeight: "15px" }}>{row.label}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)", margin: 0, lineHeight: "13px" }}>{row.sub}</p>
                   </div>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "#475569", flexShrink: 0, lineHeight: 1 }}>{row.count}</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: "var(--w-text-4)", flexShrink: 0, lineHeight: 1 }}>{row.count}</span>
                 </div>
                 {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
               </div>
             ))}
-
-            {/* ── Separator ── */}
-            <div style={{ height: 1, background: "#e2e8f0", margin: "4px 18px" }} />
-
-            {/* ── Active alert rows — full title, no truncation ── */}
-            {INBOX_ITEMS.filter(item => item.tab === "safety").sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0)).map((item, i, arr) => {
-              return (
-                <div key={item.id}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                    {/* Severity bar — gray */}
-                    <div style={{ width: 3, minHeight: 36, borderRadius: 2, background: "#cbd5e1", flexShrink: 0, marginTop: 2 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "#0f172a", margin: "0 0 3px", lineHeight: "15px" }}>{item.title}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.zone}</span>
-                        <span style={{ fontSize: 9, color: "#e2e8f0" }}>·</span>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.time}</span>
-                        {item.live && (
-                          <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
-                            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#dc2626" }}>LIVE</span>
-                          </span>
-                        )}
-                      </div>
+            <div style={{ height: 1, background: "var(--w-border)", margin: "4px 18px" }} />
+            {INBOX_ITEMS.filter(item => item.tab === "safety").sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0)).map((item, i, arr) => (
+              <div key={item.id}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                  <div style={{ width: 3, minHeight: 36, borderRadius: 2, background: "var(--w-text-5)", flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 3px", lineHeight: "15px" }}>{item.title}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>{item.zone}</span>
+                      <span style={{ fontSize: 9, color: "var(--w-text-5)" }}>·</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>{item.time}</span>
+                      {item.live && (
+                        <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
+                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 8, fontWeight: 600, color: "#dc2626" }}>LIVE</span>
+                        </span>
+                      )}
                     </div>
                   </div>
-                  {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
                 </div>
-              );
-            })}
+                {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
+              </div>
+            ))}
           </div>
           <OslCardFooter modules="RTSS · MEPS" insight="MHE-004 operating with open red finding — 3 days overdue for closure." />
         </div>
@@ -1497,30 +1484,28 @@ function OperationalStatusInboxLayer() {
 
       {/* ════ CARD 4 — Utilization · fleet rows + action list ════════════════ */}
       <div className="col-span-12 md:col-span-6 xl:col-span-3">
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
+        <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 12, display: "flex", flexDirection: "column", overflow: "hidden", height: "420px" }}>
           <OslCardHeader label="Utilization" subtitle="Equipment utilization by fleet type" />
-          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "#e2e8f0 transparent" }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", scrollbarWidth: "thin" as const, scrollbarColor: "var(--w-border) transparent" }}>
             {utilFleet.map((row, i, arr) => (
               <div key={row.type}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
-                  {/* Neutral avatar */}
-                  <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, color: "#475569" }}>{row.initials}</span>
+                  <div style={{ width: 34, height: 34, borderRadius: 10, background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 700, color: "var(--w-text-4)" }}>{row.initials}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" }}>{row.type}</p>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8", margin: 0 }}>{row.zone}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 2px" }}>{row.type}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)", margin: 0 }}>{row.zone}</p>
                   </div>
-                  {/* % + status label — color only on status text */}
                   <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
                     <p style={{ fontFamily: "Inter, sans-serif", fontSize: 14, fontWeight: 700, color: row.statusColor, margin: 0, lineHeight: 1 }}>{row.pct}%</p>
-                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "#94a3b8", margin: "2px 0 0" }}>{row.status}</p>
+                    <p style={{ fontFamily: "Inter, sans-serif", fontSize: 8, color: "var(--w-text-3)", margin: "2px 0 0" }}>{row.status}</p>
                   </div>
                 </div>
                 {i < arr.length - 1 && <div style={{ ...CARD_DIVIDER, margin: "0 18px" }} />}
               </div>
             ))}
-            <div style={{ height: 1, background: "#e2e8f0", margin: "0 18px" }} />
+            <div style={{ height: 1, background: "var(--w-border)", margin: "0 18px" }} />
             {INBOX_ITEMS.filter(item => item.tab === "utilization").map((item, i, arr) => {
               const av = INBOX_ACTION_STYLE[item.actionVariant ?? "primary"];
               const sv = INBOX_SEVERITY_STYLE[item.severity];
@@ -1530,14 +1515,12 @@ function OperationalStatusInboxLayer() {
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "11px 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                     <div style={{ width: 3, borderRadius: 2, background: sv.dot, flexShrink: 0, alignSelf: "stretch", minHeight: 36 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Title — wraps freely, no truncation */}
-                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "#0f172a", margin: "0 0 4px", lineHeight: "15px" }}>{item.title}</p>
-                      {/* Meta + action on same line */}
+                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 4px", lineHeight: "15px" }}>{item.title}</p>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" as const }}>
-                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.zone}</span>
-                          <span style={{ fontSize: 9, color: "#e2e8f0" }}>·</span>
-                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "#94a3b8" }}>{item.time}</span>
+                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>{item.zone}</span>
+                          <span style={{ fontSize: 9, color: "var(--w-text-5)" }}>·</span>
+                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)" }}>{item.time}</span>
                           {item.live && (
                             <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
                               <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
@@ -1569,7 +1552,7 @@ function OperationalStatusInboxLayer() {
 
 // ─── Widget: Operational Health ───────────────────────────────────────────────
 const FF3 = "Inter, sans-serif";
-const hoverIn3  = (e: React.MouseEvent<HTMLElement>) => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; };
+const hoverIn3  = (e: React.MouseEvent<HTMLElement>) => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg-muted)"; };
 const hoverOut3 = (e: React.MouseEvent<HTMLElement>) => { (e.currentTarget as HTMLElement).style.background = "transparent"; };
 
 function OperationalHealthWidget() {
@@ -1581,34 +1564,34 @@ function OperationalHealthWidget() {
   ];
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, display: "flex", flexDirection: "column", height: "100%" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 12, display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
 
       {/* Header */}
-      <div style={{ padding: "16px 18px 11px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
-        <p style={{ fontFamily: FF3, fontSize: 13, fontWeight: 600, color: "#0f172a", margin: "0 0 2px", lineHeight: "18px" }}>Operational Health</p>
-        <p style={{ fontFamily: FF3, fontSize: 10, color: "#94a3b8", margin: 0 }}>Weighted blend — safety · efficiency · compliance · maintenance · readiness</p>
+      <div style={{ padding: "16px 18px 11px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0 }}>
+        <p style={{ fontFamily: FF3, fontSize: 13, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 2px", lineHeight: "18px" }}>Operational Health</p>
+        <p style={{ fontFamily: FF3, fontSize: 10, color: "var(--w-text-3)", margin: 0 }}>Weighted blend — safety · efficiency · compliance · maintenance · readiness</p>
       </div>
 
       {/* Composite Score card */}
-      <div style={{ margin: "14px 18px", border: "1px solid #e2e8f0", borderRadius: 10, display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", flexShrink: 0 }}>
+      <div style={{ margin: "14px 18px", border: "1px solid var(--w-border)", borderRadius: 10, display: "flex", alignItems: "center", gap: 16, padding: "14px 16px", flexShrink: 0 }}>
         <svg width={64} height={64} viewBox="0 0 64 64" style={{ flexShrink: 0 }}>
-          <circle cx={32} cy={32} r={25} fill="none" stroke="#e2e8f0" strokeWidth={6} />
+          <circle cx={32} cy={32} r={25} fill="none" stroke="var(--w-border)" strokeWidth={6} />
           <circle cx={32} cy={32} r={25} fill="none" stroke="#1b59f8" strokeWidth={6}
             strokeDasharray="111.53 45.55" strokeLinecap="butt" transform="rotate(-90 32 32)" />
           <text x={32} y={36} textAnchor="middle"
-            style={{ fontFamily: FF3, fontSize: "14px", fontWeight: 700, fill: "#0f172a" }}>71</text>
+            style={{ fontFamily: FF3, fontSize: "14px", fontWeight: 700, fill: "var(--w-text-1)" }}>71</text>
         </svg>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontFamily: FF3, fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 2px" }}>Composite Score</p>
-          <p style={{ fontFamily: FF3, fontSize: 10, color: "#94a3b8", margin: "0 0 8px" }}>Warehouse is operational but safety risks require immediate attention</p>
+          <p style={{ fontFamily: FF3, fontSize: 13, fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 2px" }}>Composite Score</p>
+          <p style={{ fontFamily: FF3, fontSize: 10, color: "var(--w-text-3)", margin: "0 0 8px" }}>Warehouse is operational but safety risks require immediate attention</p>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontFamily: FF3, fontSize: 11, fontWeight: 700, color: "#0f172a" }}>71 / 100</span>
-            <span style={{ display: "inline-flex", padding: "2px 9px", borderRadius: 20, background: "#fffbeb", border: "1px solid #fef3c7", fontFamily: FF3, fontSize: 9, fontWeight: 600, color: "#d97706", letterSpacing: "0.04em" }}>MODERATE</span>
+            <span style={{ fontFamily: FF3, fontSize: 11, fontWeight: 700, color: "var(--w-text-1)" }}>71 / 100</span>
+            <span style={{ display: "inline-flex", padding: "2px 9px", borderRadius: 20, background: "var(--w-amber-bg)", border: "1px solid var(--w-amber-border)", fontFamily: FF3, fontSize: 9, fontWeight: 600, color: "#d97706", letterSpacing: "0.04em" }}>MODERATE</span>
           </div>
         </div>
       </div>
 
-      <div style={{ height: 1, background: "#e2e8f0", margin: "0 18px", flexShrink: 0 }} />
+      <div style={{ height: 1, background: "var(--w-border)", margin: "0 18px", flexShrink: 0 }} />
 
       {/* Pillar rows */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
@@ -1618,22 +1601,22 @@ function OperationalHealthWidget() {
           return (
             <div key={row.label} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "0 18px", cursor: "default", transition: "background 0.12s" }} onMouseEnter={hoverIn3} onMouseLeave={hoverOut3}>
-                <div style={{ width: 34, height: 34, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Icon size={16} color="#475569" />
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: "var(--w-bg-muted)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon size={16} color="var(--w-text-4)" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontFamily: FF3, fontSize: 11, fontWeight: 600, color: "#0f172a", margin: "0 0 2px" }}>{row.label}</p>
-                  <p style={{ fontFamily: FF3, fontSize: 8, color: "#94a3b8", margin: 0 }}>{row.status}</p>
+                  <p style={{ fontFamily: FF3, fontSize: 11, fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 2px" }}>{row.label}</p>
+                  <p style={{ fontFamily: FF3, fontSize: 8, color: "var(--w-text-3)", margin: 0 }}>{row.status}</p>
                 </div>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, fontFamily: FF3, fontSize: 10, fontWeight: 700, color: up ? "#16a34a" : "#dc2626" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 3, flexShrink: 0, fontFamily: FF3, fontSize: 10, fontWeight: 700, color: up ? "#22c55e" : "#ef4444" }}>
                   {up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
                   {Math.abs(row.delta).toFixed(1)}
                 </span>
                 <div style={{ textAlign: "right" as const, flexShrink: 0 }}>
-                  <p style={{ fontFamily: FF3, fontSize: 14, fontWeight: 700, color: "#475569", margin: 0, lineHeight: 1 }}>{row.val}</p>
+                  <p style={{ fontFamily: FF3, fontSize: 14, fontWeight: 700, color: "var(--w-text-4)", margin: 0, lineHeight: 1 }}>{row.val}</p>
                 </div>
               </div>
-              {i < arr.length - 1 && <div style={{ height: 1, background: "#f1f5f9", margin: "0 18px" }} />}
+              {i < arr.length - 1 && <div style={{ height: 1, background: "var(--w-divider)", margin: "0 18px" }} />}
             </div>
           );
         })}
@@ -1667,14 +1650,14 @@ export function Variation3Tab() {
           style={{
             display: "inline-flex", alignItems: "center", gap: 7,
             padding: "8px 14px", borderRadius: 8,
-            border: "1px solid #e2e8f0", background: "#ffffff",
+            border: "1px solid var(--w-border)", background: "var(--w-bg)",
             fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600,
-            color: "#475569", textDecoration: "none",
+            color: "var(--w-text-4)", textDecoration: "none",
             boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
             transition: "background 0.12s, border-color 0.12s",
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f8fafc"; (e.currentTarget as HTMLElement).style.borderColor = "#cbd5e1"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#ffffff"; (e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0"; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg-page)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--w-text-5)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--w-bg)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--w-border)"; }}
         >
           <Download size={13} />
           Documentation
@@ -1732,17 +1715,17 @@ export function Variation3Tab() {
         <SL>RTSS · MEPS · FMS · COMMAND CENTER — Operational Health · Safety Trend Intelligence</SL>
 
         {/* Operational Health */}
-        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "520px" }}>
+        <div className="col-span-12 xl:col-span-4 flex flex-col" style={{ minHeight: "520px" }}>
           <OperationalHealthWidget />
         </div>
 
         {/* Safety Violation Trend */}
-        <div className="col-span-12 xl:col-span-5 flex" style={{ minHeight: "520px" }}>
+        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "520px" }}>
           <SafetyViolationTrendWidget />
         </div>
 
         {/* Active Safety Alerts — fixed height, internal scroll */}
-        <div className="col-span-12 xl:col-span-3 flex" style={{ height: "520px", overflow: "hidden" }}>
+        <div className="col-span-12 xl:col-span-4 flex" style={{ height: "520px", overflow: "hidden" }}>
           <ActiveSafetyAlertsWidget />
         </div>
       </div>
@@ -1758,24 +1741,19 @@ export function Variation3Tab() {
       <div className="grid grid-cols-12 gap-6">
         <SL>ALL MODULES — Shift Intelligence · MEPS + RTSS — Inspection × Impact Correlation</SL>
 
-        {/* Widget: Operator Utilization — Cycle time breakdown per operator */}
-        <div className="col-span-12 xl:col-span-4 flex" style={{ minHeight: "360px" }}>
-          <OperatorUtilizationWidget />
-        </div>
-
         {/* Widget: Shift Performance vs Operational Risk */}
-        <div className="col-span-12 xl:col-span-4 flex">
+        <div className="col-span-12 xl:col-span-6 flex">
           <ShiftPerformanceWidget />
         </div>
 
         {/* Widget: Repeated Inspection Failures vs Safety Impact Frequency */}
-        <Card className="col-span-12 xl:col-span-4 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ minHeight: "360px" }}>
+        <Card className="col-span-12 xl:col-span-6 shadow-none border-[var(--border)] flex flex-col overflow-hidden" style={{ minHeight: "360px" }}>
 
-          {/* Header — matches ShiftPerformanceWidget */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid #f1f5f9", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px 14px 16px", borderBottom: "1px solid var(--w-divider)", flexShrink: 0, height: "81px", boxSizing: "border-box" as const }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap" }}>Repeated Inspection Failures vs Safety Impacts</span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "#64748b", whiteSpace: "nowrap" }}>MHEs with repeated findings (MEPS) correlated with impact event frequency (RTSS)</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap" }}>Repeated Inspection Failures vs Safety Impacts</span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "10px", lineHeight: "15px", color: "var(--w-text-3)", whiteSpace: "nowrap" }}>MHEs with repeated findings (MEPS) correlated with impact event frequency (RTSS)</span>
             </div>
           </div>
 
@@ -1789,8 +1767,8 @@ export function Variation3Tab() {
               <div style={{ width: 56, flexShrink: 0, display: "flex", flexDirection: "column" }}>
                 {INSP_IMPACT_CORR.map(row => (
                   <div key={row.mheId} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8,
-                    background: corrTooltip?.row.mheId === row.mheId ? "#f8fafc" : "transparent" }}>
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: 1 }}>{row.mheId}</span>
+                    background: corrTooltip?.row.mheId === row.mheId ? "var(--w-bg-muted)" : "transparent" }}>
+                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", lineHeight: 1 }}>{row.mheId}</span>
                   </div>
                 ))}
               </div>
@@ -1802,7 +1780,7 @@ export function Variation3Tab() {
               >
                 {/* Vertical grid lines */}
                 {[0, 25, 50, 75, 100].map(pct => (
-                  <div key={pct} style={{ position: "absolute", left: `${pct}%`, top: 0, bottom: 0, width: 1, background: "#f1f5f9", zIndex: 0 }} />
+                  <div key={pct} style={{ position: "absolute", left: `${pct}%`, top: 0, bottom: 0, width: 1, background: "var(--w-divider)", zIndex: 0 }} />
                 ))}
                 {/* Bar groups — flex:1 so entire row height is hoverable */}
                 <div style={{ height: "100%", display: "flex", flexDirection: "column", position: "relative", zIndex: 1 }}>
@@ -1816,7 +1794,7 @@ export function Variation3Tab() {
                         justifyContent: "center",
                         gap: 4,
                         cursor: "default",
-                        background: corrTooltip?.row.mheId === row.mheId ? "#f8fafc" : "transparent",
+                        background: corrTooltip?.row.mheId === row.mheId ? "var(--w-bg-muted)" : "transparent",
                         borderRadius: 4,
                       }}
                       onMouseMove={e => {
@@ -1837,8 +1815,8 @@ export function Variation3Tab() {
                     position: "absolute",
                     left: corrTooltip.x + 12,
                     top: Math.max(0, corrTooltip.y - 40),
-                    background: "#fff",
-                    border: "1px solid #e8e8e8",
+                    background: "var(--w-bg)",
+                    border: "1px solid var(--w-border)",
                     borderRadius: 6,
                     padding: "10px 14px",
                     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
@@ -1846,9 +1824,9 @@ export function Variation3Tab() {
                     pointerEvents: "none",
                     zIndex: 50,
                   }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, paddingBottom: 6, borderBottom: "0.64px solid #e2e8f0" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, color: "#0f172a" }}>{corrTooltip.row.mheId}</span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#94a3b8" }}>{corrTooltip.row.type}</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, paddingBottom: 6, borderBottom: "0.64px solid var(--w-border)" }}>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, color: "var(--w-text-1)" }}>{corrTooltip.row.mheId}</span>
+                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>{corrTooltip.row.type}</span>
                     </div>
                     {[
                       { label: "Repeated Findings (MEPS)", value: corrTooltip.row.repeatedFindings, color: "#f59e0b" },
@@ -1857,9 +1835,9 @@ export function Variation3Tab() {
                       <div key={item.label} style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 3 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                           <span style={{ width: 7, height: 7, borderRadius: "50%", background: item.color, display: "inline-block", flexShrink: 0 }} />
-                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b" }}>{item.label}</span>
+                          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)" }}>{item.label}</span>
                         </div>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "#0f172a" }}>{item.value}</span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "var(--w-text-1)" }}>{item.value}</span>
                       </div>
                     ))}
                   </div>
@@ -1870,7 +1848,7 @@ export function Variation3Tab() {
             {/* X-axis labels */}
             <div style={{ display: "flex", justifyContent: "space-between", paddingLeft: 56, paddingTop: 8, paddingBottom: 4, flexShrink: 0 }}>
               {[0, 2, 4, 6, 8].map(tick => (
-                <span key={tick} style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "#64748b", lineHeight: 1 }}>{tick}</span>
+                <span key={tick} style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", lineHeight: 1 }}>{tick}</span>
               ))}
             </div>
 
@@ -1882,17 +1860,17 @@ export function Variation3Tab() {
               { label: "Repeated Findings (MEPS)", color: "#f59e0b" },
               { label: "Impact Events (RTSS)",     color: "#ef4444" },
             ].map(l => (
-              <span key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "12px", color: "#64748b" }}>
+              <span key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "Inter, sans-serif", fontSize: "12px", color: "var(--w-text-2)" }}>
                 <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: l.color, display: "inline-block", flexShrink: 0 }} />
                 {l.label}
               </span>
             ))}
           </div>
 
-          {/* Footer — matches ShiftPerformanceWidget */}
-          <div style={{ borderTop: "1px solid #f1f5f9", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid var(--w-divider)", padding: "11px 16px 0 16px", flexShrink: 0, height: "59.5px", boxSizing: "border-box" as const, overflow: "hidden" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "12px", lineHeight: "18px", color: "var(--w-text-1)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 MHE-025 shows highest correlation — 8 repeated findings coincide with 7 impact events
               </span>
               <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: "11px", lineHeight: "16.5px", color: "#1b59f8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
