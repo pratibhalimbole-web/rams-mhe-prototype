@@ -17,13 +17,14 @@ import { MheAnalytics } from "./pages/mhe/MheAnalytics";
 import { OperatorMheDashboard } from "./pages/mhe/OperatorMheDashboard";
 import { ActionBoard } from "./pages/mhe/ActionBoard";
 import { FMS } from "./pages/mhe/FMS";
-import { MHECommandCenter } from "./pages/mhe/MHECommandCenter";
 import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
 import { FMSDashboard } from "./pages/mhe/FMSDashboard";
 import { Variation6Tab } from "./pages/mhe/Variation6Tab";
 import { CommandDashboard } from "./pages/mhe/CommandDashboard";
+import { WarehouseView3D } from "./pages/digital-twin/WarehouseView3D";
+import { CommandCenter3D } from "./pages/mhe/CommandCenter3D";
 import { IMDSInspectionFindings } from "./pages/mhe/IMDSInspectionFindings";
 import { IMDSRulesAndAction } from "./pages/mhe/IMDSRulesAndAction";
 import { IMDSManageChecklists } from "./pages/mhe/IMDSManageChecklists";
@@ -59,14 +60,14 @@ export const router = createBrowserRouter([
         element: <Navigate to="/rack/irds/project-planner" replace />,
       },
       
-      // Digital Twin routes
+      // Digital Twin routes — paths match sidebar feature IDs (flat domain: /domainId/featureId)
       {
-        path: "digital-twin/overview",
+        path: "digital-twin/dt-dashboard",
         element: <PlaceholderPage title="Digital Twin Overview" />,
       },
       {
-        path: "digital-twin/3d-map",
-        element: <PlaceholderPage title="3D Map" />,
+        path: "digital-twin/dt-map",
+        element: <WarehouseView3D />,
       },
       
       // Rack → IRDS routes
@@ -183,7 +184,7 @@ export const router = createBrowserRouter([
       // MHE → Shared Features
       {
         path: "mhe/command-center",
-        element: <MHECommandCenter />,
+        element: <CommandCenter3D />,
       },
       {
         path: "mhe/command-dashboard",

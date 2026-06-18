@@ -5,7 +5,6 @@ import { router } from "./routes";
 import { isFigmaMakeActive, isEventFromFigmaMake } from "../utils/figma-make";
 import { StorageWarningBanner } from "./components/StorageWarningBanner";
 import { ThemeProvider } from "./components/theme-provider";
-import { DevToolbar } from "./components/DevToolbar";
 
 // Version: 2.0.1 - Router-based navigation (Cache cleared)
 export default function App() {
@@ -140,7 +139,6 @@ export default function App() {
         <RouterProvider router={router} />
         <Toaster />
         <StorageWarningBanner />
-        <DevToolbar />
       </div>
     </ThemeProvider>
   );
