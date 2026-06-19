@@ -3,7 +3,6 @@ import { Variation1Tab } from "./Variation1Tab";
 import { Variation3Tab } from "./Variation3Tab";
 import { Variation4Tab } from "./Variation4Tab";
 import { CriticalIssuesModal } from "../../components/widgets/CriticalIssuesModal";
-
 const TABS = [
   { id: "variation4", label: "Common Dashboard" },
   { id: "variation2", label: "Variation 2" },
