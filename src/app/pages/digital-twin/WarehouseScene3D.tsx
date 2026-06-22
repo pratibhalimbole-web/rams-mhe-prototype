@@ -1381,7 +1381,7 @@ function TaskImpactCard({ position, assignment, onClose }: {
 }
 
 // ─── TaskPathOverlay ──────────────────────────────────────────────────────────
-export function TaskPathOverlay({ assignment, showImpact = false, onCloseImpact }: { assignment: TaskAssignment; showImpact?: boolean; onCloseImpact?: () => void }) {
+export function TaskPathOverlay({ assignment, showImpact = false, showPath = false, onCloseImpact }: { assignment: TaskAssignment; showImpact?: boolean; showPath?: boolean; onCloseImpact?: () => void }) {
   const isDeviated  = assignment.status === "deviated";
   const isCompleted = assignment.status === "completed";
   const inProgress  = assignment.status === "in-progress";
@@ -1390,20 +1390,20 @@ export function TaskPathOverlay({ assignment, showImpact = false, onCloseImpact 
 
   return (
     <group>
-      {/* Planned path — blue dashed */}
-      <PathLine points={assignment.plannedPath} color="#1b59f8" width={0.18} dashed yOffset={0.06} opacity={0.75} />
-      <PathArrows points={assignment.plannedPath} color="#1b59f8" />
+      {/* Planned path — blue dashed — only when selected */}
+      {showPath && <PathLine points={assignment.plannedPath} color="#1b59f8" width={0.18} dashed yOffset={0.06} opacity={0.75} />}
+      {showPath && <PathArrows points={assignment.plannedPath} color="#1b59f8" />}
 
-      {/* Actual path — colored solid */}
-      {(isDeviated || isCompleted) && assignment.actualPath && (
+      {/* Actual path — colored solid — only when selected */}
+      {showPath && (isDeviated || isCompleted) && assignment.actualPath && (
         <>
           <PathLine points={assignment.actualPath} color={isDeviated ? "#ef4444" : "#22c55e"} width={0.11} yOffset={0.09} opacity={0.9} />
           <PathArrows points={assignment.actualPath} color={isDeviated ? "#ef4444" : "#22c55e"} />
         </>
       )}
 
-      {/* Deviation zone */}
-      {isDeviated && assignment.deviationZone && (
+      {/* Deviation zone — only when selected */}
+      {showPath && isDeviated && assignment.deviationZone && (
         <group>
           <mesh rotation={[-Math.PI/2, 0, 0]} position={[assignment.deviationZone.cx, 0.07, assignment.deviationZone.cz]}>
             <planeGeometry args={[assignment.deviationZone.w, assignment.deviationZone.d]} />
@@ -1431,9 +1431,9 @@ export function TaskPathOverlay({ assignment, showImpact = false, onCloseImpact 
         </group>
       )}
 
-      {/* Start / End flags */}
-      <StartEndMarker position={assignment.plannedPath[0]} type="start" />
-      <StartEndMarker position={assignment.plannedPath[assignment.plannedPath.length - 1]} type="end" />
+      {/* Start / End flags — only when selected */}
+      {showPath && <StartEndMarker position={assignment.plannedPath[0]} type="start" />}
+      {showPath && <StartEndMarker position={assignment.plannedPath[assignment.plannedPath.length - 1]} type="end" />}
 
       {/* Impact card — only when MHE is clicked */}
       {showImpact && assignment.metrics && (isDeviated || isCompleted) && (
@@ -1761,6 +1761,7 @@ export function WarehouseScene({
         <TaskPathOverlay
           key={a.id}
           assignment={a}
+          showPath={selectedMHE === a.mheId}
           showImpact={selectedMHE === a.mheId}
           onCloseImpact={() => setSelectedMHE(null)}
         />
