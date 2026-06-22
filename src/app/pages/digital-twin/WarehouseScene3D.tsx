@@ -239,7 +239,7 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
   const [hovered, setHovered] = useState(false);
 
   // Dimmed vehicles get muted gray colours — no transparency (avoids Three.js depth-pass issues)
-  const bodyC  = dimmed ? "#b0b7c3" : color;
+  const bodyC  = dimmed ? "#b0b7c3" : selected ? "#fef08a" : color;
   const darkC  = dimmed ? "#7a8494" : "#1a2332";
   const steelC = dimmed ? "#7a8494" : "#2d3748";
   const forkC  = dimmed ? "#7a8494" : "#b8860b";
