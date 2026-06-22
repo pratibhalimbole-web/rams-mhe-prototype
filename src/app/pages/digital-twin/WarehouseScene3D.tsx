@@ -230,11 +230,12 @@ type MHEVehicleProps = {
   rotation?: number;
   onSelect?: (id: string) => void;
   onDoubleSelect?: (id: string) => void;
+  onHover?: (id: string | null) => void;
   selected?: boolean;
-  dimmed?: boolean; // true = gray + low opacity (other MHEs when one is focused)
+  dimmed?: boolean;
 };
 
-function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, onDoubleSelect, selected, dimmed }: MHEVehicleProps) {
+function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, onDoubleSelect, onHover, selected, dimmed }: MHEVehicleProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
 
@@ -684,8 +685,8 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
       ref={groupRef}
       position={position}
       rotation={[0, rotation, 0]}
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }}
-      onPointerOut={() => { setHovered(false); document.body.style.cursor = "default"; }}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); onHover?.(id); document.body.style.cursor = "pointer"; }}
+      onPointerOut={() => { setHovered(false); onHover?.(null); document.body.style.cursor = "default"; }}
       onClick={(e) => { e.stopPropagation(); onSelect?.(id); }}
       onDoubleClick={(e) => { e.stopPropagation(); onDoubleSelect?.(id); }}
     >
@@ -1618,6 +1619,7 @@ export function WarehouseScene({
   onNearMiss?: (e: NearMissEvent) => void;
 } = {}) {
   const [selectedMHE, setSelectedMHE] = useState<string | null>(null);
+  const [hoveredMHE,  setHoveredMHE]  = useState<string | null>(null);
   const [impactMHE, setImpactMHE]     = useState<string | null>(null);
   // Shared ref: keys are rack IDs that are currently "hot" (MHE nearby)
   const hotRacksRef = useRef<Set<string>>(new Set());
@@ -1703,6 +1705,7 @@ export function WarehouseScene({
           selected={selectedMHE === v.id}
           onSelect={handleSelect}
           onDoubleSelect={handleDoubleSelect}
+          onHover={setHoveredMHE}
           hotRacksRef={hotRacksRef}
           onNearMiss={onNearMiss}
           dimmed={
@@ -1712,23 +1715,31 @@ export function WarehouseScene({
         />
       ))}
 
-      {/* ── Selected MHE: route highlight + status card ── */}
+      {/* ── Selected MHE: route highlight only ── */}
       {selectedMHE && (() => {
         const v = MHE_VEHICLES.find(mv => mv.id === selectedMHE);
         if (!v) return null;
-        const mid = v.path[Math.floor(v.path.length / 2)];
         return (
           <group>
             <PathLine points={v.path} color={v.color} opacity={0.9} />
             <PathArrows points={v.path} color={v.color} />
-            <MHEStatusCard
-              mheId={v.id}
-              pathMid={mid}
-              color={v.color}
-              type={v.type}
-              onClose={() => setSelectedMHE(null)}
-            />
           </group>
+        );
+      })()}
+
+      {/* ── Hovered MHE: status card ── */}
+      {hoveredMHE && (() => {
+        const v = MHE_VEHICLES.find(mv => mv.id === hoveredMHE);
+        if (!v) return null;
+        const mid = v.path[Math.floor(v.path.length / 2)];
+        return (
+          <MHEStatusCard
+            mheId={v.id}
+            pathMid={mid}
+            color={v.color}
+            type={v.type}
+            onClose={() => setHoveredMHE(null)}
+          />
         );
       })()}
 
