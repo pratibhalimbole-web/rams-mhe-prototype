@@ -1767,13 +1767,13 @@ export function WarehouseScene({
       ))}
 
       <OrbitControls
+        ref={(controls: any) => { if (controls) controls.zoomToCursor = true; }}
         makeDefault
         target={[2, 0, -5]}
         minPolarAngle={0.05}
         maxPolarAngle={Math.PI / 2.05}
-        minDistance={4} maxDistance={120}
-        zoomSpeed={1.4} panSpeed={0.6}
-        zoomToCursor
+        minDistance={2} maxDistance={120}
+        zoomSpeed={1.2} panSpeed={0.6}
       />
     </>
   );
