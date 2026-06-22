@@ -1197,150 +1197,144 @@ function MHEInfoCard({ mheId, position, color, type, assignment, onClose }: {
   const effScore   = m?.efficiencyScore ?? 0;
   const effColor   = effScore >= 80 ? "#22c55e" : effScore >= 60 ? "#f59e0b" : "#ef4444";
 
-  const D = "#0f172a"; // card bg
-  const B = "rgba(255,255,255,0.07)"; // divider
+  const taskBadgeColor = isDeviated ? "#ef4444" : isCompleted ? "#22c55e" : "#64748b";
+  const taskBadgeBg    = isDeviated ? "rgba(239,68,68,0.12)" : isCompleted ? "rgba(34,197,94,0.12)" : "rgba(100,116,139,0.12)";
+  const taskBadgeLabel = isDeviated ? "⚠ Deviated" : isCompleted ? "✓ Completed" : "In Progress";
 
   return (
     <Html position={[position[0], 3.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
-        background: D, border: `1px solid rgba(255,255,255,0.1)`,
-        borderTop: `3px solid ${color}`, borderRadius: 12,
-        width: 288, fontFamily: "'Inter', system-ui, sans-serif",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.65)",
-        overflow: "hidden", userSelect: "none",
+        width: 280, borderRadius: 14, overflow: "hidden",
+        background: "#0c1220",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)",
+        fontFamily: "'Inter', system-ui, sans-serif",
+        userSelect: "none",
       }}>
 
-        {/* ── Header ── */}
-        <div style={{ padding: "10px 12px 8px", display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: sc, boxShadow: `0 0 7px ${sc}`, flexShrink: 0 }} />
-          <span style={{ fontSize: 9, fontWeight: 700, color: sc, letterSpacing: 0.8 }}>{st?.status.toUpperCase() ?? "ACTIVE"}</span>
-          <span style={{ fontSize: 9, background: `${color}22`, color, border: `1px solid ${color}44`, borderRadius: 4, padding: "1px 7px", fontWeight: 600 }}>{type}</span>
-          <div style={{ flex: 1 }} />
-          <span style={{ fontSize: 14, fontWeight: 800, color: "#f1f5f9" }}>{mheId}</span>
-          <button onClick={onClose} style={{
-            pointerEvents: "auto", cursor: "pointer",
-            background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
-            color: "#94a3b8", borderRadius: 6, width: 22, height: 22, flexShrink: 0, marginLeft: 6,
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1, padding: 0,
-          }}>×</button>
+        {/* ── Colour band + header ── */}
+        <div style={{ background: `linear-gradient(135deg, ${color}22, ${color}08)`, borderBottom: `1px solid ${color}30`, padding: "12px 14px 10px" }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+            {/* Status pulse */}
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: sc, boxShadow: `0 0 8px ${sc}`, marginRight: 6 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: sc, letterSpacing: 1, flex: 1 }}>{st?.status.toUpperCase() ?? "ACTIVE"}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: color, background: `${color}20`, border: `1px solid ${color}40`, borderRadius: 5, padding: "2px 8px" }}>{type}</span>
+            <button onClick={onClose} style={{
+              pointerEvents: "auto", cursor: "pointer", marginLeft: 8,
+              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+              color: "#64748b", borderRadius: 6, width: 22, height: 22,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 15, lineHeight: 1, padding: 0,
+            }}>×</button>
+          </div>
+          {/* MHE ID + operator row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 22, fontWeight: 900, color: "#f8fafc", letterSpacing: -0.5 }}>{mheId}</span>
+            {st && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: `${color}25`, border: `1px solid ${color}40`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color }}>{st.operator.charAt(0)}</div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: "#cbd5e1" }}>{st.operator}</div>
+                  <div style={{ fontSize: 9, color: "#475569" }}>{st.zone}</div>
+                </div>
+              </div>
+            )}
+          </div>
+          {/* Task name */}
+          {st && <div style={{ marginTop: 6, fontSize: 11, color: "#94a3b8", lineHeight: 1.4 }}>{st.task}</div>}
         </div>
 
-        {/* Operator + zone */}
+        {/* ── Live telemetry row ── */}
         {st && (
-          <div style={{ padding: "0 12px 8px", display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 20, height: 20, borderRadius: "50%", background: `${color}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color }}>{st.operator.charAt(0)}</div>
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>{st.operator}</span>
-            <span style={{ fontSize: 9, color: "#475569", marginLeft: "auto" }}>· {st.zone}</span>
-          </div>
-        )}
-
-        <div style={{ height: 1, background: B }} />
-
-        {/* Current task */}
-        {st && (
-          <div style={{ padding: "8px 12px" }}>
-            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.6, marginBottom: 3 }}>CURRENT TASK</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.4 }}>{st.task}</div>
-          </div>
-        )}
-
-        {/* Live metrics strip */}
-        {st && (
-          <>
-            <div style={{ height: 1, background: B }} />
-            <div style={{ padding: "8px 12px", display: "flex", gap: 0 }}>
-              <div style={{ flex: 1, paddingRight: 10, borderRight: `1px solid ${B}` }}>
-                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 2 }}>SPEED</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
-                  <span style={{ fontSize: 18, fontWeight: 800, color: st.speed > 0 ? "#f1f5f9" : "#6b7280", lineHeight: 1 }}>{st.speed}</span>
-                  <span style={{ fontSize: 9, color: "#475569" }}>km/h</span>
-                </div>
-              </div>
-              <div style={{ flex: 1.2, padding: "0 10px", borderRight: `1px solid ${B}` }}>
-                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 2 }}>BATTERY</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 2, marginBottom: 4 }}>
-                  <span style={{ fontSize: 18, fontWeight: 800, color: batCol, lineHeight: 1 }}>{st.battery}</span>
-                  <span style={{ fontSize: 9, color: "#475569" }}>%</span>
-                </div>
-                <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2 }}>
-                  <div style={{ height: "100%", width: `${st.battery}%`, background: batCol, borderRadius: 2 }} />
-                </div>
-              </div>
-              <div style={{ flex: 1, paddingLeft: 10 }}>
-                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 2 }}>LOCATION</div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.35 }}>{st.zone}</div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ── Task impact section ── */}
-        {m && (
-          <>
-            <div style={{ height: 1, background: B }} />
-            <div style={{ padding: "6px 12px 5px", display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 8, fontWeight: 700, color: "#475569", letterSpacing: 0.6, flex: 1 }}>TASK IMPACT</span>
-              <span style={{
-                fontSize: 8, fontWeight: 700, borderRadius: 4, padding: "2px 7px", letterSpacing: 0.4,
-                color: isDeviated ? "#ef4444" : "#22c55e",
-                background: isDeviated ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
-              }}>{isDeviated ? "⚠ DEVIATED" : "✓ COMPLETED"}</span>
-            </div>
-
-            {/* Metric chips */}
-            <div style={{ padding: "0 12px 8px", display: "flex", gap: 5 }}>
-              {[
-                { label: "DIST", planned: `${m.plannedDist}m`, actual: `${m.actualDist}m`, delta: distDelta, unit: "m" },
-                { label: "TIME", planned: `${m.plannedTime}m`, actual: `${m.actualTime}m`, delta: timeDelta, unit: "m" },
-                { label: "BAT",  planned: `${m.batteryPlanned}%`, actual: `${m.batteryActual}%`, delta: batDelta, unit: "%" },
-              ].map(({ label, planned, actual, delta, unit }) => (
-                <div key={label} style={{ flex: 1, background: "rgba(255,255,255,0.04)", borderRadius: 7, border: "1px solid rgba(255,255,255,0.08)", padding: "6px 6px 5px" }}>
-                  <div style={{ fontSize: 7, fontWeight: 700, color: "#475569", letterSpacing: 0.5, marginBottom: 3 }}>{label}</div>
-                  <div style={{ fontSize: 9, color: "#94a3b8", marginBottom: 1 }}>{planned} → <span style={{ color: delta > 0 ? "#ef4444" : "#22c55e", fontWeight: 600 }}>{actual}</span></div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: delta > 0 ? "#ef4444" : "#22c55e" }}>{delta > 0 ? "+" : ""}{delta}{unit}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Efficiency + operator score */}
-            <div style={{ padding: "0 12px 8px", display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 }}>EFFICIENCY</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2 }}>
-                    <div style={{ height: "100%", width: `${effScore}%`, background: effColor, borderRadius: 2 }} />
+          <div style={{ display: "flex", padding: "12px 14px", gap: 0, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            {[
+              { label: "SPEED", value: `${st.speed}`, unit: "km/h", color: st.speed > 0 ? "#f1f5f9" : "#475569" },
+              { label: "BATTERY", value: `${st.battery}`, unit: "%", color: batCol },
+              { label: "ZONE", value: st.zone, unit: "", color: "#e2e8f0", small: true },
+            ].map(({ label, value, unit, color: vc, small }, i) => (
+              <div key={label} style={{ flex: 1, textAlign: "center", borderRight: i < 2 ? "1px solid rgba(255,255,255,0.06)" : "none", padding: "0 4px" }}>
+                <div style={{ fontSize: 7, fontWeight: 700, color: "#334155", letterSpacing: 0.8, marginBottom: 4, textTransform: "uppercase" }}>{label}</div>
+                {!small ? (
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 2 }}>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: vc, lineHeight: 1 }}>{value}</span>
+                    <span style={{ fontSize: 9, color: "#475569" }}>{unit}</span>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: effColor, minWidth: 28 }}>{effScore}%</span>
+                ) : (
+                  <div style={{ fontSize: 10, fontWeight: 600, color: vc, lineHeight: 1.3 }}>{value}</div>
+                )}
+                {label === "BATTERY" && (
+                  <div style={{ margin: "5px auto 0", width: "70%", height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2 }}>
+                    <div style={{ height: "100%", width: `${st.battery}%`, background: batCol, borderRadius: 2 }} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Task performance ── */}
+        {m && (
+          <div style={{ padding: "10px 14px 12px" }}>
+            {/* Section header */}
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "#334155", letterSpacing: 0.7, flex: 1, textTransform: "uppercase" }}>Task Performance</span>
+              <span style={{ fontSize: 9, fontWeight: 600, color: taskBadgeColor, background: taskBadgeBg, borderRadius: 20, padding: "2px 9px" }}>{taskBadgeLabel}</span>
+            </div>
+
+            {/* Efficiency big number + operator score side by side */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+              <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div style={{ fontSize: 8, color: "#334155", fontWeight: 700, letterSpacing: 0.6, marginBottom: 6, textTransform: "uppercase" }}>Efficiency</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 6 }}>
+                  <span style={{ fontSize: 28, fontWeight: 900, color: effColor, lineHeight: 1 }}>{effScore}</span>
+                  <span style={{ fontSize: 12, color: "#475569" }}>%</span>
+                </div>
+                <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2 }}>
+                  <div style={{ height: "100%", width: `${effScore}%`, background: effColor, borderRadius: 2 }} />
                 </div>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>OPERATOR</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                  <span style={{ fontSize: 11, color: "#64748b" }}>{m.operatorScore.before}</span>
-                  <span style={{ fontSize: 9, color: "#475569" }}>→</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: scoreDelta < 0 ? "#ef4444" : "#22c55e" }}>{m.operatorScore.after}</span>
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, marginLeft: 3, padding: "1px 5px", borderRadius: 4,
-                    color: scoreDelta < 0 ? "#ef4444" : "#22c55e",
-                    background: scoreDelta < 0 ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
-                  }}>{scoreDelta > 0 ? "+" : ""}{scoreDelta}</span>
+              <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div style={{ fontSize: 8, color: "#334155", fontWeight: 700, letterSpacing: 0.6, marginBottom: 6, textTransform: "uppercase" }}>Operator Score</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>{m.operatorScore.before}</span>
+                  <span style={{ fontSize: 10, color: "#334155" }}>→</span>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: scoreDelta < 0 ? "#ef4444" : "#22c55e", lineHeight: 1 }}>{m.operatorScore.after}</span>
+                </div>
+                <div style={{ marginTop: 4, fontSize: 10, fontWeight: 700, color: scoreDelta < 0 ? "#ef4444" : "#22c55e" }}>
+                  {scoreDelta > 0 ? "+" : ""}{scoreDelta} pts
                 </div>
               </div>
+            </div>
+
+            {/* Delta pills: distance + time */}
+            <div style={{ display: "flex", gap: 6, marginBottom: m.issues.length > 0 ? 10 : 0 }}>
+              {[
+                { label: "Distance", delta: distDelta, unit: "m", from: m.plannedDist, to: m.actualDist },
+                { label: "Time",     delta: timeDelta, unit: "min", from: m.plannedTime, to: m.actualTime },
+              ].map(({ label, delta, unit, from, to }) => {
+                const bad = delta > 0;
+                return (
+                  <div key={label} style={{ flex: 1, background: bad ? "rgba(239,68,68,0.06)" : "rgba(34,197,94,0.06)", borderRadius: 8, padding: "7px 10px", border: `1px solid ${bad ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)"}` }}>
+                    <div style={{ fontSize: 8, color: "#475569", fontWeight: 600, marginBottom: 3 }}>{label}</div>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>{from}{unit} → <span style={{ color: bad ? "#ef4444" : "#22c55e", fontWeight: 700 }}>{to}{unit}</span></div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: bad ? "#ef4444" : "#22c55e", marginTop: 2 }}>{bad ? "+" : ""}{delta}{unit}</div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Issues */}
             {m.issues.length > 0 && (
-              <div style={{ background: "rgba(255,255,255,0.03)", borderTop: `1px solid ${B}`, padding: "7px 12px 10px" }}>
-                <div style={{ fontSize: 8, fontWeight: 700, color: "#475569", letterSpacing: 0.5, marginBottom: 4 }}>ISSUES</div>
+              <div style={{ background: "rgba(239,68,68,0.05)", borderRadius: 8, padding: "8px 10px", border: "1px solid rgba(239,68,68,0.12)" }}>
                 {m.issues.map((issue, i) => (
-                  <div key={i} style={{ display: "flex", gap: 5, marginBottom: i < m.issues.length - 1 ? 3 : 0 }}>
-                    <span style={{ color: "#ef4444", fontSize: 9, flexShrink: 0 }}>•</span>
-                    <span style={{ fontSize: 9, color: "#94a3b8", lineHeight: 1.45 }}>{issue}</span>
+                  <div key={i} style={{ display: "flex", gap: 6, marginBottom: i < m.issues.length - 1 ? 5 : 0 }}>
+                    <span style={{ color: "#ef4444", fontSize: 10, flexShrink: 0, marginTop: 1 }}>•</span>
+                    <span style={{ fontSize: 10, color: "#94a3b8", lineHeight: 1.5 }}>{issue}</span>
                   </div>
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </Html>
