@@ -229,11 +229,12 @@ type MHEVehicleProps = {
   position: [number, number, number];
   rotation?: number;
   onSelect?: (id: string) => void;
+  onDoubleSelect?: (id: string) => void;
   selected?: boolean;
   dimmed?: boolean; // true = gray + low opacity (other MHEs when one is focused)
 };
 
-function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, selected, dimmed }: MHEVehicleProps) {
+function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, onDoubleSelect, selected, dimmed }: MHEVehicleProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
 
@@ -687,6 +688,7 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = "pointer"; }}
       onPointerOut={() => { setHovered(false); document.body.style.cursor = "default"; }}
       onClick={(e) => { e.stopPropagation(); onSelect?.(id); }}
+      onDoubleClick={(e) => { e.stopPropagation(); onDoubleSelect?.(id); }}
     >
       {geomByType[type] ?? forkliftGeom}
 
@@ -1243,7 +1245,7 @@ function TaskImpactCard({ position, assignment, onClose }: {
   };
 
   return (
-    <Html position={[position[0], 6.5, position[2]]} center distanceFactor={28} zIndexRange={[200, 0]}>
+    <Html position={[position[0], 6.5, position[2]]} center zIndexRange={[200, 0]}>
       <div style={{
         background: s.card,
         border: `1px solid ${s.border}`,
@@ -1480,6 +1482,7 @@ export function WarehouseScene({
   onNearMiss?: (e: NearMissEvent) => void;
 } = {}) {
   const [selectedMHE, setSelectedMHE] = useState<string | null>(null);
+  const [impactMHE, setImpactMHE]     = useState<string | null>(null);
   // Shared ref: keys are rack IDs that are currently "hot" (MHE nearby)
   const hotRacksRef = useRef<Set<string>>(new Set());
 
@@ -1489,6 +1492,10 @@ export function WarehouseScene({
   const handleSelect = (id: string) => {
     setSelectedMHE(prev => prev === id ? null : id);
     onSelectMHE?.(id);
+  };
+
+  const handleDoubleSelect = (id: string) => {
+    setImpactMHE(prev => prev === id ? null : id);
   };
 
   return (
@@ -1559,6 +1566,7 @@ export function WarehouseScene({
           speed={0.7 + i * 0.08}
           selected={selectedMHE === v.id}
           onSelect={handleSelect}
+          onDoubleSelect={handleDoubleSelect}
           hotRacksRef={hotRacksRef}
           onNearMiss={onNearMiss}
           dimmed={focusedMheId !== null && v.id !== focusedMheId}
@@ -1580,8 +1588,8 @@ export function WarehouseScene({
         <TaskPathOverlay
           key={a.id}
           assignment={a}
-          showImpact={selectedMHE === a.mheId}
-          onCloseImpact={() => setSelectedMHE(null)}
+          showImpact={impactMHE === a.mheId}
+          onCloseImpact={() => setImpactMHE(null)}
         />
       ))}
 
