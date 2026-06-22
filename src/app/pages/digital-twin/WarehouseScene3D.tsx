@@ -1448,7 +1448,7 @@ export function TaskPathOverlay({ assignment, showImpact = false, onCloseImpact 
 const MHE_VEHICLES = [
   { id: "MHE-01", label: "MHE 01", type: "Forklift",             color: "#f59e0b", path: [[-20,0,-5],[-12,0,-5],[-12,0,2],[-20,0,2],[-20,0,-5]]    as [number,number,number][] },
   { id: "MHE-02", label: "MHE 02", type: "Reach Truck",          color: "#10b981", path: [[4,0,-12],[16,0,-12],[16,0,-7],[4,0,-7],[4,0,-12]]          as [number,number,number][] },
-  { id: "MHE-03", label: "MHE 03", type: "Forklift",             color: "#8b5cf6", path: [[-8,0,5],[2,0,5],[2,0,10],[-8,0,10],[-8,0,5]]              as [number,number,number][] },
+  { id: "MHE-03", label: "MHE 03", type: "Forklift",             color: "#fef08a", path: [[-8,0,5],[2,0,5],[2,0,10],[-8,0,10],[-8,0,5]]              as [number,number,number][] },
   { id: "MHE-04", label: "MHE 04", type: "Order Picker",         color: "#ec4899", path: [[2,0,-14],[18,0,-14],[18,0,-8],[2,0,-8],[2,0,-14]]          as [number,number,number][] },
   { id: "MHE-05", label: "MHE 05", type: "BPOT",                 color: "#06b6d4", path: [[-22,0,3],[-14,0,3],[-14,0,7],[-22,0,7],[-22,0,3]]         as [number,number,number][] },
   { id: "MHE-06", label: "MHE 06", type: "Forklift",             color: "#f97316", path: [[-2,0,-14],[10,0,-14],[10,0,-8],[-2,0,-8],[-2,0,-14]]       as [number,number,number][] },
