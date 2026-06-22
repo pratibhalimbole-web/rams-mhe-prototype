@@ -3,7 +3,7 @@
  * page and the MHE Command Center page.
  */
 import { useRef, useEffect, useState, useMemo } from "react";
-import { OrbitControls, Html } from "@react-three/drei";
+import { OrbitControls, Html, Line } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -1095,61 +1095,48 @@ export type TaskAssignment = {
 };
 
 // ─── PathLine ─────────────────────────────────────────────────────────────────
-// Renders a vertical wall ribbon along the path so it's visible from any angle.
-// Planned path uses dashed=true (gaps in the wall); actual path is solid.
-const WALL_H    = 0.22; // ribbon height in world units
-const WALL_T    = 0.06; // ribbon thickness
-
-function PathLine({ points, color, opacity = 0.88, dashed = false }: {
+// Clean floor-level line using drei Line (LineSegments2 — WebGL thick lines).
+// Planned path = dashed, actual path = solid.
+function PathLine({ points, color, opacity = 0.92, dashed = false }: {
   points: [number,number,number][];
   color: string; opacity?: number; dashed?: boolean;
-  // yOffset and width are unused — kept for call-site compat
-  yOffset?: number; width?: number;
+  yOffset?: number; width?: number; // kept for call-site compat
 }) {
-  const segs: { cx: number; cz: number; len: number; angle: number }[] = [];
-  for (let i = 0; i < points.length - 1; i++) {
-    const [sx,, sz] = points[i];
-    const [ex,, ez] = points[i + 1];
-    const len = Math.sqrt((ex-sx)**2 + (ez-sz)**2);
-    const angle = Math.atan2(ex-sx, ez-sz);
-    if (!dashed) {
-      segs.push({ cx: (sx+ex)/2, cz: (sz+ez)/2, len, angle });
-    } else {
-      const DASH = 0.7, TOTAL = 1.2;
-      const count = Math.max(1, Math.floor(len / TOTAL));
-      for (let d = 0; d < count; d++) {
-        const t0 = (d * TOTAL) / len;
-        const t1 = Math.min((d * TOTAL + DASH) / len, 1);
-        segs.push({ cx: sx+(ex-sx)*(t0+t1)/2, cz: sz+(ez-sz)*(t0+t1)/2, len: len*(t1-t0), angle });
-      }
-    }
-  }
+  // Lift slightly off floor so it doesn't z-fight
+  const pts = points.map(([x,, z]) => [x, 0.06, z] as [number,number,number]);
   return (
-    <>
-      {segs.map((s, i) => (
-        <mesh key={i} position={[s.cx, WALL_H / 2, s.cz]} rotation={[0, s.angle, 0]}>
-          <boxGeometry args={[WALL_T, WALL_H, s.len]} />
-          <meshBasicMaterial color={color} transparent opacity={opacity} />
-        </mesh>
-      ))}
-    </>
+    <group>
+      {/* Soft glow halo — wider, very transparent */}
+      <Line points={pts} color={color} lineWidth={6}
+        transparent opacity={opacity * 0.15} depthWrite={false} />
+      {/* Core line */}
+      <Line points={pts} color={color}
+        lineWidth={dashed ? 1.5 : 2.5}
+        dashed={dashed} dashSize={0.55} gapSize={0.35}
+        transparent opacity={opacity} />
+    </group>
   );
 }
 
 // ─── PathArrows ───────────────────────────────────────────────────────────────
-// Direction chevrons at the top of the wall ribbon (visible above rack floor)
+// Small flat chevrons on the floor at each segment midpoint.
 function PathArrows({ points, color }: { points: [number,number,number][]; color: string }) {
   return (
     <>
       {points.slice(1).map(([ex,, ez], i) => {
         const [sx,, sz] = points[i];
-        const mx = (sx+ex)/2, mz = (sz+ez)/2;
+        const segLen = Math.sqrt((ex-sx)**2+(ez-sz)**2);
         const angle = Math.atan2(ex-sx, ez-sz);
+        // Place one arrow per segment at the 65% mark so it feels directional
+        const t = 0.65;
+        const mx = sx + (ex-sx)*t, mz = sz + (ez-sz)*t;
+        // Skip tiny segments
+        if (segLen < 0.8) return null;
         return (
-          <group key={i} position={[mx, WALL_H + 0.1, mz]} rotation={[0, angle, 0]}>
-            <mesh rotation={[Math.PI/2, 0, 0]}>
-              <coneGeometry args={[0.13, 0.28, 6]} />
-              <meshBasicMaterial color={color} transparent opacity={0.85} />
+          <group key={i} position={[mx, 0.07, mz]} rotation={[-Math.PI/2, 0, -angle]}>
+            <mesh>
+              <coneGeometry args={[0.18, 0.32, 3]} />
+              <meshBasicMaterial color={color} transparent opacity={0.75} depthWrite={false} />
             </mesh>
           </group>
         );
