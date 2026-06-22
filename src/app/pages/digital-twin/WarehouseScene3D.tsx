@@ -238,22 +238,21 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
 
-  const bodyC  = dimmed ? "#adb5bd" : color;
-  const darkC  = dimmed ? "#9ca3af" : "#1a2332";
-  const steelC = dimmed ? "#9ca3af" : "#2d3748";
-  const forkC  = dimmed ? "#9ca3af" : "#b8860b";  // dark gold — unpainted fork steel
-  const wheelC = dimmed ? "#6b7280" : "#111827";
-  const hubC   = dimmed ? "#9ca3af" : "#374151";
-  const glassC = "#bae6fd";
-  const op     = dimmed ? 0.28 : 1;
-  const d      = dimmed;
+  // Dimmed vehicles get muted gray colours — no transparency (avoids Three.js depth-pass issues)
+  const bodyC  = dimmed ? "#b0b7c3" : color;
+  const darkC  = dimmed ? "#7a8494" : "#1a2332";
+  const steelC = dimmed ? "#7a8494" : "#2d3748";
+  const forkC  = dimmed ? "#7a8494" : "#b8860b";
+  const wheelC = dimmed ? "#5a6270" : "#111827";
+  const hubC   = dimmed ? "#7a8494" : "#374151";
+  const glassC = dimmed ? "#8a9bb0" : "#bae6fd";
 
-  // PBR material helpers — always transparent:true so opacity changes work without needsUpdate
-  const BM = { roughness: 0.72, metalness: 0.06, transparent: true, opacity: op };  // painted body
-  const DM = { roughness: 0.50, metalness: 0.28, transparent: true, opacity: op };  // structural steel
-  const FM = { roughness: 0.40, metalness: 0.35, transparent: true, opacity: op };  // forks / yellow steel
-  const WM = { roughness: 0.94, metalness: 0.00, transparent: true, opacity: op };  // rubber tyre
-  const HM = { roughness: 0.38, metalness: 0.55, transparent: true, opacity: op };  // hub cap
+  // PBR material helpers — opaque always so depth buffer is never skipped
+  const BM = { roughness: 0.72, metalness: 0.06 };
+  const DM = { roughness: 0.50, metalness: 0.28 };
+  const FM = { roughness: 0.40, metalness: 0.35 };
+  const WM = { roughness: 0.94, metalness: 0.00 };
+  const HM = { roughness: 0.38, metalness: 0.55 };
 
   // ── Counterbalance Forklift ──────────────────────────────────────────────────
   // Reference-matched: heavy counterweight, big drive tyres, steering wheel, open overhead guard
