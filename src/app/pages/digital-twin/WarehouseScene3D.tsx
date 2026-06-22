@@ -4,7 +4,7 @@
  */
 import { useRef, useEffect, useState, useMemo } from "react";
 import { OrbitControls, Html, Line } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -1242,7 +1242,7 @@ function TaskImpactCard({ position, assignment, onClose }: {
   };
 
   return (
-    <Html position={[position[0], 6.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
+    <Html position={[position[0], 9.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
         background: s.card,
         border: `1px solid ${s.border}`,
@@ -1500,7 +1500,7 @@ function MHEStatusCard({ mheId, pathMid, color, type, onClose }: {
   const sl      = s.status.toUpperCase();
 
   return (
-    <Html position={[pathMid[0], 5.5, pathMid[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
+    <Html position={[pathMid[0], 9.0, pathMid[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
         background: "#0f172a",
         border: `1px solid rgba(255,255,255,0.1)`,
@@ -1595,6 +1595,49 @@ function MHEStatusCard({ mheId, pathMid, color, type, onClose }: {
       </div>
     </Html>
   );
+}
+
+// ─── CameraAnimator ──────────────────────────────────────────────────────────
+// Smoothly flies the camera to center on a target world position when it changes.
+function CameraAnimator({ target }: { target: [number,number,number] | null }) {
+  const { camera, controls } = useThree();
+  const animRef = useRef<{
+    fromCam: THREE.Vector3; toCam: THREE.Vector3;
+    fromTarget: THREE.Vector3; toTarget: THREE.Vector3;
+    t: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!target || !controls) return;
+    const ctrl = controls as any;
+    const mhe = new THREE.Vector3(...target);
+
+    // Keep current camera direction, just pull closer to the MHE
+    const fromCam    = camera.position.clone();
+    const fromTarget = ctrl.target.clone();
+    const dir        = fromCam.clone().sub(fromTarget).normalize();
+    const dist       = 22;
+    const toCam      = mhe.clone().add(dir.multiplyScalar(dist));
+
+    animRef.current = { fromCam, toCam, fromTarget, toTarget: mhe, t: 0 };
+  }, [target ? target.join(",") : null]);
+
+  useFrame(() => {
+    const a = animRef.current;
+    if (!a || !controls) return;
+    const ctrl = controls as any;
+
+    a.t = Math.min(a.t + 0.045, 1);
+    const ease = 1 - Math.pow(1 - a.t, 3); // cubic ease-out
+
+    camera.position.lerpVectors(a.fromCam, a.toCam, ease);
+    ctrl.target.lerpVectors(a.fromTarget, a.toTarget, ease);
+    ctrl.update();
+
+    if (a.t >= 1) animRef.current = null;
+  });
+
+  return null;
 }
 
 // ─── WarehouseScene (the full Three.js scene — no Canvas wrapper) ─────────────
@@ -1762,6 +1805,17 @@ export function WarehouseScene({
         maxPolarAngle={Math.PI / 2.05}
         minDistance={2} maxDistance={120}
         zoomSpeed={1.2} panSpeed={0.6}
+      />
+
+      {/* Auto-fly camera to selected MHE */}
+      <CameraAnimator
+        target={(() => {
+          if (!selectedMHE) return null;
+          const v = MHE_VEHICLES.find(mv => mv.id === selectedMHE);
+          if (!v) return null;
+          const p = v.path[0];
+          return [p[0], 0, p[2]];
+        })()}
       />
     </>
   );
