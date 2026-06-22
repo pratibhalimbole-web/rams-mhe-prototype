@@ -1471,6 +1471,134 @@ const EVENT_DATA = [
   { id: "E4", position: [16,  0, -8]  as [number,number,number], label: "Impact",    severity: "critical" as EventSeverity, count: 3 },
 ];
 
+// ─── Live MHE Status Data ────────────────────────────────────────────────────
+type MHEStatus = "active" | "idle" | "loading" | "charging";
+const MHE_STATUS_DATA: Record<string, {
+  status: MHEStatus; operator: string; speed: number;
+  battery: number; zone: string; task: string;
+}> = {
+  "MHE-01": { status: "active",   operator: "J. Smith",  speed: 8.2, battery: 74, zone: "Aisle C",        task: "Pallet Pick → Bay A-12"      },
+  "MHE-02": { status: "active",   operator: "A. Patel",  speed: 6.5, battery: 58, zone: "Main Storage",   task: "Replenishment → Row B"        },
+  "MHE-03": { status: "active",   operator: "M. Lee",    speed: 7.1, battery: 82, zone: "Staging Area",   task: "Outbound → Shipping Station"  },
+  "MHE-04": { status: "loading",  operator: "T. Brown",  speed: 0.0, battery: 91, zone: "Bulk Storage",   task: "Order Pick · Bay D-08"        },
+  "MHE-05": { status: "charging", operator: "R. Gomez",  speed: 0.0, battery: 34, zone: "Charging Bay",   task: "Standby · Awaiting Next Task" },
+  "MHE-06": { status: "active",   operator: "D. Kim",    speed: 9.4, battery: 67, zone: "Aisle A",        task: "Pallet Move → QC Station"     },
+};
+
+const STATUS_COLOR: Record<MHEStatus, string> = {
+  active: "#22c55e", idle: "#6b7280", loading: "#f59e0b", charging: "#3b82f6",
+};
+
+// ─── MHE Status Card ─────────────────────────────────────────────────────────
+function MHEStatusCard({ mheId, pathMid, color, type, onClose }: {
+  mheId: string; pathMid: [number,number,number];
+  color: string; type: string; onClose: () => void;
+}) {
+  const s = MHE_STATUS_DATA[mheId];
+  if (!s) return null;
+
+  const sc      = STATUS_COLOR[s.status];
+  const batCol  = s.battery > 60 ? "#22c55e" : s.battery > 30 ? "#f59e0b" : "#ef4444";
+  const sl      = s.status.toUpperCase();
+
+  return (
+    <Html position={[pathMid[0], 5.5, pathMid[2]]} center zIndexRange={[200, 0]}>
+      <div style={{
+        background: "#0f172a",
+        border: `1px solid rgba(255,255,255,0.1)`,
+        borderTop: `3px solid ${color}`,
+        borderRadius: 12,
+        width: 272,
+        fontFamily: "'Inter', system-ui, sans-serif",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.65)",
+        overflow: "hidden",
+        userSelect: "none",
+      }}>
+
+        {/* ── Header ── */}
+        <div style={{ padding: "10px 12px 9px", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+            background: sc, boxShadow: `0 0 8px ${sc}`,
+          }} />
+          <span style={{ fontSize: 9, fontWeight: 700, color: sc, letterSpacing: 0.8 }}>{sl}</span>
+          <span style={{
+            fontSize: 9, background: `${color}22`, color, border: `1px solid ${color}44`,
+            borderRadius: 4, padding: "1px 7px", fontWeight: 600, marginLeft: 2,
+          }}>{type}</span>
+          <div style={{ flex: 1 }} />
+          <span style={{ fontSize: 14, fontWeight: 800, color: "#f1f5f9", letterSpacing: 0.3 }}>{mheId}</span>
+          <button
+            onClick={onClose}
+            style={{
+              pointerEvents: "auto", cursor: "pointer",
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
+              color: "#94a3b8", borderRadius: 6,
+              width: 22, height: 22, flexShrink: 0, marginLeft: 6,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, lineHeight: 1, padding: 0,
+            }}
+          >×</button>
+        </div>
+
+        {/* Operator row */}
+        <div style={{ padding: "0 12px 9px", display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{
+            width: 20, height: 20, borderRadius: "50%",
+            background: `${color}30`, display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 9, fontWeight: 700, color,
+          }}>{s.operator.charAt(0)}</div>
+          <span style={{ fontSize: 11, color: "#94a3b8" }}>{s.operator}</span>
+          <span style={{ fontSize: 9, color: "#475569", marginLeft: "auto" }}>· {s.zone}</span>
+        </div>
+
+        <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
+
+        {/* Task */}
+        <div style={{ padding: "9px 12px" }}>
+          <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.6, marginBottom: 4 }}>CURRENT TASK</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.4 }}>{s.task}</div>
+        </div>
+
+        <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
+
+        {/* Metrics strip */}
+        <div style={{ padding: "9px 12px", display: "flex", gap: 0 }}>
+
+          {/* Speed */}
+          <div style={{ flex: 1, paddingRight: 10, borderRight: "1px solid rgba(255,255,255,0.07)" }}>
+            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>SPEED</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: s.speed > 0 ? "#f1f5f9" : "#6b7280", lineHeight: 1 }}>{s.speed}</span>
+              <span style={{ fontSize: 9, color: "#475569" }}>km/h</span>
+            </div>
+          </div>
+
+          {/* Battery */}
+          <div style={{ flex: 1.2, padding: "0 10px", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
+            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>BATTERY</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 5 }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: batCol, lineHeight: 1 }}>{s.battery}</span>
+              <span style={{ fontSize: 9, color: "#475569" }}>%</span>
+            </div>
+            <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2 }}>
+              <div style={{ height: "100%", width: `${s.battery}%`, background: batCol, borderRadius: 2, transition: "width 0.4s" }} />
+            </div>
+          </div>
+
+          {/* Zone */}
+          <div style={{ flex: 1, paddingLeft: 10 }}>
+            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>LOCATION</div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.35 }}>{s.zone}</div>
+          </div>
+
+        </div>
+
+      </div>
+    </Html>
+  );
+}
+
 // ─── WarehouseScene (the full Three.js scene — no Canvas wrapper) ─────────────
 export function WarehouseScene({
   onSelectMHE,
@@ -1572,6 +1700,26 @@ export function WarehouseScene({
           dimmed={focusedMheId !== null && v.id !== focusedMheId}
         />
       ))}
+
+      {/* ── Selected MHE: route highlight + status card ── */}
+      {selectedMHE && (() => {
+        const v = MHE_VEHICLES.find(mv => mv.id === selectedMHE);
+        if (!v) return null;
+        const mid = v.path[Math.floor(v.path.length / 2)];
+        return (
+          <group>
+            <PathLine points={v.path} color={v.color} opacity={0.9} />
+            <PathArrows points={v.path} color={v.color} />
+            <MHEStatusCard
+              mheId={v.id}
+              pathMid={mid}
+              color={v.color}
+              type={v.type}
+              onClose={() => setSelectedMHE(null)}
+            />
+          </group>
+        );
+      })()}
 
       {/* ── Operator markers ── */}
       {OPERATOR_DATA.map(op => (
