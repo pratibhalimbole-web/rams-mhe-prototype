@@ -700,12 +700,21 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
         </mesh>
       )}
 
-      {/* Selection ring */}
+      {/* Selection ring — vehicle colour when selected, subtle white when hovered */}
       {!dimmed && (selected || hovered) && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-          <ringGeometry args={[0.72, 0.88, 24]} />
-          <meshBasicMaterial color={selected ? "#1b59f8" : "#60a5fa"} transparent opacity={0.7} side={THREE.DoubleSide} />
-        </mesh>
+        <group>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+            <ringGeometry args={[0.72, 0.88, 24]} />
+            <meshBasicMaterial color={selected ? color : "#ffffff"} transparent opacity={selected ? 0.9 : 0.35} side={THREE.DoubleSide} />
+          </mesh>
+          {/* Second outer glow ring when selected */}
+          {selected && (
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+              <ringGeometry args={[0.9, 1.1, 24]} />
+              <meshBasicMaterial color={color} transparent opacity={0.28} side={THREE.DoubleSide} />
+            </mesh>
+          )}
+        </group>
       )}
 
       {/* Label */}
@@ -713,13 +722,13 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
         <div style={{
           background: dimmed
             ? "rgba(60,60,60,0.38)"
-            : (hovered || selected ? "#1b59f8" : "rgba(30,30,30,0.75)"),
-          color: dimmed ? "rgba(255,255,255,0.45)" : "#fff",
+            : selected ? color : (hovered ? "rgba(255,255,255,0.18)" : "rgba(30,30,30,0.75)"),
+          color: dimmed ? "rgba(255,255,255,0.45)" : selected ? "#0f172a" : "#fff",
           borderRadius: 4, padding: "2px 7px",
-          fontSize: 9, fontWeight: 600, fontFamily: "system-ui,sans-serif",
+          fontSize: 9, fontWeight: 700, fontFamily: "system-ui,sans-serif",
           pointerEvents: "none", whiteSpace: "nowrap",
-          boxShadow: dimmed ? "none" : "0 1px 4px rgba(0,0,0,0.3)",
-          border: selected && !dimmed ? "1px solid #93c5fd" : "1px solid transparent",
+          boxShadow: selected && !dimmed ? `0 2px 10px ${color}88` : "0 1px 4px rgba(0,0,0,0.3)",
+          border: selected && !dimmed ? `1px solid ${color}` : "1px solid transparent",
           transition: "background 0.15s",
         }}>
           {label}
