@@ -1242,7 +1242,7 @@ function TaskImpactCard({ position, assignment, onClose }: {
   };
 
   return (
-    <Html position={[position[0], 9.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
+    <Html position={[position[0], 3.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
         background: s.card,
         border: `1px solid ${s.border}`,
@@ -1500,7 +1500,7 @@ function MHEStatusCard({ mheId, pathMid, color, type, onClose }: {
   const sl      = s.status.toUpperCase();
 
   return (
-    <Html position={[pathMid[0], 9.0, pathMid[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
+    <Html position={[pathMid[0], 3.2, pathMid[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
         background: "#0f172a",
         border: `1px solid rgba(255,255,255,0.1)`,
