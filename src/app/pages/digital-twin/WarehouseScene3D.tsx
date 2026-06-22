@@ -237,10 +237,416 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
 
-  const isForklift = type === "Forklift" || type === "Reach Truck";
-  const bodyColor  = dimmed ? "#adb5bd" : color;
-  const cabinColor = dimmed ? "#adb5bd" : color;
-  const op         = dimmed ? 0.28 : 1;
+  const bodyC  = dimmed ? "#adb5bd" : color;
+  const darkC  = dimmed ? "#9ca3af" : "#1a2332";
+  const forkC  = dimmed ? "#9ca3af" : "#eab308";
+  const wheelC = dimmed ? "#6b7280" : "#0f172a";
+  const glassC = dimmed ? "#9ca3af" : "#bae6fd";
+  const op     = dimmed ? 0.28 : 1;
+  const d      = dimmed;
+
+  // ── Counterbalance Forklift ──────────────────────────────────────────────────
+  // Stocky rear-heavy chassis, 4-pillar overhead guard, twin-channel mast, yellow forks
+  const forkliftGeom = (
+    <group>
+      {/* Main chassis — wide and low */}
+      <mesh position={[0, 0.3, 0]} castShadow>
+        <boxGeometry args={[0.9, 0.6, 1.45]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Counterweight block at rear — the defining feature of a CB forklift */}
+      <mesh position={[0, 0.42, -0.72]} castShadow>
+        <boxGeometry args={[0.88, 0.76, 0.45]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Engine hood (sloped cover between mast and cabin) */}
+      <mesh position={[0, 0.66, -0.1]} rotation={[0.28, 0, 0]}>
+        <boxGeometry args={[0.86, 0.1, 0.7]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Seat */}
+      <mesh position={[0, 0.65, -0.16]}>
+        <boxGeometry args={[0.38, 0.07, 0.28]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Overhead guard — 4 vertical pillars */}
+      {([ [-0.4, 0.48], [0.4, 0.48], [-0.4, -0.52], [0.4, -0.52] ] as [number,number][]).map(([px, pz], i) => (
+        <mesh key={i} position={[px, 1.08, pz]}>
+          <boxGeometry args={[0.055, 1.02, 0.055]} />
+          <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+        </mesh>
+      ))}
+      {/* Overhead guard top — two crossbars */}
+      <mesh position={[0, 1.6, -0.02]}>
+        <boxGeometry args={[0.86, 0.04, 0.04]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0, 1.6, -0.02]}>
+        <boxGeometry args={[0.04, 0.04, 1.06]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Mast — twin vertical channels */}
+      <mesh position={[-0.28, 0.95, 0.74]}>
+        <boxGeometry args={[0.075, 1.9, 0.1]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.28, 0.95, 0.74]}>
+        <boxGeometry args={[0.075, 1.9, 0.1]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Fork carriage crossbar */}
+      <mesh position={[0, 0.38, 0.8]}>
+        <boxGeometry args={[0.62, 0.1, 0.07]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Forks — twin blades */}
+      <mesh position={[-0.17, 0.1, 1.22]}>
+        <boxGeometry args={[0.09, 0.06, 0.95]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.17, 0.1, 1.22]}>
+        <boxGeometry args={[0.09, 0.06, 0.95]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Drive wheels (front, large) */}
+      <mesh position={[-0.52, 0.19, 0.5]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.19, 0.19, 0.15, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.52, 0.19, 0.5]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.19, 0.19, 0.15, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Steer wheels (rear, smaller) */}
+      <mesh position={[-0.47, 0.14, -0.58]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.14, 0.14, 0.12, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.47, 0.14, -0.58]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.14, 0.14, 0.12, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Safety stripes on counterweight */}
+      <mesh position={[0, 0.2, -0.95]}>
+        <boxGeometry args={[0.86, 0.08, 0.02]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+    </group>
+  );
+
+  // ── Reach Truck ──────────────────────────────────────────────────────────────
+  // Narrow tall body, A-frame outrigger legs, telescoping triple-stage mast
+  const reachTruckGeom = (
+    <group>
+      {/* Tall narrow body */}
+      <mesh position={[0, 0.62, -0.08]} castShadow>
+        <boxGeometry args={[0.6, 1.24, 1.0]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Operator cabin glass */}
+      <mesh position={[0, 0.72, 0.51]}>
+        <boxGeometry args={[0.54, 0.6, 0.04]} />
+        <meshLambertMaterial color={glassC} transparent opacity={dimmed ? 0.08 : 0.5} />
+      </mesh>
+      {/* Cabin roof */}
+      <mesh position={[0, 1.26, -0.08]}>
+        <boxGeometry args={[0.62, 0.07, 1.04]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Outrigger arms — two horizontal legs extending forward */}
+      <mesh position={[-0.34, 0.1, 0.82]}>
+        <boxGeometry args={[0.09, 0.09, 1.65]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.34, 0.1, 0.82]}>
+        <boxGeometry args={[0.09, 0.09, 1.65]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Outrigger end feet */}
+      <mesh position={[-0.34, 0.05, 1.62]}>
+        <boxGeometry args={[0.18, 0.04, 0.24]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.34, 0.05, 1.62]}>
+        <boxGeometry args={[0.18, 0.04, 0.24]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Mast outer stage */}
+      <mesh position={[-0.2, 1.2, 0.52]}>
+        <boxGeometry args={[0.075, 2.4, 0.1]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.2, 1.2, 0.52]}>
+        <boxGeometry args={[0.075, 2.4, 0.1]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Mast inner stage (telescoping) */}
+      <mesh position={[-0.16, 1.5, 0.53]}>
+        <boxGeometry args={[0.05, 1.8, 0.07]} />
+        <meshLambertMaterial color={dimmed ? "#9ca3af" : "#374151"} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.16, 1.5, 0.53]}>
+        <boxGeometry args={[0.05, 1.8, 0.07]} />
+        <meshLambertMaterial color={dimmed ? "#9ca3af" : "#374151"} transparent={d} opacity={op} />
+      </mesh>
+      {/* Reach mechanism carriage */}
+      <mesh position={[0, 0.38, 0.58]}>
+        <boxGeometry args={[0.46, 0.1, 0.08]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Forks */}
+      <mesh position={[-0.12, 0.1, 1.32]}>
+        <boxGeometry args={[0.07, 0.06, 1.55]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.12, 0.1, 1.32]}>
+        <boxGeometry args={[0.07, 0.06, 1.55]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Single rear drive wheel */}
+      <mesh position={[0, 0.17, -0.58]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.17, 0.17, 0.2, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Outrigger tip wheels */}
+      <mesh position={[-0.34, 0.09, 1.6]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.09, 0.09, 0.08, 12]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.34, 0.09, 1.6]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.09, 0.09, 0.08, 12]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+    </group>
+  );
+
+  // ── Electric Pallet Jack ─────────────────────────────────────────────────────
+  // Flat motor head + long platform forks, tiller steering arm, walk-behind
+  const palletJackGeom = (
+    <group>
+      {/* Motor/battery head — compact block */}
+      <mesh position={[0, 0.26, -0.32]} castShadow>
+        <boxGeometry args={[0.64, 0.52, 0.72]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Control panel on top of head */}
+      <mesh position={[0, 0.54, -0.12]}>
+        <boxGeometry args={[0.28, 0.18, 0.18]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Display/screen bezel */}
+      <mesh position={[0, 0.56, -0.02]}>
+        <boxGeometry args={[0.18, 0.1, 0.02]} />
+        <meshLambertMaterial color={glassC} transparent opacity={dimmed ? 0.1 : 0.7} />
+      </mesh>
+      {/* Tiller arm shaft */}
+      <mesh position={[0, 0.62, -0.7]} rotation={[-0.45, 0, 0]}>
+        <boxGeometry args={[0.04, 0.04, 0.72]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Tiller handle crossbar */}
+      <mesh position={[0, 0.95, -1.05]}>
+        <boxGeometry args={[0.38, 0.04, 0.04]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Handle grips */}
+      <mesh position={[-0.19, 0.92, -1.05]}>
+        <boxGeometry args={[0.04, 0.12, 0.04]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.19, 0.92, -1.05]}>
+        <boxGeometry args={[0.04, 0.12, 0.04]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Fork pallet channels — long and low */}
+      <mesh position={[-0.2, 0.1, 0.75]}>
+        <boxGeometry args={[0.12, 0.15, 1.55]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.2, 0.1, 0.75]}>
+        <boxGeometry args={[0.12, 0.15, 1.55]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Cross brace connecting forks to head */}
+      <mesh position={[0, 0.12, 0.02]}>
+        <boxGeometry args={[0.52, 0.1, 0.08]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Drive wheel under motor head */}
+      <mesh position={[0, 0.13, -0.32]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.13, 0.13, 0.16, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Load wheels at fork tips */}
+      <mesh position={[-0.2, 0.07, 1.5]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.07, 0.07, 0.1, 10]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.2, 0.07, 1.5]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.07, 0.07, 0.1, 10]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+    </group>
+  );
+
+  // ── Order Picker ─────────────────────────────────────────────────────────────
+  // Raised operator cage rides up with forks, outrigger base, tall rear mast
+  const orderPickerGeom = (
+    <group>
+      {/* Lower drive chassis */}
+      <mesh position={[0, 0.22, -0.1]} castShadow>
+        <boxGeometry args={[0.66, 0.44, 1.0]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Operator cage platform floor */}
+      <mesh position={[0, 0.46, 0.32]}>
+        <boxGeometry args={[0.62, 0.06, 0.55]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Cage side rails */}
+      <mesh position={[-0.32, 0.86, 0.32]}>
+        <boxGeometry args={[0.04, 0.8, 0.56]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.32, 0.86, 0.32]}>
+        <boxGeometry args={[0.04, 0.8, 0.56]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Cage front bar */}
+      <mesh position={[0, 0.86, 0.6]}>
+        <boxGeometry args={[0.66, 0.8, 0.035]} />
+        <meshLambertMaterial color={bodyC} transparent opacity={dimmed ? 0.15 : 0.3} />
+      </mesh>
+      {/* Cage top rail */}
+      <mesh position={[0, 1.28, 0.32]}>
+        <boxGeometry args={[0.66, 0.04, 0.56]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Outrigger legs */}
+      <mesh position={[-0.34, 0.1, 0.74]}>
+        <boxGeometry args={[0.08, 0.08, 1.48]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.34, 0.1, 0.74]}>
+        <boxGeometry args={[0.08, 0.08, 1.48]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Rear mast channels */}
+      <mesh position={[-0.22, 1.3, -0.56]}>
+        <boxGeometry args={[0.065, 2.6, 0.09]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.22, 1.3, -0.56]}>
+        <boxGeometry args={[0.065, 2.6, 0.09]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Forks */}
+      <mesh position={[-0.15, 0.1, 1.22]}>
+        <boxGeometry args={[0.07, 0.06, 1.45]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.15, 0.1, 1.22]}>
+        <boxGeometry args={[0.07, 0.06, 1.45]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Drive wheel (rear center) */}
+      <mesh position={[0, 0.15, -0.54]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.15, 0.15, 0.17, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Outrigger tip wheels */}
+      <mesh position={[-0.34, 0.09, 1.44]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.09, 0.09, 0.09, 12]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.34, 0.09, 1.44]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.09, 0.09, 0.09, 12]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+    </group>
+  );
+
+  // ── BPOT (Battery Powered Order Truck) ───────────────────────────────────────
+  // Wide flat ride-on platform truck, stand-on operator deck, low cargo bed
+  const bpotGeom = (
+    <group>
+      {/* Long flat cargo platform deck */}
+      <mesh position={[0, 0.17, 0.42]} castShadow>
+        <boxGeometry args={[0.92, 0.22, 1.55]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Deck surface (non-slip dark grid) */}
+      <mesh position={[0, 0.29, 0.42]}>
+        <boxGeometry args={[0.88, 0.03, 1.5]} />
+        <meshLambertMaterial color={dimmed ? "#9ca3af" : "#1e293b"} transparent={d} opacity={op} />
+      </mesh>
+      {/* Operator stand-on station at rear */}
+      <mesh position={[0, 0.36, -0.62]}>
+        <boxGeometry args={[0.9, 0.5, 0.5]} />
+        <meshLambertMaterial color={bodyC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Operator deck footplate */}
+      <mesh position={[0, 0.62, -0.62]}>
+        <boxGeometry args={[0.88, 0.04, 0.48]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Steering column */}
+      <mesh position={[0, 1.0, -0.46]} rotation={[-0.3, 0, 0]}>
+        <boxGeometry args={[0.045, 0.58, 0.045]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Handlebar */}
+      <mesh position={[0, 1.26, -0.35]}>
+        <boxGeometry args={[0.48, 0.045, 0.045]} />
+        <meshLambertMaterial color={darkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Control display */}
+      <mesh position={[0, 1.1, -0.38]}>
+        <boxGeometry args={[0.16, 0.1, 0.03]} />
+        <meshLambertMaterial color={glassC} transparent opacity={dimmed ? 0.1 : 0.65} />
+      </mesh>
+      {/* Deck guard rails (safety yellow) */}
+      <mesh position={[-0.48, 0.44, 0.42]}>
+        <boxGeometry args={[0.025, 0.3, 1.52]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.48, 0.44, 0.42]}>
+        <boxGeometry args={[0.025, 0.3, 1.52]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Front bumper bar */}
+      <mesh position={[0, 0.26, 1.22]}>
+        <boxGeometry args={[0.92, 0.14, 0.055]} />
+        <meshLambertMaterial color={forkC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Drive wheels (under operator station, large) */}
+      <mesh position={[-0.48, 0.16, -0.62]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.16, 0.16, 0.16, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.48, 0.16, -0.62]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.16, 0.16, 0.16, 14]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      {/* Castor wheels at front corners */}
+      <mesh position={[-0.44, 0.1, 1.14]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.11, 12]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+      <mesh position={[0.44, 0.1, 1.14]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.11, 12]} />
+        <meshLambertMaterial color={wheelC} transparent={d} opacity={op} />
+      </mesh>
+    </group>
+  );
+
+  const geomByType: Record<string, JSX.Element> = {
+    "Forklift":             forkliftGeom,
+    "Reach Truck":          reachTruckGeom,
+    "Electric Pallet Jack": palletJackGeom,
+    "Order Picker":         orderPickerGeom,
+    "BPOT":                 bpotGeom,
+  };
 
   return (
     <group
@@ -251,65 +657,26 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
       onPointerOut={() => { setHovered(false); document.body.style.cursor = "default"; }}
       onClick={(e) => { e.stopPropagation(); onSelect?.(id); }}
     >
-      {/* Body */}
-      <mesh position={[0, 0.35, 0]} castShadow>
-        <boxGeometry args={[0.7, 0.5, 1.1]} />
-        <meshLambertMaterial color={bodyColor} transparent={dimmed} opacity={op} />
-      </mesh>
-      {/* Cabin / overhead guard */}
-      <mesh position={[0, 0.85, -0.2]} castShadow>
-        <boxGeometry args={[0.72, 0.08, 0.72]} />
-        <meshLambertMaterial color={cabinColor} transparent={dimmed} opacity={op} />
-      </mesh>
-      {/* Guard pillars */}
-      {[[-0.32, 0.6, -0.55], [0.32, 0.6, -0.55], [-0.32, 0.6, 0.15], [0.32, 0.6, 0.15]].map((p, i) => (
-        <mesh key={i} position={p as [number, number, number]}>
-          <boxGeometry args={[0.05, 0.5, 0.05]} />
-          <meshLambertMaterial color={cabinColor} transparent={dimmed} opacity={op} />
-        </mesh>
-      ))}
-      {/* Wheels */}
-      {[[-0.38, 0.1, 0.38], [0.38, 0.1, 0.38], [-0.38, 0.1, -0.38], [0.38, 0.1, -0.38]].map((p, i) => (
-        <mesh key={i} position={p as [number, number, number]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.12, 0.12, 0.12, 10]} />
-          <meshLambertMaterial color={dimmed ? "#6b7280" : "#1f2937"} transparent={dimmed} opacity={op} />
-        </mesh>
-      ))}
-      {/* Fork mast */}
-      {isForklift && (
-        <group position={[0, 0, 0.58]}>
-          <mesh position={[0, 0.7, 0]}>
-            <boxGeometry args={[0.6, 1.4, 0.08]} />
-            <meshLambertMaterial color={dimmed ? "#9ca3af" : "#374151"} transparent={dimmed} opacity={op} />
-          </mesh>
-          <mesh position={[-0.22, 0.35, 0.06]}>
-            <boxGeometry args={[0.07, 0.08, 0.5]} />
-            <meshLambertMaterial color={dimmed ? "#9ca3af" : "#f59e0b"} transparent={dimmed} opacity={op} />
-          </mesh>
-          <mesh position={[0.22, 0.35, 0.06]}>
-            <boxGeometry args={[0.07, 0.08, 0.5]} />
-            <meshLambertMaterial color={dimmed ? "#9ca3af" : "#f59e0b"} transparent={dimmed} opacity={op} />
-          </mesh>
-        </group>
-      )}
-      {/* Blinker light — hide when dimmed */}
+      {geomByType[type] ?? forkliftGeom}
+
+      {/* Warning beacon light */}
       {!dimmed && (
-        <mesh position={[0, 0.65, 0.55]}>
-          <sphereGeometry args={[0.05, 6, 6]} />
+        <mesh position={[0, 1.05, 0]}>
+          <sphereGeometry args={[0.065, 8, 8]} />
           <meshBasicMaterial color={selected ? "#f59e0b" : (hovered ? "#fbbf24" : "#d97706")} />
         </mesh>
       )}
 
-      {/* Selection ring — only when not dimmed */}
+      {/* Selection ring */}
       {!dimmed && (selected || hovered) && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-          <ringGeometry args={[0.65, 0.78, 24]} />
+          <ringGeometry args={[0.72, 0.88, 24]} />
           <meshBasicMaterial color={selected ? "#1b59f8" : "#60a5fa"} transparent opacity={0.7} side={THREE.DoubleSide} />
         </mesh>
       )}
 
-      {/* Label — dimmed MHEs get a subtle dark badge */}
-      <Html position={[0, 1.6, 0]} center distanceFactor={18} zIndexRange={[80, 0]}>
+      {/* Label */}
+      <Html position={[0, 2.4, 0]} center distanceFactor={18} zIndexRange={[80, 0]}>
         <div style={{
           background: dimmed
             ? "rgba(60,60,60,0.38)"
