@@ -1193,6 +1193,7 @@ function TaskImpactCard({ position, assignment, onClose }: {
   assignment: TaskAssignment;
   onClose?: () => void;
 }) {
+  const portalRef  = useRef(document.body);
   const m          = assignment.metrics!;
   const isDeviated = assignment.status === "deviated";
   const accent     = isDeviated ? "#ef4444" : "#22c55e";
@@ -1254,7 +1255,7 @@ function TaskImpactCard({ position, assignment, onClose }: {
   };
 
   return (
-    <Html position={[position[0], 6.5, position[2]]} center zIndexRange={[200, 0]}>
+    <Html position={[position[0], 6.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
         background: s.card,
         border: `1px solid ${s.border}`,
@@ -1503,6 +1504,7 @@ function MHEStatusCard({ mheId, pathMid, color, type, onClose }: {
   mheId: string; pathMid: [number,number,number];
   color: string; type: string; onClose: () => void;
 }) {
+  const portalRef = useRef(document.body);
   const s = MHE_STATUS_DATA[mheId];
   if (!s) return null;
 
@@ -1511,7 +1513,7 @@ function MHEStatusCard({ mheId, pathMid, color, type, onClose }: {
   const sl      = s.status.toUpperCase();
 
   return (
-    <Html position={[pathMid[0], 5.5, pathMid[2]]} center zIndexRange={[200, 0]}>
+    <Html position={[pathMid[0], 5.5, pathMid[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
         background: "#0f172a",
         border: `1px solid rgba(255,255,255,0.1)`,
