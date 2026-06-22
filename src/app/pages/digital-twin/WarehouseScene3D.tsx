@@ -248,12 +248,12 @@ function MHEVehicle({ id, label, type, color, position, rotation = 0, onSelect, 
   const op     = dimmed ? 0.28 : 1;
   const d      = dimmed;
 
-  // PBR material helpers
-  const BM = { roughness: 0.72, metalness: 0.06, transparent: d, opacity: op } as const;  // painted body
-  const DM = { roughness: 0.50, metalness: 0.28, transparent: d, opacity: op } as const;  // structural steel
-  const FM = { roughness: 0.40, metalness: 0.35, transparent: d, opacity: op } as const;  // forks / yellow steel
-  const WM = { roughness: 0.94, metalness: 0.00, transparent: d, opacity: op } as const;  // rubber tyre
-  const HM = { roughness: 0.38, metalness: 0.55, transparent: d, opacity: op } as const;  // hub cap
+  // PBR material helpers — always transparent:true so opacity changes work without needsUpdate
+  const BM = { roughness: 0.72, metalness: 0.06, transparent: true, opacity: op };  // painted body
+  const DM = { roughness: 0.50, metalness: 0.28, transparent: true, opacity: op };  // structural steel
+  const FM = { roughness: 0.40, metalness: 0.35, transparent: true, opacity: op };  // forks / yellow steel
+  const WM = { roughness: 0.94, metalness: 0.00, transparent: true, opacity: op };  // rubber tyre
+  const HM = { roughness: 0.38, metalness: 0.55, transparent: true, opacity: op };  // hub cap
 
   // ── Counterbalance Forklift ──────────────────────────────────────────────────
   // Reference-matched: heavy counterweight, big drive tyres, steering wheel, open overhead guard
