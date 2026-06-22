@@ -209,118 +209,13 @@ function AisleMarker({ position, label }: { position: [number, number, number]; 
 
 // ─── Building Structure ───────────────────────────────────────────────────────
 function WarehouseBuilding() {
-  const wallColor = "#d4d8dc";
-  const wallOp = 0.18;
-  const roofColor = "#c8ccd0";
-  const halfW = WH_W / 2;
-  const halfD = WH_D / 2;
-
-  // Dock door positions (front wall, Z = WH_OZ + halfD)
-  const dockDoors = [-10, 0, 10];
-
   return (
     <group position={[WH_OX, 0, WH_OZ]}>
-      {/* Floor slab */}
+      {/* Floor slab only — walls/roof removed to avoid visual overlap with scene content */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]} receiveShadow>
         <planeGeometry args={[WH_W, WH_D]} />
         <meshLambertMaterial color="#b9b9b9" />
       </mesh>
-
-      {/* Back wall */}
-      <mesh position={[0, WH_H / 2, -halfD]}>
-        <boxGeometry args={[WH_W, WH_H, 0.3]} />
-        <meshLambertMaterial color={wallColor} transparent opacity={wallOp} />
-      </mesh>
-      {/* Left wall */}
-      <mesh position={[-halfW, WH_H / 2, 0]}>
-        <boxGeometry args={[0.3, WH_H, WH_D]} />
-        <meshLambertMaterial color={wallColor} transparent opacity={wallOp} />
-      </mesh>
-      {/* Right wall */}
-      <mesh position={[halfW, WH_H / 2, 0]}>
-        <boxGeometry args={[0.3, WH_H, WH_D]} />
-        <meshLambertMaterial color={wallColor} transparent opacity={wallOp} />
-      </mesh>
-      {/* Front wall segments (between dock doors) */}
-      <mesh position={[-halfW + 9, WH_H / 2, halfD]}>
-        <boxGeometry args={[18, WH_H, 0.3]} />
-        <meshLambertMaterial color={wallColor} transparent opacity={wallOp} />
-      </mesh>
-      <mesh position={[halfW - 9, WH_H / 2, halfD]}>
-        <boxGeometry args={[18, WH_H, 0.3]} />
-        <meshLambertMaterial color={wallColor} transparent opacity={wallOp} />
-      </mesh>
-      <mesh position={[0, WH_H - 1.5, halfD]}>
-        <boxGeometry args={[12, 3, 0.3]} />
-        <meshLambertMaterial color={wallColor} transparent opacity={wallOp} />
-      </mesh>
-
-      {/* Roof */}
-      <mesh position={[0, WH_H, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[WH_W, WH_D]} />
-        <meshLambertMaterial color={roofColor} transparent opacity={0.12} side={THREE.DoubleSide} />
-      </mesh>
-
-      {/* Roof ridge beam */}
-      <mesh position={[0, WH_H + 0.15, 0]}>
-        <boxGeometry args={[WH_W + 0.5, 0.3, 0.3]} />
-        <meshLambertMaterial color="#a0a4a8" />
-      </mesh>
-
-      {/* Structural columns */}
-      {[-halfW + 0.15, -halfW + 18, 0, halfW - 18, halfW - 0.15].map((x, i) => (
-        <mesh key={i} position={[x, WH_H / 2, -halfD + 0.15]}>
-          <boxGeometry args={[0.4, WH_H, 0.4]} />
-          <meshLambertMaterial color="#9ca3af" />
-        </mesh>
-      ))}
-      {[-halfW + 0.15, -halfW + 18, 0, halfW - 18, halfW - 0.15].map((x, i) => (
-        <mesh key={i} position={[x, WH_H / 2, halfD - 0.15]}>
-          <boxGeometry args={[0.4, WH_H, 0.4]} />
-          <meshLambertMaterial color="#9ca3af" />
-        </mesh>
-      ))}
-
-      {/* Dock doors */}
-      {dockDoors.map((dx, i) => (
-        <group key={i} position={[dx, 0, halfD]}>
-          {/* Door frame */}
-          <mesh position={[0, 2.5, 0]}>
-            <boxGeometry args={[4.2, 5.2, 0.35]} />
-            <meshLambertMaterial color="#6b7280" />
-          </mesh>
-          {/* Door opening */}
-          <mesh position={[0, 2.4, 0]}>
-            <boxGeometry args={[3.6, 4.8, 0.4]} />
-            <meshLambertMaterial color="#374151" transparent opacity={0.7} />
-          </mesh>
-          {/* Dock bumpers */}
-          <mesh position={[-1.6, 0.3, 0.1]}>
-            <boxGeometry args={[0.2, 0.4, 0.3]} />
-            <meshLambertMaterial color="#ef4444" />
-          </mesh>
-          <mesh position={[1.6, 0.3, 0.1]}>
-            <boxGeometry args={[0.2, 0.4, 0.3]} />
-            <meshLambertMaterial color="#ef4444" />
-          </mesh>
-          <Html position={[0, 5.8, 0]} center distanceFactor={22} zIndexRange={[60, 0]}>
-            <div style={{
-              background: "rgba(55,65,81,0.85)", color: "#fff",
-              borderRadius: 3, padding: "2px 7px",
-              fontSize: 8, fontWeight: 600, fontFamily: "system-ui,sans-serif",
-              pointerEvents: "none", letterSpacing: 0.5,
-            }}>DOCK {i + 1}</div>
-          </Html>
-        </group>
-      ))}
-
-      {/* Ceiling lights strip */}
-      {[-20, -6, 8, 22].map((x, i) => (
-        <mesh key={i} position={[x, WH_H - 0.1, 0]}>
-          <boxGeometry args={[1.2, 0.12, WH_D - 2]} />
-          <meshBasicMaterial color="#fff9e0" transparent opacity={0.55} />
-        </mesh>
-      ))}
     </group>
   );
 }
@@ -1297,8 +1192,9 @@ export function WarehouseScene({
         target={[2, 0, -5]}
         minPolarAngle={Math.PI / 10}
         maxPolarAngle={Math.PI / 2.2}
-        minDistance={10} maxDistance={120}
-        zoomSpeed={0.7} panSpeed={0.6}
+        minDistance={4} maxDistance={120}
+        zoomSpeed={1.4} panSpeed={0.6}
+        zoomToCursor
       />
     </>
   );
