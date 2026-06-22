@@ -1190,8 +1190,8 @@ export function WarehouseScene({
       <OrbitControls
         makeDefault
         target={[2, 0, -5]}
-        minPolarAngle={Math.PI / 10}
-        maxPolarAngle={Math.PI / 2.2}
+        minPolarAngle={0.05}
+        maxPolarAngle={Math.PI / 2.05}
         minDistance={4} maxDistance={120}
         zoomSpeed={1.4} panSpeed={0.6}
         zoomToCursor
