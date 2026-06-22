@@ -1711,8 +1711,9 @@ export function WarehouseScene({
           hotRacksRef={hotRacksRef}
           onNearMiss={onNearMiss}
           dimmed={
-            (focusedMheId !== null && v.id !== focusedMheId) ||
-            (selectedMHE !== null && v.id !== selectedMHE)
+            selectedMHE !== null
+              ? v.id !== selectedMHE
+              : focusedMheId !== null && v.id !== focusedMheId
           }
         />
       ))}
