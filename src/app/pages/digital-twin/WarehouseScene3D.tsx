@@ -1747,7 +1747,7 @@ export function WarehouseScene({
         <TaskPathOverlay
           key={a.id}
           assignment={a}
-          showImpact={selectedMHE === a.mheId}
+          showImpact={false}
           onCloseImpact={() => setSelectedMHE(null)}
         />
       ))}
