@@ -23,7 +23,6 @@ function ToolbarBtn({ icon: Icon, badge, active = false }: {
 export function WarehouseView3D() {
   const [highlightIssues, setHighlightIssues] = useState(true);
   const [singleRackView, setSingleRackView] = useState(false);
-
   const wrapRef = useRef<HTMLDivElement>(null);
   const [canvasHeight, setCanvasHeight] = useState(0);
 
