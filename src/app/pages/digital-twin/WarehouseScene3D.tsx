@@ -1174,192 +1174,172 @@ function StartEndMarker({ position, type }: { position: [number,number,number]; 
   );
 }
 
-// ─── TaskImpactCard ───────────────────────────────────────────────────────────
-function TaskImpactCard({ position, assignment, onClose }: {
-  position: [number,number,number];
-  assignment: TaskAssignment;
-  onClose?: () => void;
+// ─── MHEInfoCard — unified status + task impact card ─────────────────────────
+function MHEInfoCard({ mheId, position, color, type, assignment, onClose }: {
+  mheId: string; position: [number,number,number];
+  color: string; type: string;
+  assignment?: TaskAssignment;
+  onClose: () => void;
 }) {
   const portalRef  = useRef(document.body);
-  const m          = assignment.metrics!;
-  const isDeviated = assignment.status === "deviated";
-  const accent     = isDeviated ? "#ef4444" : "#22c55e";
+  const st         = MHE_STATUS_DATA[mheId];
+  const m          = assignment?.metrics;
+  const isDeviated = assignment?.status === "deviated";
+  const isCompleted= assignment?.status === "completed";
+  const accent     = isDeviated ? "#ef4444" : isCompleted ? "#22c55e" : color;
+  const sc         = st ? STATUS_COLOR[st.status] : color;
+  const batCol     = st ? (st.battery > 60 ? "#22c55e" : st.battery > 30 ? "#f59e0b" : "#ef4444") : "#6b7280";
 
-  const distDelta  = m.actualDist - m.plannedDist;
-  const timeDelta  = +(m.actualTime - m.plannedTime).toFixed(1);
-  const batDelta   = +(m.batteryActual - m.batteryPlanned).toFixed(1);
-  const scoreDelta = m.operatorScore.after - m.operatorScore.before;
+  const distDelta  = m ? m.actualDist - m.plannedDist : 0;
+  const timeDelta  = m ? +(m.actualTime - m.plannedTime).toFixed(1) : 0;
+  const batDelta   = m ? +(m.batteryActual - m.batteryPlanned).toFixed(1) : 0;
+  const scoreDelta = m ? m.operatorScore.after - m.operatorScore.before : 0;
+  const effScore   = m?.efficiencyScore ?? 0;
+  const effColor   = effScore >= 80 ? "#22c55e" : effScore >= 60 ? "#f59e0b" : "#ef4444";
 
-  // Uses CSS variables from the app's design system — auto-responds to dark/light mode
-  const s = {
-    card:     "var(--w-bg)",
-    surface:  "var(--w-bg-muted)",
-    border:   "var(--w-border)",
-    txt1:     "var(--w-text-1)",
-    txt2:     "var(--w-text-2)",
-    txt3:     "var(--w-text-3)",
-    chip:     "var(--w-bg-muted)",
-  } as const;
-
-  const neg = isDeviated ? "var(--w-red-bg)" : "var(--w-green-bg)";
-  const negBd = isDeviated ? "var(--w-red-border)" : "var(--w-green-border)";
-  const negTxt = isDeviated ? "#ef4444" : "#22c55e";
-
-  const effScore = m.efficiencyScore;
-  const effColor = effScore >= 80 ? "#22c55e" : effScore >= 60 ? "#f59e0b" : "#ef4444";
-  const effBg    = effScore >= 80 ? "var(--w-green-bg)" : effScore >= 60 ? "var(--w-amber-bg)" : "var(--w-red-bg)";
-
-  const MetricChip = ({ label, planned, actual, delta, bad }: {
-    label: string; planned: string; actual: string; delta: string; bad: boolean;
-  }) => {
-    const chipAccent = bad ? "#ef4444" : "#22c55e";
-    const chipBg     = bad ? "var(--w-red-bg)" : "var(--w-green-bg)";
-    return (
-      <div style={{
-        flex: 1, background: s.chip, borderRadius: 8,
-        border: `1px solid ${s.border}`, padding: "8px 8px 6px",
-        display: "flex", flexDirection: "column", gap: 4, minWidth: 0,
-      }}>
-        <div style={{ fontSize: 8, fontWeight: 700, color: s.txt3, letterSpacing: 0.6 }}>{label}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 7, color: s.txt3, marginBottom: 1 }}>Plan</div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: s.txt1 }}>{planned}</div>
-          </div>
-          <div style={{ fontSize: 9, color: s.txt3, flexShrink: 0 }}>→</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 7, color: s.txt3, marginBottom: 1 }}>Actual</div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: chipAccent }}>{actual}</div>
-          </div>
-        </div>
-        <div style={{
-          fontSize: 9, fontWeight: 700, textAlign: "center",
-          color: chipAccent, background: chipBg,
-          borderRadius: 4, padding: "2px 4px",
-        }}>{delta}</div>
-      </div>
-    );
-  };
+  const D = "#0f172a"; // card bg
+  const B = "rgba(255,255,255,0.07)"; // divider
 
   return (
     <Html position={[position[0], 3.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
       <div style={{
-        background: s.card,
-        border: `1px solid ${s.border}`,
-        borderTop: `3px solid ${accent}`,
-        borderRadius: 12,
-        width: 280,
-        fontFamily: "'Inter', system-ui, sans-serif",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10)",
-        pointerEvents: "none",
+        background: D, border: `1px solid rgba(255,255,255,0.1)`,
+        borderTop: `3px solid ${color}`, borderRadius: 12,
+        width: 288, fontFamily: "'Inter', system-ui, sans-serif",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.65)",
+        overflow: "hidden", userSelect: "none",
       }}>
 
         {/* ── Header ── */}
-        <div style={{ padding: "10px 12px 9px", display: "flex", alignItems: "flex-start", gap: 8 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" }}>
-              <span style={{
-                background: neg, color: negTxt, border: `1px solid ${negBd}`,
-                fontSize: 8, fontWeight: 700, letterSpacing: 0.5,
-                borderRadius: 4, padding: "2px 7px", whiteSpace: "nowrap",
-              }}>
-                {isDeviated ? "⚠ DEVIATION" : "✓ COMPLETED"}
-              </span>
-              <span style={{ fontSize: 9, color: s.txt2, fontWeight: 500 }}>{assignment.mheId}</span>
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: s.txt1, lineHeight: 1.3 }}>
-              {assignment.taskName}
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              pointerEvents: "auto", cursor: "pointer",
-              background: s.surface, border: `1px solid ${s.border}`,
-              color: s.txt2, borderRadius: 6,
-              width: 24, height: 24, flexShrink: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 14, lineHeight: 1, padding: 0,
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = s.txt1; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = s.txt2; }}
-          >×</button>
+        <div style={{ padding: "10px 12px 8px", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: sc, boxShadow: `0 0 7px ${sc}`, flexShrink: 0 }} />
+          <span style={{ fontSize: 9, fontWeight: 700, color: sc, letterSpacing: 0.8 }}>{st?.status.toUpperCase() ?? "ACTIVE"}</span>
+          <span style={{ fontSize: 9, background: `${color}22`, color, border: `1px solid ${color}44`, borderRadius: 4, padding: "1px 7px", fontWeight: 600 }}>{type}</span>
+          <div style={{ flex: 1 }} />
+          <span style={{ fontSize: 14, fontWeight: 800, color: "#f1f5f9" }}>{mheId}</span>
+          <button onClick={onClose} style={{
+            pointerEvents: "auto", cursor: "pointer",
+            background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
+            color: "#94a3b8", borderRadius: 6, width: 22, height: 22, flexShrink: 0, marginLeft: 6,
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, lineHeight: 1, padding: 0,
+          }}>×</button>
         </div>
 
-        {/* ── Divider ── */}
-        <div style={{ height: 1, background: s.border }} />
-
-        {/* ── Metric chips ── */}
-        <div style={{ padding: "10px 12px", display: "flex", gap: 6 }}>
-          <MetricChip label="DISTANCE" planned={`${m.plannedDist}m`} actual={`${m.actualDist}m`}
-            delta={distDelta > 0 ? `+${distDelta}m` : `${distDelta}m`} bad={distDelta > 0} />
-          <MetricChip label="TIME" planned={`${m.plannedTime}m`} actual={`${m.actualTime}m`}
-            delta={timeDelta > 0 ? `+${timeDelta}m` : `${timeDelta}m`} bad={timeDelta > 0} />
-          <MetricChip label="BATTERY" planned={`${m.batteryPlanned}%`} actual={`${m.batteryActual}%`}
-            delta={batDelta > 0 ? `+${batDelta}%` : `${batDelta}%`} bad={batDelta > 0} />
-        </div>
-
-        {/* ── Divider ── */}
-        <div style={{ height: 1, background: s.border }} />
-
-        {/* ── Efficiency ── */}
-        <div style={{ padding: "9px 12px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <span style={{ fontSize: 9, fontWeight: 600, color: s.txt2, letterSpacing: 0.4 }}>ROUTE EFFICIENCY</span>
-            <span style={{
-              fontSize: 11, fontWeight: 700, color: effColor,
-              background: effBg, borderRadius: 4, padding: "1px 7px",
-            }}>{effScore}%</span>
+        {/* Operator + zone */}
+        {st && (
+          <div style={{ padding: "0 12px 8px", display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 20, height: 20, borderRadius: "50%", background: `${color}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color }}>{st.operator.charAt(0)}</div>
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>{st.operator}</span>
+            <span style={{ fontSize: 9, color: "#475569", marginLeft: "auto" }}>· {st.zone}</span>
           </div>
-          <div style={{ background: s.surface, borderRadius: 4, height: 6 }}>
-            <div style={{
-              height: "100%", borderRadius: 4, width: `${effScore}%`,
-              background: effColor,
-            }} />
+        )}
+
+        <div style={{ height: 1, background: B }} />
+
+        {/* Current task */}
+        {st && (
+          <div style={{ padding: "8px 12px" }}>
+            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.6, marginBottom: 3 }}>CURRENT TASK</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.4 }}>{st.task}</div>
           </div>
-        </div>
+        )}
 
-        {/* ── Divider ── */}
-        <div style={{ height: 1, background: s.border }} />
-
-        {/* ── Operator score ── */}
-        <div style={{ padding: "9px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 600, color: s.txt2, letterSpacing: 0.4, marginBottom: 4 }}>
-              OPERATOR SCORE
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: s.txt2 }}>{m.operatorScore.before}</span>
-              <span style={{ fontSize: 10, color: s.txt3 }}>→</span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: scoreDelta < 0 ? "#ef4444" : "#22c55e" }}>
-                {m.operatorScore.after}
-              </span>
-              <span style={{ fontSize: 9, color: s.txt3 }}>/ 100</span>
-            </div>
-          </div>
-          <div style={{
-            fontSize: 12, fontWeight: 700, padding: "5px 11px", borderRadius: 6,
-            color: scoreDelta < 0 ? "#ef4444" : "#22c55e",
-            background: scoreDelta < 0 ? "var(--w-red-bg)" : "var(--w-green-bg)",
-            border: `1px solid ${scoreDelta < 0 ? "var(--w-red-border)" : "var(--w-green-border)"}`,
-          }}>{scoreDelta > 0 ? "+" : ""}{scoreDelta} pts</div>
-        </div>
-
-        {/* ── Issues ── */}
-        {m.issues.length > 0 && (
+        {/* Live metrics strip */}
+        {st && (
           <>
-            <div style={{ height: 1, background: s.border }} />
-            <div style={{ background: s.surface, borderRadius: "0 0 12px 12px", padding: "8px 12px 10px" }}>
-              <div style={{ fontSize: 8, fontWeight: 700, color: s.txt3, letterSpacing: 0.5, marginBottom: 5 }}>
-                ISSUES
+            <div style={{ height: 1, background: B }} />
+            <div style={{ padding: "8px 12px", display: "flex", gap: 0 }}>
+              <div style={{ flex: 1, paddingRight: 10, borderRight: `1px solid ${B}` }}>
+                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 2 }}>SPEED</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: st.speed > 0 ? "#f1f5f9" : "#6b7280", lineHeight: 1 }}>{st.speed}</span>
+                  <span style={{ fontSize: 9, color: "#475569" }}>km/h</span>
+                </div>
               </div>
-              {m.issues.map((issue, i) => (
-                <div key={i} style={{ display: "flex", gap: 6, marginBottom: i < m.issues.length - 1 ? 4 : 0 }}>
-                  <span style={{ color: negTxt, fontSize: 9, flexShrink: 0, marginTop: 1 }}>•</span>
-                  <span style={{ fontSize: 9, color: s.txt2, lineHeight: 1.5 }}>{issue}</span>
+              <div style={{ flex: 1.2, padding: "0 10px", borderRight: `1px solid ${B}` }}>
+                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 2 }}>BATTERY</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 2, marginBottom: 4 }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: batCol, lineHeight: 1 }}>{st.battery}</span>
+                  <span style={{ fontSize: 9, color: "#475569" }}>%</span>
+                </div>
+                <div style={{ height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 2 }}>
+                  <div style={{ height: "100%", width: `${st.battery}%`, background: batCol, borderRadius: 2 }} />
+                </div>
+              </div>
+              <div style={{ flex: 1, paddingLeft: 10 }}>
+                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 2 }}>LOCATION</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.35 }}>{st.zone}</div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── Task impact section ── */}
+        {m && (
+          <>
+            <div style={{ height: 1, background: B }} />
+            <div style={{ padding: "6px 12px 5px", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 8, fontWeight: 700, color: "#475569", letterSpacing: 0.6, flex: 1 }}>TASK IMPACT</span>
+              <span style={{
+                fontSize: 8, fontWeight: 700, borderRadius: 4, padding: "2px 7px", letterSpacing: 0.4,
+                color: isDeviated ? "#ef4444" : "#22c55e",
+                background: isDeviated ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
+              }}>{isDeviated ? "⚠ DEVIATED" : "✓ COMPLETED"}</span>
+            </div>
+
+            {/* Metric chips */}
+            <div style={{ padding: "0 12px 8px", display: "flex", gap: 5 }}>
+              {[
+                { label: "DIST", planned: `${m.plannedDist}m`, actual: `${m.actualDist}m`, delta: distDelta, unit: "m" },
+                { label: "TIME", planned: `${m.plannedTime}m`, actual: `${m.actualTime}m`, delta: timeDelta, unit: "m" },
+                { label: "BAT",  planned: `${m.batteryPlanned}%`, actual: `${m.batteryActual}%`, delta: batDelta, unit: "%" },
+              ].map(({ label, planned, actual, delta, unit }) => (
+                <div key={label} style={{ flex: 1, background: "rgba(255,255,255,0.04)", borderRadius: 7, border: "1px solid rgba(255,255,255,0.08)", padding: "6px 6px 5px" }}>
+                  <div style={{ fontSize: 7, fontWeight: 700, color: "#475569", letterSpacing: 0.5, marginBottom: 3 }}>{label}</div>
+                  <div style={{ fontSize: 9, color: "#94a3b8", marginBottom: 1 }}>{planned} → <span style={{ color: delta > 0 ? "#ef4444" : "#22c55e", fontWeight: 600 }}>{actual}</span></div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: delta > 0 ? "#ef4444" : "#22c55e" }}>{delta > 0 ? "+" : ""}{delta}{unit}</div>
                 </div>
               ))}
             </div>
+
+            {/* Efficiency + operator score */}
+            <div style={{ padding: "0 12px 8px", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 }}>EFFICIENCY</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ flex: 1, height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2 }}>
+                    <div style={{ height: "100%", width: `${effScore}%`, background: effColor, borderRadius: 2 }} />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: effColor, minWidth: 28 }}>{effScore}%</span>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>OPERATOR</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                  <span style={{ fontSize: 11, color: "#64748b" }}>{m.operatorScore.before}</span>
+                  <span style={{ fontSize: 9, color: "#475569" }}>→</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: scoreDelta < 0 ? "#ef4444" : "#22c55e" }}>{m.operatorScore.after}</span>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, marginLeft: 3, padding: "1px 5px", borderRadius: 4,
+                    color: scoreDelta < 0 ? "#ef4444" : "#22c55e",
+                    background: scoreDelta < 0 ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
+                  }}>{scoreDelta > 0 ? "+" : ""}{scoreDelta}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Issues */}
+            {m.issues.length > 0 && (
+              <div style={{ background: "rgba(255,255,255,0.03)", borderTop: `1px solid ${B}`, padding: "7px 12px 10px" }}>
+                <div style={{ fontSize: 8, fontWeight: 700, color: "#475569", letterSpacing: 0.5, marginBottom: 4 }}>ISSUES</div>
+                {m.issues.map((issue, i) => (
+                  <div key={i} style={{ display: "flex", gap: 5, marginBottom: i < m.issues.length - 1 ? 3 : 0 }}>
+                    <span style={{ color: "#ef4444", fontSize: 9, flexShrink: 0 }}>•</span>
+                    <span style={{ fontSize: 9, color: "#94a3b8", lineHeight: 1.45 }}>{issue}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -1422,11 +1402,6 @@ export function TaskPathOverlay({ assignment, showImpact = false, showPath = fal
       {showPath && <StartEndMarker position={assignment.plannedPath[0]} type="start" />}
       {showPath && <StartEndMarker position={assignment.plannedPath[assignment.plannedPath.length - 1]} type="end" />}
 
-      {/* Impact card — only when MHE is clicked */}
-      {showImpact && assignment.metrics && (isDeviated || isCompleted) && (
-        <TaskImpactCard position={mid} assignment={assignment} onClose={onCloseImpact} />
-      )}
-
       {/* In-progress badge */}
       {inProgress && (
         <Html position={[mid[0], 3.5, mid[2]]} center distanceFactor={20} zIndexRange={[150, 0]}>
@@ -1485,117 +1460,6 @@ const MHE_STATUS_DATA: Record<string, {
 const STATUS_COLOR: Record<MHEStatus, string> = {
   active: "#22c55e", idle: "#6b7280", loading: "#f59e0b", charging: "#3b82f6",
 };
-
-// ─── MHE Status Card ─────────────────────────────────────────────────────────
-function MHEStatusCard({ mheId, pathMid, color, type, onClose }: {
-  mheId: string; pathMid: [number,number,number];
-  color: string; type: string; onClose: () => void;
-}) {
-  const portalRef = useRef(document.body);
-  const s = MHE_STATUS_DATA[mheId];
-  if (!s) return null;
-
-  const sc      = STATUS_COLOR[s.status];
-  const batCol  = s.battery > 60 ? "#22c55e" : s.battery > 30 ? "#f59e0b" : "#ef4444";
-  const sl      = s.status.toUpperCase();
-
-  return (
-    <Html position={[pathMid[0], 3.2, pathMid[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
-      <div style={{
-        background: "#0f172a",
-        border: `1px solid rgba(255,255,255,0.1)`,
-        borderTop: `3px solid ${color}`,
-        borderRadius: 12,
-        width: 272,
-        fontFamily: "'Inter', system-ui, sans-serif",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.65)",
-        overflow: "hidden",
-        userSelect: "none",
-      }}>
-
-        {/* ── Header ── */}
-        <div style={{ padding: "10px 12px 9px", display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-            background: sc, boxShadow: `0 0 8px ${sc}`,
-          }} />
-          <span style={{ fontSize: 9, fontWeight: 700, color: sc, letterSpacing: 0.8 }}>{sl}</span>
-          <span style={{
-            fontSize: 9, background: `${color}22`, color, border: `1px solid ${color}44`,
-            borderRadius: 4, padding: "1px 7px", fontWeight: 600, marginLeft: 2,
-          }}>{type}</span>
-          <div style={{ flex: 1 }} />
-          <span style={{ fontSize: 14, fontWeight: 800, color: "#f1f5f9", letterSpacing: 0.3 }}>{mheId}</span>
-          <button
-            onClick={onClose}
-            style={{
-              pointerEvents: "auto", cursor: "pointer",
-              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
-              color: "#94a3b8", borderRadius: 6,
-              width: 22, height: 22, flexShrink: 0, marginLeft: 6,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 14, lineHeight: 1, padding: 0,
-            }}
-          >×</button>
-        </div>
-
-        {/* Operator row */}
-        <div style={{ padding: "0 12px 9px", display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{
-            width: 20, height: 20, borderRadius: "50%",
-            background: `${color}30`, display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 9, fontWeight: 700, color,
-          }}>{s.operator.charAt(0)}</div>
-          <span style={{ fontSize: 11, color: "#94a3b8" }}>{s.operator}</span>
-          <span style={{ fontSize: 9, color: "#475569", marginLeft: "auto" }}>· {s.zone}</span>
-        </div>
-
-        <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
-
-        {/* Task */}
-        <div style={{ padding: "9px 12px" }}>
-          <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.6, marginBottom: 4 }}>CURRENT TASK</div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.4 }}>{s.task}</div>
-        </div>
-
-        <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
-
-        {/* Metrics strip */}
-        <div style={{ padding: "9px 12px", display: "flex", gap: 0 }}>
-
-          {/* Speed */}
-          <div style={{ flex: 1, paddingRight: 10, borderRight: "1px solid rgba(255,255,255,0.07)" }}>
-            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>SPEED</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: s.speed > 0 ? "#f1f5f9" : "#6b7280", lineHeight: 1 }}>{s.speed}</span>
-              <span style={{ fontSize: 9, color: "#475569" }}>km/h</span>
-            </div>
-          </div>
-
-          {/* Battery */}
-          <div style={{ flex: 1.2, padding: "0 10px", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
-            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>BATTERY</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 5 }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: batCol, lineHeight: 1 }}>{s.battery}</span>
-              <span style={{ fontSize: 9, color: "#475569" }}>%</span>
-            </div>
-            <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2 }}>
-              <div style={{ height: "100%", width: `${s.battery}%`, background: batCol, borderRadius: 2, transition: "width 0.4s" }} />
-            </div>
-          </div>
-
-          {/* Zone */}
-          <div style={{ flex: 1, paddingLeft: 10 }}>
-            <div style={{ fontSize: 8, color: "#475569", fontWeight: 700, letterSpacing: 0.5, marginBottom: 3 }}>LOCATION</div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: "#e2e8f0", lineHeight: 1.35 }}>{s.zone}</div>
-          </div>
-
-        </div>
-
-      </div>
-    </Html>
-  );
-}
 
 // ─── CameraAnimator ──────────────────────────────────────────────────────────
 // Smoothly flies the camera to center on a target world position when it changes.
@@ -1748,31 +1612,25 @@ export function WarehouseScene({
         />
       ))}
 
-      {/* ── Selected MHE: route highlight only ── */}
+      {/* ── Selected MHE: route highlight + unified info card ── */}
       {selectedMHE && (() => {
         const v = MHE_VEHICLES.find(mv => mv.id === selectedMHE);
         if (!v) return null;
+        const assignment = taskAssignments.find(a => a.mheId === selectedMHE);
+        const mid = v.path[Math.floor(v.path.length / 2)];
         return (
           <group>
             <PathLine points={v.path} color={v.color} opacity={0.9} />
             <PathArrows points={v.path} color={v.color} />
+            <MHEInfoCard
+              mheId={v.id}
+              position={[mid[0], 0, mid[2]]}
+              color={v.color}
+              type={v.type}
+              assignment={assignment}
+              onClose={() => setSelectedMHE(null)}
+            />
           </group>
-        );
-      })()}
-
-      {/* ── Hovered MHE: status card ── */}
-      {hoveredMHE && (() => {
-        const v = MHE_VEHICLES.find(mv => mv.id === hoveredMHE);
-        if (!v) return null;
-        const mid = v.path[Math.floor(v.path.length / 2)];
-        return (
-          <MHEStatusCard
-            mheId={v.id}
-            pathMid={mid}
-            color={v.color}
-            type={v.type}
-            onClose={() => setHoveredMHE(null)}
-          />
         );
       })()}
 
@@ -1792,8 +1650,6 @@ export function WarehouseScene({
           key={a.id}
           assignment={a}
           showPath={selectedMHE === a.mheId}
-          showImpact={selectedMHE === a.mheId}
-          onCloseImpact={() => setSelectedMHE(null)}
         />
       ))}
 
