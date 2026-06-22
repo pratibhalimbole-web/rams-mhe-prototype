@@ -1706,7 +1706,10 @@ export function WarehouseScene({
           onDoubleSelect={handleDoubleSelect}
           hotRacksRef={hotRacksRef}
           onNearMiss={onNearMiss}
-          dimmed={focusedMheId !== null && v.id !== focusedMheId}
+          dimmed={
+            (focusedMheId !== null && v.id !== focusedMheId) ||
+            (selectedMHE !== null && v.id !== selectedMHE)
+          }
         />
       ))}
 
