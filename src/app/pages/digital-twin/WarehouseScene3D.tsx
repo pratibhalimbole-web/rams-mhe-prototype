@@ -26,11 +26,12 @@ const WH_OZ = -8;  // Z offset center
 
 // ─── RackSection ─────────────────────────────────────────────────────────────
 export function RackSection({
-  rows, bays, position, label, sublabel,
+  rows, bays, position, label, sublabel, rowLetter = "A", labelStart = 1,
 }: {
   rows: number; bays: number;
   position: [number, number, number];
   label: string; sublabel: string;
+  rowLetter?: string; labelStart?: number;
 }) {
   const postRef  = useRef<THREE.InstancedMesh>(null);
   const beamXRef = useRef<THREE.InstancedMesh>(null);
@@ -91,21 +92,25 @@ export function RackSection({
     }
   }, [bays, rows, totalW, totalD]);
 
-  // Bay number labels every 3 bays
+  // Bay labels every 3 bays — floor-level at back face, sticky (no distanceFactor)
   const bayLabels = [];
   for (let b = 0; b < bays; b += 3) {
+    const n = Math.floor(b / 3) + labelStart;
     bayLabels.push(
-      <Html key={b} position={[b * BAY_W + BAY_W * 1.5, 0.25, -0.4]} center distanceFactor={14} zIndexRange={[30, 0]}>
+      <Html key={b} position={[b * BAY_W + BAY_W * 1.5, 0.08, -0.52]} center zIndexRange={[30, 0]}>
         <div style={{
-          fontSize: 7, color: "#888", fontFamily: "system-ui,sans-serif",
-          pointerEvents: "none", fontWeight: 500,
-        }}>B{String(b + 1).padStart(2, "0")}</div>
+          fontSize: 9, color: "rgba(255,255,255,0.82)", fontFamily: "system-ui,sans-serif",
+          pointerEvents: "none", fontWeight: 600, letterSpacing: "0.03em",
+          textShadow: "0 1px 4px rgba(0,0,0,0.8)",
+          whiteSpace: "nowrap",
+        }}>{rowLetter}{n}'</div>
       </Html>
     );
   }
 
   return (
     <group position={position}>
+
       <instancedMesh ref={postRef} args={[null as any, null as any, postCount]} castShadow>
         <boxGeometry args={[POST_DIM, RACK_H, POST_DIM]} />
         <meshLambertMaterial color="#1e3a6e" />
@@ -118,15 +123,14 @@ export function RackSection({
         <boxGeometry args={[0.065, BEAM_H, totalD]} />
         <meshLambertMaterial color="#C4622D" />
       </instancedMesh>
-      <Html position={[totalW / 2, RACK_H + 1.0, totalD / 2]} center distanceFactor={22} zIndexRange={[100, 0]}>
+      <Html position={[totalW / 2, 0.08, -1.2]} center zIndexRange={[100, 0]}>
         <div style={{
-          background: "white", border: "1px solid #d1d5db", borderRadius: 4,
-          padding: "3px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
+          fontSize: 10, fontWeight: 700, whiteSpace: "nowrap",
           pointerEvents: "none", fontFamily: "system-ui,sans-serif",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+          color: "rgba(255,255,255,0.65)", letterSpacing: "0.1em",
+          textShadow: "0 1px 4px rgba(0,0,0,0.9)",
         }}>
-          {label}{" "}
-          <span style={{ fontSize: 9, fontWeight: 400, color: "#888" }}>· {sublabel}</span>
+          {label}
         </div>
       </Html>
       {bayLabels}
@@ -747,8 +751,11 @@ function AnimatedMHE(props: MHEVehicleProps & {
   path: PathPoint[]; speed?: number;
   onNearMiss?: (e: NearMissEvent) => void;
   hotRacksRef?: React.MutableRefObject<Set<string>>;
+  infoCardNode?: React.ReactNode;
+  mheStateRef?: React.MutableRefObject<Map<string, MHELiveState>>;
+  humanPositions?: [number,number,number][];
 }) {
-  const { path, speed = 1.2, onNearMiss, hotRacksRef, ...vehicleProps } = props;
+  const { path, speed = 1.2, onNearMiss, hotRacksRef, infoCardNode, mheStateRef, humanPositions, ...vehicleProps } = props;
   const groupRef = useRef<THREE.Group>(null);
   const tRef = useRef(Math.random()); // stagger start
   const trailRef = useRef<THREE.Points>(null);
@@ -756,7 +763,16 @@ function AnimatedMHE(props: MHEVehicleProps & {
   const trailIdx = useRef(0);
   const lastAlertAt  = useRef<Record<string, number>>({});
   const clearTimers  = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const ALERT_COOLDOWN = 6000; // ms between alerts for the same mhe+rack pair
+  const ALERT_COOLDOWN = 6000;
+
+  // Proximity zone material refs
+  const dangerFillRef = useRef<THREE.MeshBasicMaterial>(null);
+  const warnFillRef   = useRef<THREE.MeshBasicMaterial>(null);
+  const safeFillRef   = useRef<THREE.MeshBasicMaterial>(null);
+  const dangerRingRef = useRef<THREE.MeshBasicMaterial>(null);
+  const warnRingRef   = useRef<THREE.MeshBasicMaterial>(null);
+  const safeRingRef   = useRef<THREE.MeshBasicMaterial>(null);
+  const zonePulseT    = useRef(0);
 
   const totalLen = useMemo(() => {
     let l = 0;
@@ -793,6 +809,8 @@ function AnimatedMHE(props: MHEVehicleProps & {
       groupRef.current.position.set(pos.x, 0, pos.z);
       groupRef.current.rotation.y = angle;
     }
+    // Publish live state for follow-cam
+    mheStateRef?.current.set(vehicleProps.id, { x: pos.x, z: pos.z, angle });
     // Update trail
     const ti = (trailIdx.current % 30) * 3;
     trailPositions.current[ti]     = pos.x;
@@ -825,12 +843,75 @@ function AnimatedMHE(props: MHEVehicleProps & {
         });
       }
     }
+
+    // ── Human proximity detection ──────────────────────────────────────────
+    if (humanPositions?.length) {
+      let minDist = Infinity;
+      for (const hp of humanPositions) {
+        const dx = pos.x - hp[0], dz = pos.z - hp[2];
+        minDist = Math.min(minDist, Math.sqrt(dx * dx + dz * dz));
+      }
+      zonePulseT.current += delta;
+      const pulse = Math.sin(zonePulseT.current * 6) * 0.5 + 0.5; // 0–1
+
+      const inDanger  = minDist < ZONE_DANGER;
+      const inWarning = minDist < ZONE_WARNING;
+      const inSafe    = minDist < ZONE_SAFE;
+
+      if (dangerFillRef.current)
+        dangerFillRef.current.opacity = inDanger  ? 0.18 + pulse * 0.14 : 0.04;
+      if (dangerRingRef.current)
+        dangerRingRef.current.opacity = inDanger  ? 0.9  : 0.25;
+      if (warnFillRef.current)
+        warnFillRef.current.opacity   = (!inDanger && inWarning) ? 0.10 + pulse * 0.08 : 0.03;
+      if (warnRingRef.current)
+        warnRingRef.current.opacity   = inWarning ? (inDanger ? 0.2 : 0.75) : 0.18;
+      if (safeFillRef.current)
+        safeFillRef.current.opacity   = (!inWarning && inSafe)  ? 0.06 + pulse * 0.04 : 0.02;
+      if (safeRingRef.current)
+        safeRingRef.current.opacity   = inSafe    ? (inWarning ? 0.12 : 0.55) : 0.10;
+    }
   });
 
   return (
     <>
       <group ref={groupRef}>
         <MHEVehicle {...vehicleProps} position={[0, 0, 0]} rotation={0} />
+        {infoCardNode}
+
+        {/* ── Proximity detection zones (always shown, intensity reacts to humans) ── */}
+        {/* Danger fill */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
+          <circleGeometry args={[ZONE_DANGER, 52]} />
+          <meshBasicMaterial ref={dangerFillRef} color="#ef4444" transparent opacity={0.04} depthWrite={false} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+        </mesh>
+        {/* Danger ring border */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.022, 0]}>
+          <ringGeometry args={[ZONE_DANGER - 0.13, ZONE_DANGER, 52]} />
+          <meshBasicMaterial ref={dangerRingRef} color="#ef4444" transparent opacity={0.25} depthWrite={false} />
+        </mesh>
+
+        {/* Warning fill (annular) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
+          <ringGeometry args={[ZONE_DANGER, ZONE_WARNING, 52]} />
+          <meshBasicMaterial ref={warnFillRef} color="#f59e0b" transparent opacity={0.03} depthWrite={false} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+        </mesh>
+        {/* Warning ring border */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.022, 0]}>
+          <ringGeometry args={[ZONE_WARNING - 0.13, ZONE_WARNING, 52]} />
+          <meshBasicMaterial ref={warnRingRef} color="#f59e0b" transparent opacity={0.18} depthWrite={false} />
+        </mesh>
+
+        {/* Safe fill (annular) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
+          <ringGeometry args={[ZONE_WARNING, ZONE_SAFE, 52]} />
+          <meshBasicMaterial ref={safeFillRef} color="#22c55e" transparent opacity={0.02} depthWrite={false} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
+        </mesh>
+        {/* Safe ring border */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.022, 0]}>
+          <ringGeometry args={[ZONE_SAFE - 0.13, ZONE_SAFE, 52]} />
+          <meshBasicMaterial ref={safeRingRef} color="#22c55e" transparent opacity={0.10} depthWrite={false} />
+        </mesh>
       </group>
       {/* Trail — hidden when dimmed */}
       {!props.dimmed && (
@@ -996,6 +1077,19 @@ export type NearMissEvent = {
   timestamp: number;
 };
 
+// ── Human proximity zones ─────────────────────────────────────────────────────
+const ZONE_DANGER  = 2.5; // red   — imminent collision risk
+const ZONE_WARNING = 5.0; // amber — caution, slow down
+const ZONE_SAFE    = 8.5; // green — awareness zone
+
+const HUMAN_SPOTS: { id: string; name: string; pos: [number,number,number] }[] = [
+  { id: "w1", name: "Worker A", pos: [-9,  0, -4]  },
+  { id: "w2", name: "Worker B", pos: [ 6,  0,  5]  },
+  { id: "w3", name: "Worker C", pos: [13,  0, -9]  },
+  { id: "w4", name: "Worker D", pos: [-2,  0,  8]  },
+  { id: "w5", name: "Worker E", pos: [22,  0,  2]  },
+];
+
 function isInSafetyZone(x: number, z: number): typeof RACK_BOUNDS[number] | null {
   for (const r of RACK_BOUNDS) {
     if (x >= r.xMin - SAFETY_MARGIN && x <= r.xMax + SAFETY_MARGIN &&
@@ -1012,60 +1106,206 @@ function RackSafetyZone({
   rack: typeof RACK_BOUNDS[number];
   hotRacksRef: React.MutableRefObject<Set<string>>;
 }) {
-  // Only border lines — no fill plane so the floor stays clean
-  const bordRefs = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
+  const matRefs = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
 
   useFrame(() => {
-    const hot = hotRacksRef.current.has(rack.id);
+    const hot   = hotRacksRef.current.has(rack.id);
     const color = hot ? "#ef4444" : "#f59e0b";
-    bordRefs.current.forEach(m => {
+    matRefs.current.forEach((m, i) => {
       if (!m) return;
       m.color.set(color);
-      m.opacity = hot ? 1.0 : 0.55;
+      // index 0 is fill, 1-4 are border bars
+      m.opacity = i === 0 ? (hot ? 0.18 : 0.06) : (hot ? 1.0 : 0.7);
     });
   });
 
-  const cx = (rack.xMin + rack.xMax) / 2;
-  const cz = (rack.zMin + rack.zMax) / 2;
-  const sw = (rack.xMax - rack.xMin) + SAFETY_MARGIN * 2;
-  const sd = (rack.zMax - rack.zMin) + SAFETY_MARGIN * 2;
-  // Dashed border: alternate solid/gap segments along each edge
-  const T = 0.10, H = 0.06;
+  const x0 = rack.xMin - SAFETY_MARGIN;
+  const x1 = rack.xMax + SAFETY_MARGIN;
+  const z0 = rack.zMin - SAFETY_MARGIN;
+  const z1 = rack.zMax + SAFETY_MARGIN;
+  const cx = (x0 + x1) / 2;
+  const cz = (z0 + z1) / 2;
+  const w  = x1 - x0;
+  const d  = z1 - z0;
 
-  const borders = [
-    { pos: [cx, H/2, rack.zMin - SAFETY_MARGIN] as [number,number,number], size: [sw, H, T] as [number,number,number] },
-    { pos: [cx, H/2, rack.zMax + SAFETY_MARGIN] as [number,number,number], size: [sw, H, T] as [number,number,number] },
-    { pos: [rack.xMin - SAFETY_MARGIN, H/2, cz]  as [number,number,number], size: [T, H, sd] as [number,number,number] },
-    { pos: [rack.xMax + SAFETY_MARGIN, H/2, cz]  as [number,number,number], size: [T, H, sd] as [number,number,number] },
+  // Thin raised bars for the 4 edges — no z-fighting, no aliasing
+  const T = 0.07; // bar thickness
+  const H = 0.055; // bar height above floor
+  const bars: { pos: [number,number,number]; size: [number,number,number] }[] = [
+    { pos: [cx, H / 2, z0], size: [w, H, T] }, // front
+    { pos: [cx, H / 2, z1], size: [w, H, T] }, // back
+    { pos: [x0, H / 2, cz], size: [T, H, d] }, // left
+    { pos: [x1, H / 2, cz], size: [T, H, d] }, // right
   ];
 
   return (
     <group>
-      {borders.map((b, i) => (
+      {/* Subtle fill — polygonOffset keeps it above floor without z-fight */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, 0, cz]}>
+        <planeGeometry args={[w, d]} />
+        <meshBasicMaterial
+          ref={el => { matRefs.current[0] = el; }}
+          color="#f59e0b" transparent opacity={0.06}
+          depthWrite={false} polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2}
+        />
+      </mesh>
+
+      {/* Solid border bars */}
+      {bars.map((b, i) => (
         <mesh key={i} position={b.pos}>
           <boxGeometry args={b.size} />
-          <meshBasicMaterial ref={el => { bordRefs.current[i] = el; }} color="#f59e0b" transparent opacity={0.55} />
+          <meshBasicMaterial
+            ref={el => { matRefs.current[i + 1] = el; }}
+            color="#f59e0b" transparent opacity={0.7}
+          />
         </mesh>
       ))}
-      {/* Corner diamonds */}
-      {([
-        [rack.xMin - SAFETY_MARGIN, rack.zMin - SAFETY_MARGIN],
-        [rack.xMax + SAFETY_MARGIN, rack.zMin - SAFETY_MARGIN],
-        [rack.xMax + SAFETY_MARGIN, rack.zMax + SAFETY_MARGIN],
-        [rack.xMin - SAFETY_MARGIN, rack.zMax + SAFETY_MARGIN],
-      ] as [number,number][]).map(([bx, bz], i) => (
-        <mesh key={`c${i}`} position={[bx, 0.1, bz]} rotation={[0, Math.PI/4, 0]}>
-          <boxGeometry args={[0.28, 0.08, 0.28]} />
-          <meshBasicMaterial color="#f59e0b" transparent opacity={0.7} />
-        </mesh>
-      ))}
-      <Html position={[cx, 0.5, rack.zMin - SAFETY_MARGIN - 0.5]} center distanceFactor={22} zIndexRange={[45, 0]}>
-        <div style={{
-          background: "rgba(245,158,11,0.85)", color: "#fff",
-          borderRadius: 3, padding: "1px 7px",
-          fontSize: 7, fontWeight: 700, fontFamily: "system-ui,sans-serif",
-          pointerEvents: "none", letterSpacing: 0.5, whiteSpace: "nowrap",
-        }}>⚠ {rack.label.toUpperCase()} SAFETY ZONE</div>
+    </group>
+  );
+}
+
+// ─── Human Figure (warehouse worker, walks slowly, detection-aware) ──────────
+const WALK_RADIUS = 3.5; // units from base before turning back
+const WALK_SPEED  = 0.45; // units/second
+
+function HumanFigure({
+  pos, name, mheStateRef,
+}: {
+  pos: [number,number,number];
+  name: string;
+  mheStateRef: React.MutableRefObject<Map<string, MHELiveState>>;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+
+  // Walking state — all in refs so useFrame can mutate without re-renders
+  const walkX      = useRef(pos[0]);
+  const walkZ      = useRef(pos[2]);
+  const targetX    = useRef(pos[0]);
+  const targetZ    = useRef(pos[2]);
+  const turnTimer  = useRef(Math.random() * 3); // stagger first turn
+  const walkFacing = useRef(0);
+  const stepDist   = useRef(Math.random() * Math.PI * 2); // bob phase offset
+
+  // Material refs for detection colours
+  const bodyRef  = useRef<THREE.MeshLambertMaterial>(null);
+  const hatRef   = useRef<THREE.MeshLambertMaterial>(null);
+  const dotRef   = useRef<THREE.MeshBasicMaterial>(null);
+  const ringRef  = useRef<THREE.Mesh>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
+  const pulseT   = useRef(0);
+
+  const pickNewTarget = () => {
+    const angle = Math.random() * Math.PI * 2;
+    const r     = 1.5 + Math.random() * (WALK_RADIUS - 1.5);
+    targetX.current = pos[0] + Math.cos(angle) * r;
+    targetZ.current = pos[2] + Math.sin(angle) * r;
+    turnTimer.current = 4 + Math.random() * 5; // 4-9 s per leg
+  };
+
+  useFrame((_, delta) => {
+    // ── Walk ───────────────────────────────────────────────────────────────
+    turnTimer.current -= delta;
+    const dx   = targetX.current - walkX.current;
+    const dz   = targetZ.current - walkZ.current;
+    const dist = Math.sqrt(dx * dx + dz * dz);
+
+    if (dist < 0.12 || turnTimer.current <= 0) pickNewTarget();
+
+    if (dist > 0.01) {
+      const step = Math.min(WALK_SPEED * delta, dist);
+      walkX.current    += (dx / dist) * step;
+      walkZ.current    += (dz / dist) * step;
+      walkFacing.current = Math.atan2(dx, dz);
+      stepDist.current  += step;
+    }
+
+    const bobY = Math.abs(Math.sin(stepDist.current * 5)) * 0.06;
+
+    if (groupRef.current) {
+      groupRef.current.position.set(walkX.current, bobY, walkZ.current);
+      groupRef.current.rotation.y = walkFacing.current;
+    }
+
+    // ── Detection ──────────────────────────────────────────────────────────
+    let minDist = Infinity;
+    for (const s of mheStateRef.current.values()) {
+      const ex = s.x - walkX.current, ez = s.z - walkZ.current;
+      minDist = Math.min(minDist, Math.sqrt(ex * ex + ez * ez));
+    }
+    pulseT.current += delta;
+    const pulse = Math.sin(pulseT.current * 7) * 0.5 + 0.5;
+
+    const inDanger  = minDist < ZONE_DANGER;
+    const inWarning = minDist < ZONE_WARNING;
+
+    const bodyColor = inDanger ? "#ef4444" : inWarning ? "#f59e0b" : "#0ea5e9";
+    const dotColor  = inDanger ? "#ef4444" : inWarning ? "#f59e0b" : "#22c55e";
+
+    bodyRef.current?.color.set(bodyColor);
+    hatRef.current?.color.set(inDanger ? "#ef4444" : "#f59e0b");
+    dotRef.current?.color.set(dotColor);
+
+    if (ringRef.current) {
+      const mat = ringRef.current.material as THREE.MeshBasicMaterial;
+      if (inDanger || inWarning) {
+        const s = 1 + pulse * 0.45;
+        ringRef.current.scale.set(s, s, s);
+        mat.color.set(dotColor);
+        mat.opacity = inDanger ? 0.55 + pulse * 0.25 : 0.35 + pulse * 0.15;
+      } else {
+        mat.opacity = 0;
+      }
+    }
+
+    if (labelRef.current) {
+      labelRef.current.style.background = inDanger
+        ? "rgba(239,68,68,0.18)" : inWarning
+        ? "rgba(245,158,11,0.18)" : "rgba(14,165,233,0.10)";
+      labelRef.current.style.color      = inDanger ? "#ef4444" : inWarning ? "#f59e0b" : "#0ea5e9";
+      labelRef.current.style.borderColor = inDanger ? "rgba(239,68,68,0.5)" : inWarning ? "rgba(245,158,11,0.5)" : "rgba(14,165,233,0.35)";
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* Body */}
+      <mesh position={[0, 0.9, 0]}>
+        <cylinderGeometry args={[0.12, 0.15, 0.7, 8]} />
+        <meshLambertMaterial ref={bodyRef} color="#0ea5e9" />
+      </mesh>
+      {/* Head */}
+      <mesh position={[0, 1.4, 0]}>
+        <sphereGeometry args={[0.16, 10, 10]} />
+        <meshLambertMaterial color="#fde68a" />
+      </mesh>
+      {/* Hard hat */}
+      <mesh position={[0, 1.54, 0]}>
+        <cylinderGeometry args={[0.18, 0.14, 0.1, 10]} />
+        <meshLambertMaterial ref={hatRef} color="#f59e0b" />
+      </mesh>
+      {/* Status dot */}
+      <mesh position={[0.18, 1.45, 0]}>
+        <sphereGeometry args={[0.05, 6, 6]} />
+        <meshBasicMaterial ref={dotRef} color="#22c55e" />
+      </mesh>
+      {/* Pulse ring on floor */}
+      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+        <ringGeometry args={[0.22, 0.42, 20]} />
+        <meshBasicMaterial color="#ef4444" transparent opacity={0} depthWrite={false} />
+      </mesh>
+      {/* Shadow disc */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <circleGeometry args={[0.22, 16]} />
+        <meshBasicMaterial color="#000" transparent opacity={0.1} depthWrite={false} />
+      </mesh>
+      <Html position={[0, 1.95, 0]} center distanceFactor={16} zIndexRange={[75, 0]}>
+        <div ref={labelRef} style={{
+          background: "rgba(14,165,233,0.10)", color: "#0ea5e9",
+          border: "1px solid rgba(14,165,233,0.35)",
+          borderRadius: 4, padding: "2px 7px",
+          fontSize: 8, fontWeight: 700, fontFamily: "system-ui,sans-serif",
+          pointerEvents: "none", whiteSpace: "nowrap",
+        }}>{name}</div>
       </Html>
     </group>
   );
@@ -1176,11 +1416,10 @@ function StartEndMarker({ position, type }: { position: [number,number,number]; 
 }
 
 // ─── MHEInfoCard — unified status + task impact card (pure React, no R3F) ─────
-function MHEInfoCard({ mheId, position, color, type, assignment, onClose }: {
+function MHEInfoCard({ mheId, position, color, type, assignment }: {
   mheId: string; position: [number,number,number];
   color: string; type: string;
   assignment?: TaskAssignment;
-  onClose: () => void;
 }) {
   const st         = MHE_STATUS_DATA[mheId];
   const m          = assignment?.metrics;
@@ -1230,7 +1469,11 @@ function MHEInfoCard({ mheId, position, color, type, assignment, onClose }: {
   };
 
   const card = (
-    <div style={{ width: 280, fontFamily: F, borderRadius: 12, overflow: "hidden", boxShadow: C.shadow, userSelect: "none", background: C.bg, border: `1px solid ${C.border}` }}>
+    <div
+      style={{ width: 280, fontFamily: F, borderRadius: 12, overflow: "hidden", boxShadow: C.shadow, userSelect: "none", background: C.bg, border: `1px solid ${C.border}` }}
+      onPointerDown={e => e.stopPropagation()}
+      onClick={e => e.stopPropagation()}
+    >
 
       {/* ── Header ── */}
       <div style={{ padding: "12px 14px 10px", borderBottom: `1px solid ${C.border}` }}>
@@ -1243,7 +1486,6 @@ function MHEInfoCard({ mheId, position, color, type, assignment, onClose }: {
           </div>
           <span style={{ fontSize: 9, fontWeight: 600, color: C.t3, background: C.bgMuted, border: `1px solid ${C.tile}`, borderRadius: 4, padding: "2px 8px", letterSpacing: 0.3 }}>{type}</span>
           <div style={{ flex: 1 }} />
-          <button onClick={onClose} style={{ pointerEvents: "auto", cursor: "pointer", background: C.bgMuted, border: `1px solid ${C.tile}`, color: C.t4, borderRadius: 6, width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, padding: 0 }}>×</button>
         </div>
 
         {/* row 2: MHE ID + zone inline */}
@@ -1356,7 +1598,7 @@ function MHEInfoCard({ mheId, position, color, type, assignment, onClose }: {
   );
 
   return (
-    <Html position={[position[0], 3.5, position[2]]} center zIndexRange={[200, 0]} portal={portalRef}>
+    <Html position={[0, 3.5, 0]} center zIndexRange={[200, 0]} portal={portalRef}>
       {card}
     </Html>
   );
@@ -1476,9 +1718,123 @@ const STATUS_COLOR: Record<MHEStatus, string> = {
   active: "#22c55e", idle: "#6b7280", loading: "#f59e0b", charging: "#3b82f6",
 };
 
+// ─── Shared MHE live-state ref ────────────────────────────────────────────────
+export type MHELiveState = { x: number; z: number; angle: number };
+
+// ─── ViewModeController ──────────────────────────────────────────────────────
+export type ViewMode = "2d" | "3d" | "avatar" | "focus";
+
+const VIEW_PRESETS: Record<Exclude<ViewMode,"avatar">, { cam: [number,number,number]; tgt: [number,number,number] }> = {
+  "3d":    { cam: [55, 42, 45],  tgt: [2, 0, -5] },
+  "2d":    { cam: [2, 100, -5],  tgt: [2, 0, -5] },
+  "focus": { cam: [2, 28, 18],   tgt: [2, 0, -5] },
+};
+
+function ViewModeController({
+  mode,
+  mheStateRef,
+  followMheId,
+}: {
+  mode: ViewMode;
+  mheStateRef: React.MutableRefObject<Map<string, MHELiveState>>;
+  followMheId: string | null;
+}) {
+  const { camera, controls } = useThree();
+
+  // Refs so useFrame always reads latest values — no stale closures
+  const modeRef    = useRef(mode);
+  const followRef  = useRef(followMheId);
+  useEffect(() => { modeRef.current   = mode; },        [mode]);
+  useEffect(() => { followRef.current = followMheId; }, [followMheId]);
+
+  // One-time transition anim for non-avatar modes
+  const animRef = useRef<{
+    fromCam: THREE.Vector3; toCam: THREE.Vector3;
+    fromTarget: THREE.Vector3; toTarget: THREE.Vector3;
+    t: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (mode === "avatar") { animRef.current = null; return; }
+    if (!controls) return;
+    const ctrl = controls as any;
+    const preset = VIEW_PRESETS[mode as Exclude<ViewMode, "avatar">];
+    animRef.current = {
+      fromCam:    camera.position.clone(),
+      toCam:      new THREE.Vector3(...preset.cam),
+      fromTarget: ctrl.target.clone(),
+      toTarget:   new THREE.Vector3(...preset.tgt),
+      t: 0,
+    };
+  }, [mode]);
+
+  // Smoothed vectors for avatar follow-cam
+  const smoothCam     = useRef(new THREE.Vector3());
+  const smoothTgt     = useRef(new THREE.Vector3());
+  const avatarInit    = useRef(false);
+  const prevFollowId  = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (mode !== "avatar") avatarInit.current = false;
+  }, [mode]);
+
+  useFrame(() => {
+    const ctrl = controls as any;
+    if (!ctrl) return;
+
+    // ── Avatar / Google-Maps follow-cam ──────────────────────────────────────
+    if (modeRef.current === "avatar") {
+      const id    = followRef.current ?? MHE_VEHICLES[0].id;
+      const state = mheStateRef.current.get(id);
+      if (!state) return;
+
+      const { x, z, angle } = state;
+      const dx = Math.sin(angle);
+      const dz = Math.cos(angle);
+
+      const desiredCam = new THREE.Vector3(x - dx * 9, 3.5, z - dz * 9);
+      const desiredTgt = new THREE.Vector3(x + dx * 5, 1.2, z + dz * 5);
+
+      // Re-seed when entering avatar mode OR switching to a different MHE
+      if (!avatarInit.current || prevFollowId.current !== id) {
+        smoothCam.current.copy(camera.position);
+        smoothTgt.current.copy(ctrl.target);
+        avatarInit.current   = true;
+        prevFollowId.current = id;
+      }
+
+      smoothCam.current.lerp(desiredCam, 0.07);
+      smoothTgt.current.lerp(desiredTgt, 0.07);
+
+      camera.position.copy(smoothCam.current);
+      ctrl.target.copy(smoothTgt.current);
+      ctrl.update();
+      return;
+    }
+
+    // ── One-time transition for 2d / 3d / focus ───────────────────────────
+    const a = animRef.current;
+    if (!a) return;
+    a.t = Math.min(a.t + 0.04, 1);
+    const ease = 1 - Math.pow(1 - a.t, 3);
+    camera.position.lerpVectors(a.fromCam, a.toCam, ease);
+    ctrl.target.lerpVectors(a.fromTarget, a.toTarget, ease);
+    ctrl.update();
+    if (a.t >= 1) animRef.current = null;
+  });
+
+  return null;
+}
+
 // ─── CameraAnimator ──────────────────────────────────────────────────────────
-// Smoothly flies the camera to center on a target world position when it changes.
-function CameraAnimator({ target }: { target: [number,number,number] | null }) {
+// Zooms to the MHE's LIVE position when mheId changes, not a static waypoint.
+function CameraAnimator({
+  mheId,
+  mheStateRef,
+}: {
+  mheId: string | null;
+  mheStateRef: React.MutableRefObject<Map<string, MHELiveState>>;
+}) {
   const { camera, controls } = useThree();
   const animRef = useRef<{
     fromCam: THREE.Vector3; toCam: THREE.Vector3;
@@ -1487,19 +1843,26 @@ function CameraAnimator({ target }: { target: [number,number,number] | null }) {
   } | null>(null);
 
   useEffect(() => {
-    if (!target || !controls) return;
+    if (!mheId || !controls) return;
     const ctrl = controls as any;
-    const mhe = new THREE.Vector3(...target);
 
-    // Keep current camera direction, just pull closer to the MHE
-    const fromCam    = camera.position.clone();
-    const fromTarget = ctrl.target.clone();
-    const dir        = fromCam.clone().sub(fromTarget).normalize();
-    const dist       = 22;
-    const toCam      = mhe.clone().add(dir.multiplyScalar(dist));
+    // Grab live position — fall back to orbit target if MHE hasn't moved yet
+    const live  = mheStateRef.current.get(mheId);
+    const tx    = live?.x ?? ctrl.target.x;
+    const tz    = live?.z ?? ctrl.target.z;
+    const focus = new THREE.Vector3(tx, 0, tz);
 
-    animRef.current = { fromCam, toCam, fromTarget, toTarget: mhe, t: 0 };
-  }, [target ? target.join(",") : null]);
+    // Tight isometric view: 14 units above, 12 units diagonally back
+    const toCam = new THREE.Vector3(tx + 12, 14, tz + 12);
+
+    animRef.current = {
+      fromCam:    camera.position.clone(),
+      toCam,
+      fromTarget: ctrl.target.clone(),
+      toTarget:   focus,
+      t: 0,
+    };
+  }, [mheId]);
 
   useFrame(() => {
     const a = animRef.current;
@@ -1524,16 +1887,20 @@ export function WarehouseScene({
   onSelectMHE,
   taskAssignments = [],
   onNearMiss,
+  viewMode = "3d",
 }: {
   onSelectMHE?: (id: string) => void;
   taskAssignments?: TaskAssignment[];
   onNearMiss?: (e: NearMissEvent) => void;
+  viewMode?: ViewMode;
 } = {}) {
   const [selectedMHE, setSelectedMHE] = useState<string | null>(null);
   const [hoveredMHE,  setHoveredMHE]  = useState<string | null>(null);
   const [impactMHE, setImpactMHE]     = useState<string | null>(null);
   // Shared ref: keys are rack IDs that are currently "hot" (MHE nearby)
   const hotRacksRef = useRef<Set<string>>(new Set());
+  // Live MHE positions updated every frame by AnimatedMHE
+  const mheStateRef = useRef<Map<string, MHELiveState>>(new Map());
 
   // Derived: if any task assignment exists, that MHE is "focused"; others are dimmed
   const focusedMheId = taskAssignments.length > 0 ? taskAssignments[0].mheId : null;
@@ -1560,8 +1927,8 @@ export function WarehouseScene({
       {/* Warm fill from front */}
       <directionalLight position={[0, 8, 30]} intensity={0.28} color="#fff8e0" />
 
-      {/* Large ground plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      {/* Large ground plane — click anywhere on empty floor to deselect */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow onClick={() => setSelectedMHE(null)}>
         <planeGeometry args={[140, 140]} />
         <meshLambertMaterial color="#c8c8c8" />
       </mesh>
@@ -1570,9 +1937,9 @@ export function WarehouseScene({
       <WarehouseBuilding />
 
       {/* ── Rack sections ── */}
-      <RackSection label="SIDE STORAGE"  sublabel="2 ROWS × 6 BAYS"  rows={2} bays={6}  position={[-26, 0, -13]} />
-      <RackSection label="MAIN STORAGE"  sublabel="4 ROWS × 21 BAYS" rows={4} bays={21} position={[-4,  0, -19]} />
-      <RackSection label="BULK STORAGE"  sublabel="2 ROWS × 12 BAYS" rows={2} bays={12} position={[6,   0,  2]}  />
+      <RackSection label="SIDE STORAGE"  sublabel="2 ROWS × 6 BAYS"  rows={2} bays={6}  position={[-26, 0, -13]} rowLetter="A" labelStart={1}  />
+      <RackSection label="MAIN STORAGE"  sublabel="4 ROWS × 21 BAYS" rows={4} bays={21} position={[-4,  0, -19]} rowLetter="A" labelStart={3}  />
+      <RackSection label="BULK STORAGE"  sublabel="2 ROWS × 12 BAYS" rows={2} bays={12} position={[6,   0,  2]}  rowLetter="A" labelStart={10} />
 
       {/* ── Row labels ── */}
       <RowLabel position={[-26, 0.3, -12]}   text="Row A" />
@@ -1591,10 +1958,10 @@ export function WarehouseScene({
       <AisleMarker position={[20, 0.1, -12]}  label="AISLE D" />
 
       {/* ── Floor zones ── */}
-      <FloorZone position={[-28, 0, 0]}  width={15} depth={11} color="#4A90D9" borderColor="#4A90D9" labelText="Pallet Receiving" labelSub="Inbound" />
-      <FloorZone position={[-8, 0, 12]}  width={19} depth={9}  color="#4CAF50" borderColor="#4CAF50" labelText="Shipping Station" labelSub="Outbound" rotation={[0, 0.12, 0]} />
-      <FloorZone position={[22, 0, -4]}  width={12} depth={8}  color="#a855f7" borderColor="#a855f7" labelText="Charging Bay"     labelSub="MHE Charging" />
-      <FloorZone position={[5,  0, 10]}  width={8}  depth={6}  color="#f59e0b" borderColor="#f59e0b" labelText="QC Station"        labelSub="Quality Check" />
+      <FloorZone position={[-28, 0, 0]}  width={15} depth={11} color="#8a8a8a" borderColor="#6e6e6e" labelText="Pallet Receiving" labelSub="Inbound" />
+      <FloorZone position={[-8, 0, 12]}  width={19} depth={9}  color="#8a8a8a" borderColor="#6e6e6e" labelText="Shipping Station" labelSub="Outbound" rotation={[0, 0.12, 0]} />
+      <FloorZone position={[22, 0, -4]}  width={12} depth={8}  color="#8a8a8a" borderColor="#6e6e6e" labelText="Charging Bay"     labelSub="MHE Charging" />
+      <FloorZone position={[5,  0, 10]}  width={8}  depth={6}  color="#8a8a8a" borderColor="#6e6e6e" labelText="QC Station"        labelSub="Quality Check" />
       <AreaLabel position={[-14, 0.2, 3]} text="Open Workflow" sub="Staging Area" />
 
       {/* ── Rack safety zones (amber → red when MHE is near) ── */}
@@ -1603,61 +1970,56 @@ export function WarehouseScene({
       ))}
 
       {/* ── Animated MHEs ── */}
-      {MHE_VEHICLES.map((v, i) => (
-        <AnimatedMHE
-          key={v.id}
-          id={v.id}
-          label={v.label}
-          type={v.type}
-          color={v.color}
-          position={v.path[0]}
-          path={v.path}
-          speed={0.7 + i * 0.08}
-          selected={selectedMHE === v.id}
-          onSelect={handleSelect}
-          onDoubleSelect={handleDoubleSelect}
-          onHover={setHoveredMHE}
-          hotRacksRef={hotRacksRef}
-          onNearMiss={onNearMiss}
-          dimmed={
-            selectedMHE !== null
-              ? v.id !== selectedMHE
-              : focusedMheId !== null && v.id !== focusedMheId
-          }
-        />
-      ))}
+      {MHE_VEHICLES.map((v, i) => {
+        const isSelected = selectedMHE === v.id;
+        const assignment = isSelected ? taskAssignments.find(a => a.mheId === v.id) : undefined;
+        return (
+          <AnimatedMHE
+            key={v.id}
+            id={v.id}
+            label={v.label}
+            type={v.type}
+            color={v.color}
+            position={v.path[0]}
+            path={v.path}
+            speed={0.7 + i * 0.08}
+            selected={isSelected}
+            onSelect={handleSelect}
+            onDoubleSelect={handleDoubleSelect}
+            onHover={setHoveredMHE}
+            hotRacksRef={hotRacksRef}
+            mheStateRef={mheStateRef}
+            humanPositions={HUMAN_SPOTS.map(h => h.pos)}
+            onNearMiss={onNearMiss}
+            dimmed={
+              selectedMHE !== null
+                ? !isSelected
+                : focusedMheId !== null && v.id !== focusedMheId
+            }
+            infoCardNode={isSelected ? (
+              <MHEInfoCard
+                mheId={v.id}
+                position={[0, 0, 0]}
+                color={v.color}
+                type={v.type}
+                assignment={assignment}
+              />
+            ) : undefined}
+          />
+        );
+      })}
 
-      {/* ── Selected MHE: route highlight + info card ── */}
+      {/* ── Selected MHE: route highlight ── */}
       {selectedMHE && (() => {
         const v = MHE_VEHICLES.find(mv => mv.id === selectedMHE);
         if (!v) return null;
-        const assignment = taskAssignments.find(a => a.mheId === selectedMHE);
-        const mid = v.path[Math.floor(v.path.length / 2)];
         return (
           <group>
-            <PathLine points={v.path} color={v.color} opacity={0.9} />
-            <PathArrows points={v.path} color={v.color} />
-            <MHEInfoCard
-              mheId={v.id}
-              position={[mid[0], 0, mid[2]]}
-              color={v.color}
-              type={v.type}
-              assignment={assignment}
-              onClose={() => setSelectedMHE(null)}
-            />
+            <PathLine points={v.path} color="#3b82f6" opacity={0.9} />
+            <PathArrows points={v.path} color="#3b82f6" />
           </group>
         );
       })()}
-
-      {/* ── Operator markers ── */}
-      {OPERATOR_DATA.map(op => (
-        <OperatorMarker key={op.id} {...op} />
-      ))}
-
-      {/* ── Event hotspots ── */}
-      {EVENT_DATA.map(ev => (
-        <EventHotspot key={ev.id} {...ev} />
-      ))}
 
       {/* ── Task path overlays ── */}
       {taskAssignments.map(a => (
@@ -1668,26 +2030,33 @@ export function WarehouseScene({
         />
       ))}
 
+      {/* ── Warehouse workers (proximity-detection-aware) ── */}
+      {HUMAN_SPOTS.map(h => (
+        <HumanFigure key={h.id} pos={h.pos} name={h.name} mheStateRef={mheStateRef} />
+      ))}
+
       <OrbitControls
         ref={(controls: any) => { if (controls) controls.zoomToCursor = true; }}
         makeDefault
         target={[2, 0, -5]}
-        minPolarAngle={0.05}
-        maxPolarAngle={Math.PI / 2.05}
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI / 1.8}
         minDistance={2} maxDistance={120}
-        zoomSpeed={1.2} panSpeed={0.6}
+        zoomSpeed={1.2} panSpeed={0.8}
+        screenSpacePanning
       />
 
-      {/* Auto-fly camera to selected MHE */}
-      <CameraAnimator
-        target={(() => {
-          if (!selectedMHE) return null;
-          const v = MHE_VEHICLES.find(mv => mv.id === selectedMHE);
-          if (!v) return null;
-          const p = v.path[0];
-          return [p[0], 0, p[2]];
-        })()}
+      {/* View mode camera controller */}
+      <ViewModeController
+        mode={viewMode}
+        mheStateRef={mheStateRef}
+        followMheId={selectedMHE ?? MHE_VEHICLES[0].id}
       />
+
+      {/* Zoom to selected MHE live position — skip when avatar-following */}
+      {viewMode !== "avatar" && (
+        <CameraAnimator mheId={selectedMHE} mheStateRef={mheStateRef} />
+      )}
     </>
   );
 }

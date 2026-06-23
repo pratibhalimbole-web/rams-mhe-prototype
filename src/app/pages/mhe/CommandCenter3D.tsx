@@ -11,7 +11,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip as RTooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
-import { WarehouseScene, TaskAssignment, TaskStatus, NearMissEvent } from "../digital-twin/WarehouseScene3D";
+import { WarehouseScene, TaskAssignment, TaskStatus, NearMissEvent, ViewMode } from "../digital-twin/WarehouseScene3D";
 import { useTheme } from "../../hooks/useTheme";
 
 // ─── Mock data (from Figma design) ────────────────────────────────────────────
@@ -720,7 +720,7 @@ function TripsPanel() {
 
 const PANEL_IDS = new Set(["schedule", "mhe", "operator", "layers", "overview", "trips", "alerts", "tasks"]);
 
-function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onRemoveTask, onExpand, isExpanded }: {
+function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onRemoveTask, onExpand, isExpanded, onViewModeChange, viewMode }: {
   mode: "live" | "history";
   onViewAnalytics: (mhe: MHEItem) => void;
   taskAssignments: TaskAssignment[];
@@ -728,9 +728,10 @@ function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onR
   onRemoveTask: (id: string) => void;
   onExpand: () => void;
   isExpanded: boolean;
+  onViewModeChange: (mode: ViewMode) => void;
+  viewMode: ViewMode;
 }) {
   const [topActive, setTopActive]   = useState<string>("overview");
-  const [bottomActive, setBottomActive] = useState<string>("3d");
   const [openPanel, setOpenPanel]   = useState<string | null>(null);
 
   useEffect(() => {
@@ -764,10 +765,10 @@ function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onR
       <div style={{ position: "absolute", left: 12, bottom: 16, zIndex: 20, display: "flex", flexDirection: "column", gap: 5 }}>
         {BOTTOM_BTNS.map(b => (
           <IconBtn key={b.id} icon={b.icon} label={b.label}
-            active={b.id === "expand" ? isExpanded : bottomActive === b.id}
+            active={b.id === "expand" ? isExpanded : viewMode === b.id}
             onClick={() => {
               if (b.id === "expand") { onExpand(); return; }
-              setBottomActive(b.id);
+              onViewModeChange(b.id as ViewMode);
             }}
           />
         ))}
@@ -1437,6 +1438,7 @@ export function CommandCenter3D() {
   const [analyticsMHE, setAnalyticsMHE] = useState<MHEItem | null>(null);
   const [taskAssignments, setTaskAssignments] = useState<TaskAssignment[]>(INITIAL_ASSIGNMENTS);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("3d");
 
   // Near-miss alert state
   type NearMissAlert = { id: string; mheId: string; mheLabel: string; rackLabel: string };
@@ -1521,6 +1523,8 @@ export function CommandCenter3D() {
             onRemoveTask={handleRemoveTask}
             onExpand={() => setIsExpanded(p => !p)}
             isExpanded={isExpanded}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
 
           {/* ── Events trigger button (top-right) ── */}
@@ -1607,7 +1611,7 @@ export function CommandCenter3D() {
               gl={{ antialias: true }}
             >
               <Suspense fallback={null}>
-                <WarehouseScene taskAssignments={taskAssignments} onNearMiss={handleNearMiss} />
+                <WarehouseScene taskAssignments={taskAssignments} onNearMiss={handleNearMiss} viewMode={viewMode} />
               </Suspense>
             </Canvas>
           )}
