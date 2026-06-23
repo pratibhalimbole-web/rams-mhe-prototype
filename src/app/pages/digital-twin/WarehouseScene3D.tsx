@@ -1186,12 +1186,8 @@ function HumanFigure({
   const walkFacing = useRef(0);
   const stepDist   = useRef(Math.random() * Math.PI * 2); // bob phase offset
 
-  // Material refs for detection colours
-  const bodyRef  = useRef<THREE.MeshLambertMaterial>(null);
-  const hatRef   = useRef<THREE.MeshLambertMaterial>(null);
-  const dotRef   = useRef<THREE.MeshBasicMaterial>(null);
   const ringRef  = useRef<THREE.Mesh>(null);
-  const labelRef = useRef<HTMLDivElement>(null);
+  const iconRef  = useRef<HTMLDivElement>(null);
   const pulseT   = useRef(0);
 
   const pickNewTarget = () => {
@@ -1238,74 +1234,48 @@ function HumanFigure({
     const inDanger  = minDist < ZONE_DANGER;
     const inWarning = minDist < ZONE_WARNING;
 
-    const bodyColor = inDanger ? "#ef4444" : inWarning ? "#f59e0b" : "#0ea5e9";
-    const dotColor  = inDanger ? "#ef4444" : inWarning ? "#f59e0b" : "#22c55e";
+    const iconColor = inDanger ? "#ef4444" : inWarning ? "#f59e0b" : "#9ca3af";
 
-    bodyRef.current?.color.set(bodyColor);
-    hatRef.current?.color.set(inDanger ? "#ef4444" : "#f59e0b");
-    dotRef.current?.color.set(dotColor);
+    if (iconRef.current) iconRef.current.style.color = iconColor;
 
     if (ringRef.current) {
       const mat = ringRef.current.material as THREE.MeshBasicMaterial;
       if (inDanger || inWarning) {
         const s = 1 + pulse * 0.45;
         ringRef.current.scale.set(s, s, s);
-        mat.color.set(dotColor);
+        mat.color.set(iconColor);
         mat.opacity = inDanger ? 0.55 + pulse * 0.25 : 0.35 + pulse * 0.15;
       } else {
         mat.opacity = 0;
       }
     }
-
-    if (labelRef.current) {
-      labelRef.current.style.background = inDanger
-        ? "rgba(239,68,68,0.18)" : inWarning
-        ? "rgba(245,158,11,0.18)" : "rgba(14,165,233,0.10)";
-      labelRef.current.style.color      = inDanger ? "#ef4444" : inWarning ? "#f59e0b" : "#0ea5e9";
-      labelRef.current.style.borderColor = inDanger ? "rgba(239,68,68,0.5)" : inWarning ? "rgba(245,158,11,0.5)" : "rgba(14,165,233,0.35)";
-    }
   });
 
   return (
     <group ref={groupRef}>
-      {/* Body */}
-      <mesh position={[0, 0.9, 0]}>
-        <cylinderGeometry args={[0.12, 0.15, 0.7, 8]} />
-        <meshLambertMaterial ref={bodyRef} color="#0ea5e9" />
-      </mesh>
-      {/* Head */}
-      <mesh position={[0, 1.4, 0]}>
-        <sphereGeometry args={[0.16, 10, 10]} />
-        <meshLambertMaterial color="#fde68a" />
-      </mesh>
-      {/* Hard hat */}
-      <mesh position={[0, 1.54, 0]}>
-        <cylinderGeometry args={[0.18, 0.14, 0.1, 10]} />
-        <meshLambertMaterial ref={hatRef} color="#f59e0b" />
-      </mesh>
-      {/* Status dot */}
-      <mesh position={[0.18, 1.45, 0]}>
-        <sphereGeometry args={[0.05, 6, 6]} />
-        <meshBasicMaterial ref={dotRef} color="#22c55e" />
-      </mesh>
       {/* Pulse ring on floor */}
-      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <ringGeometry args={[0.22, 0.42, 20]} />
+      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+        <ringGeometry args={[0.18, 0.34, 20]} />
         <meshBasicMaterial color="#ef4444" transparent opacity={0} depthWrite={false} />
       </mesh>
       {/* Shadow disc */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-        <circleGeometry args={[0.22, 16]} />
-        <meshBasicMaterial color="#000" transparent opacity={0.1} depthWrite={false} />
+        <circleGeometry args={[0.18, 16]} />
+        <meshBasicMaterial color="#000" transparent opacity={0.08} depthWrite={false} />
       </mesh>
-      <Html position={[0, 1.95, 0]} center distanceFactor={16} zIndexRange={[75, 0]}>
-        <div ref={labelRef} style={{
-          background: "rgba(14,165,233,0.10)", color: "#0ea5e9",
-          border: "1px solid rgba(14,165,233,0.35)",
-          borderRadius: 4, padding: "2px 7px",
-          fontSize: 8, fontWeight: 700, fontFamily: "system-ui,sans-serif",
-          pointerEvents: "none", whiteSpace: "nowrap",
-        }}>{name}</div>
+      {/* Gray person icon + name label */}
+      <Html position={[0, 0, 0]} center zIndexRange={[75, 0]}>
+        <div ref={iconRef} style={{
+          display: "flex", flexDirection: "column", alignItems: "center",
+          pointerEvents: "none", color: "#9ca3af",
+        }}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <circle cx="12" cy="4.5" r="2.8" />
+            <path d="M8 9.5c0-2.2 1.8-4 4-4s4 1.8 4 4v5H8v-5z" />
+            <path d="M9 14.5l-1.5 7h2l1-4 1 4h2l1-4 1 4h2l-1.5-7H9z" />
+          </svg>
+          <span style={{ fontSize: 9, fontWeight: 700, fontFamily: "system-ui,sans-serif", marginTop: 2, whiteSpace: "nowrap", textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}>{name}</span>
+        </div>
       </Html>
     </group>
   );
@@ -1940,16 +1910,6 @@ export function WarehouseScene({
       <RackSection label="SIDE STORAGE"  sublabel="2 ROWS × 6 BAYS"  rows={2} bays={6}  position={[-26, 0, -13]} rowLetter="A" labelStart={1}  />
       <RackSection label="MAIN STORAGE"  sublabel="4 ROWS × 21 BAYS" rows={4} bays={21} position={[-4,  0, -19]} rowLetter="A" labelStart={3}  />
       <RackSection label="BULK STORAGE"  sublabel="2 ROWS × 12 BAYS" rows={2} bays={12} position={[6,   0,  2]}  rowLetter="A" labelStart={10} />
-
-      {/* ── Row labels ── */}
-      <RowLabel position={[-26, 0.3, -12]}   text="Row A" />
-      <RowLabel position={[-26, 0.3, -11.1]} text="Row B" />
-      <RowLabel position={[-4,  0.3, -18.9]} text="Row A" />
-      <RowLabel position={[-4,  0.3, -18.0]} text="Row B" />
-      <RowLabel position={[-4,  0.3, -17.1]} text="Row C" />
-      <RowLabel position={[-4,  0.3, -16.2]} text="Row D" />
-      <RowLabel position={[6,   0.3,  2.05]} text="Row A" />
-      <RowLabel position={[6,   0.3,  2.95]} text="Row B" />
 
       {/* ── Aisle markers ── */}
       <AisleMarker position={[-1, 0.1, -13]}  label="AISLE A" />
