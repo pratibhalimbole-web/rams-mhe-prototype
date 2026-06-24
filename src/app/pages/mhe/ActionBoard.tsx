@@ -334,25 +334,25 @@ function KanbanColumnComponent({
     >
       {/* Column Header */}
       <div
-        className="flex items-center justify-between px-3 py-2.5 border-b border-border rounded-t-lg sticky top-0 z-10"
-        style={{ backgroundColor: "var(--muted)" }}
+        className="flex items-center justify-between px-4 py-3 border-b border-border rounded-t-lg sticky top-0 z-10"
+        style={{ background: "var(--card)" }}
       >
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: column.color }} />
-          <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: column.color }} />
+          <span className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
             {column.label}
           </span>
         </div>
         <span
-          className="text-xs font-semibold px-1.5 py-0.5 rounded"
-          style={{ backgroundColor: "var(--background)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+          className="min-w-[22px] h-[22px] flex items-center justify-center text-[11px] font-bold rounded-md px-1.5"
+          style={{ background: "var(--muted)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
         >
           {count}
         </span>
       </div>
 
       {/* Column Body */}
-      <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5">
         {column.id === "incoming" ? (
           issues.length === 0 ? (
             <EmptyState message="No new issues" icon="inbox" />
@@ -1162,62 +1162,100 @@ export function ActionBoard() {
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: "var(--background)" }}>
 
-      {/* ── Single Header Bar: Search + Filters + Create Action ── */}
-      <div
-        className="flex items-center gap-2 px-6 py-3 border-b border-border shrink-0"
-        style={{ backgroundColor: "var(--card)" }}
-      >
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--muted-foreground)" }} />
-          <Input
-            placeholder="Search issues or actions..."
-            className="h-8 pl-8 text-xs w-52"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="w-px h-5 bg-border mx-1" />
-        <span className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>Filter:</span>
-        <Select value={filterSuite} onValueChange={v => setFilterSuite(v as Suite | "all")}>
-          <SelectTrigger className="h-8 text-xs w-28"><SelectValue placeholder="All Suites" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Suites</SelectItem>
-            <SelectItem value="MEPS">MEPS</SelectItem>
-            <SelectItem value="RTSS">RTSS</SelectItem>
-            <SelectItem value="MMS">MMS</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterPriority} onValueChange={v => setFilterPriority(v as Severity | "all")}>
-          <SelectTrigger className="h-8 text-xs w-28"><SelectValue placeholder="All Priority" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Priority</SelectItem>
-            <SelectItem value="Critical">Critical</SelectItem>
-            <SelectItem value="High">High</SelectItem>
-            <SelectItem value="Medium">Medium</SelectItem>
-            <SelectItem value="Low">Low</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterStatus} onValueChange={v => setFilterStatus(v as KanbanStatus | "all")}>
-          <SelectTrigger className="h-8 text-xs w-28"><SelectValue placeholder="All Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="assigned">Assigned</SelectItem>
-            <SelectItem value="in-progress">In Progress</SelectItem>
-            <SelectItem value="review">Review</SelectItem>
-            <SelectItem value="done">Done</SelectItem>
-          </SelectContent>
-        </Select>
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" className="h-8 text-xs px-2"
-            onClick={() => { setFilterSuite("all"); setFilterPriority("all"); setFilterStatus("all"); setSearch(""); }}>
-            <X className="w-3 h-3 mr-1" />Clear
+      {/* ── Header ── */}
+      <div className="shrink-0 border-b border-border" style={{ background: "var(--card)" }}>
+        {/* Row 1 — title + create */}
+        <div className="flex items-center justify-between px-6 pt-4 pb-3">
+          <div>
+            <h1 className="text-[15px] font-bold" style={{ color: "var(--foreground)" }}>Action Board</h1>
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+              Assign, track and resolve issues across MHE suites
+            </p>
+          </div>
+          <Button className="h-9 gap-2 text-[12px] font-semibold px-4" onClick={() => setCreateOpen(true)}>
+            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+            Create Action
           </Button>
-        )}
-        <div className="flex-1" />
-        <Button size="sm" className="h-8 gap-1.5 text-xs font-medium" onClick={() => setCreateOpen(true)}>
-          <Plus className="w-3.5 h-3.5" />
-          Create Action
-        </Button>
+        </div>
+
+        {/* Row 2 — search + filters */}
+        <div className="flex items-center gap-2 px-6 pb-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" strokeWidth={1.5}
+              style={{ color: "var(--muted-foreground)" }} />
+            <Input
+              placeholder="Search issues or actions..."
+              className="h-9 pl-9 text-[12px] w-64"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && (
+              <button onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="w-px h-5 bg-border" />
+
+          {/* Filter label */}
+          <div className="flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
+            <Filter className="w-3.5 h-3.5" strokeWidth={1.5} />
+            <span className="text-[11px] font-medium">Filters</span>
+          </div>
+
+          <Select value={filterSuite} onValueChange={v => setFilterSuite(v as Suite | "all")}>
+            <SelectTrigger className="h-9 text-[12px] w-32"><SelectValue placeholder="Suite" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Suites</SelectItem>
+              <SelectItem value="MEPS">MEPS</SelectItem>
+              <SelectItem value="RTSS">RTSS</SelectItem>
+              <SelectItem value="MMS">MMS</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filterPriority} onValueChange={v => setFilterPriority(v as Severity | "all")}>
+            <SelectTrigger className="h-9 text-[12px] w-32"><SelectValue placeholder="Priority" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priority</SelectItem>
+              <SelectItem value="Critical">Critical</SelectItem>
+              <SelectItem value="High">High</SelectItem>
+              <SelectItem value="Medium">Medium</SelectItem>
+              <SelectItem value="Low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filterStatus} onValueChange={v => setFilterStatus(v as KanbanStatus | "all")}>
+            <SelectTrigger className="h-9 text-[12px] w-32"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="assigned">Assigned</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="review">Review</SelectItem>
+              <SelectItem value="done">Done</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <button
+              onClick={() => { setFilterSuite("all"); setFilterPriority("all"); setFilterStatus("all"); setSearch(""); }}
+              className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-[12px] font-medium hover:bg-muted transition-colors"
+              style={{ color: "var(--muted-foreground)" }}>
+              <X className="w-3 h-3" />
+              Clear
+            </button>
+          )}
+
+          {/* Active filter count pill */}
+          {hasActiveFilters && (
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: "var(--foreground)", color: "var(--background)" }}>
+              {[filterSuite !== "all", filterPriority !== "all", filterStatus !== "all", search !== ""].filter(Boolean).length} active
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── Escalation Banner ── */}
