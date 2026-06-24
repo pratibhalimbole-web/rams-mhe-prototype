@@ -896,6 +896,8 @@ function AssignModal({ issue, open, onClose, onConfirm }: AssignModalProps) {
 
 // ─── Detail Sheet ─────────────────────────────────────────────────────────────
 
+function useNav() { return useNavigate(); }
+
 interface DetailSheetProps {
   item: Issue | Action | null;
   type: "issue" | "action" | null;
@@ -905,6 +907,7 @@ interface DetailSheetProps {
 }
 
 function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) {
+  const navigate = useNav();
   if (!item) return null;
 
   const isIssue = type === "issue";
