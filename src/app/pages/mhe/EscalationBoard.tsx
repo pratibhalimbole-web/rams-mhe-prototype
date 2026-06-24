@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router";
 import { useSidebar } from "../../components/layout/SidebarLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -31,6 +32,7 @@ import {
   X,
   Activity,
   Ban,
+  Settings2,
 } from "lucide-react";
 import { cn } from "../../components/ui/utils";
 
@@ -903,6 +905,7 @@ function KpiCard({ label, value, color, icon: Icon }: {
 type TabKey = "active" | "pending_ack" | "resolved" | "all";
 
 export function EscalationBoard() {
+  const navigate                            = useNavigate();
   const [tab, setTab]                       = useState<TabKey>("active");
   const [search, setSearch]                 = useState("");
   const [filterSource, setFilterSource]     = useState<string>("all");
@@ -968,6 +971,14 @@ export function EscalationBoard() {
             <KpiCard label="Breached" value={totalBreached} color="#ef4444"           icon={Ban} />
             <KpiCard label="Pending"  value={totalPending}  color="#f59e0b"           icon={Clock} />
             <KpiCard label="Resolved" value={totalResolved} color="#22c55e"           icon={CheckCircle2} />
+            <button
+              onClick={() => navigate("/mhe/escalation-settings")}
+              className="w-9 h-9 rounded-xl flex items-center justify-center border border-border hover:bg-muted transition-colors ml-1"
+              title="Notification Settings"
+              style={{ background: "var(--card)" }}
+            >
+              <Settings2 size={15} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+            </button>
           </div>
         </div>
 

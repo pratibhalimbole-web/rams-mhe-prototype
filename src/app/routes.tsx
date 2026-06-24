@@ -29,6 +29,7 @@ import { IMDSInspectionFindings } from "./pages/mhe/IMDSInspectionFindings";
 import { IMDSRulesAndAction } from "./pages/mhe/IMDSRulesAndAction";
 import { IMDSManageChecklists } from "./pages/mhe/IMDSManageChecklists";
 import { EscalationBoard } from "./pages/mhe/EscalationBoard";
+import { EscalationSettings } from "./pages/mhe/EscalationSettings";
 
 // Create a placeholder component for pages not yet implemented
 function PlaceholderPage({ title }: { title: string }) {
@@ -288,6 +289,10 @@ export const router = createBrowserRouter([
       {
         path: "mhe/escalation-logs",
         element: <EscalationBoard />,
+      },
+      {
+        path: "mhe/escalation-settings",
+        element: <EscalationSettings />,
       },
       {
         path: "mhe/report",
