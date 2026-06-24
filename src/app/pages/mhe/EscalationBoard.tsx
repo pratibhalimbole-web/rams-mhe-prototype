@@ -35,6 +35,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { cn } from "../../components/ui/utils";
+import { ReassignModal } from "./ReassignModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -676,7 +677,8 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
 // ─── Detail Drawer ────────────────────────────────────────────────────────────
 
 function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose: () => void }) {
-  const [note, setNote] = useState("");
+  const [note, setNote]               = useState("");
+  const [reassignOpen, setReassignOpen] = useState(false);
 
   if (!item) return null;
 
@@ -857,7 +859,8 @@ function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose:
               )}
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1 h-8 text-xs gap-1.5">
+              <Button size="sm" variant="outline" className="flex-1 h-8 text-xs gap-1.5"
+                onClick={() => setReassignOpen(true)}>
                 <User size={12} strokeWidth={1.5} />
                 Reassign
               </Button>
@@ -870,6 +873,20 @@ function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose:
             </div>
           </div>
         )}
+
+        <ReassignModal
+          open={reassignOpen}
+          onClose={() => setReassignOpen(false)}
+          currentLevel={item.currentLevel}
+          currentAssignee={item.assignedTo}
+          escalationId={item.id}
+          escalationTitle={item.title}
+          onConfirm={(user, handoffNote) => {
+            // In a real app: PATCH /api/escalations/:id/reassign
+            console.log("Reassigned to:", user.name, "Note:", handoffNote);
+            setReassignOpen(false);
+          }}
+        />
       </SheetContent>
     </Sheet>
   );
