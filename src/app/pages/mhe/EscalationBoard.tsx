@@ -433,16 +433,10 @@ function EscalationCard({ item, onClick }: { item: EscalationItem; onClick: () =
       className="group relative flex flex-col overflow-hidden rounded-xl cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
       style={{
         background: "var(--card)",
-        border: `1px solid var(--border)`,
-        borderLeft: `4px solid ${srcColor}`,
-        boxShadow: critBreach
-          ? `0 0 0 1px ${srcColor}35, 0 2px 12px ${srcColor}18`
-          : "0 1px 3px rgba(0,0,0,0.05)",
+        border: `1.5px solid var(--border)`,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.10)",
       }}
     >
-      {/* Severity accent line at top */}
-      <div className="h-0.5 w-full shrink-0"
-        style={{ background: `linear-gradient(90deg, ${sevColor}CC, ${sevColor}40, transparent)` }} />
 
       <div className="p-3.5 flex flex-col gap-2.5">
         {/* Badges row */}
@@ -859,13 +853,14 @@ function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose:
               )}
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1 h-8 text-xs gap-1.5"
-                onClick={() => setReassignOpen(true)}>
-                <User size={12} strokeWidth={1.5} />
+              <Button size="sm" className="flex-1 h-9 text-xs font-bold gap-1.5"
+                onClick={() => setReassignOpen(true)}
+                style={{ background: "var(--foreground)", color: "var(--background)" }}>
+                <User size={13} strokeWidth={1.5} />
                 Reassign
               </Button>
               {note.trim() && (
-                <Button size="sm" variant="outline" className="flex-1 h-8 text-xs gap-1.5">
+                <Button size="sm" variant="outline" className="flex-1 h-9 text-xs gap-1.5">
                   <MessageSquare size={12} strokeWidth={1.5} />
                   Save Note
                 </Button>
@@ -894,25 +889,18 @@ function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose:
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, color, icon: Icon }: {
-  label: string; value: number; color: string; icon: React.ElementType;
-}) {
+function KpiCard({ label, value, sub }: { label: string; value: number; sub: string }) {
   return (
-    <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl shrink-0"
-      style={{
-        background: "var(--card)",
-        border: `1px solid var(--border)`,
-        borderTop: `3px solid ${color}`,
-        minWidth: 96,
-      }}>
-      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: `${color}15` }}>
-        <Icon size={14} strokeWidth={1.5} style={{ color }} />
-      </div>
-      <div>
-        <p className="text-xl font-black leading-none mb-0.5" style={{ color }}>{value}</p>
-        <p className="text-[10px] font-medium" style={{ color: "var(--muted-foreground)" }}>{label}</p>
-      </div>
+    <div className="flex flex-col px-4 py-3 rounded-lg shrink-0"
+      style={{ background: "var(--card)", border: "1px solid var(--border)", minWidth: 100 }}>
+      <p className="text-[10px] font-semibold mb-2 uppercase tracking-wide"
+        style={{ color: "var(--muted-foreground)", letterSpacing: "0.07em" }}>
+        {label}
+      </p>
+      <p className="text-[28px] font-bold leading-none mb-1" style={{ color: "var(--foreground)" }}>
+        {value}
+      </p>
+      <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>{sub}</p>
     </div>
   );
 }
@@ -971,32 +959,32 @@ export function EscalationBoard() {
 
       {/* Header */}
       <div className="px-6 pt-5 pb-0 shrink-0">
-        <div className="flex items-start justify-between gap-4 mb-5">
+        {/* Title row */}
+        <div className="flex items-center justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-[22px] font-black tracking-tight leading-tight"
-              style={{ color: "var(--foreground)" }}>
+            <h1 className="text-[15px] font-bold leading-tight" style={{ color: "var(--foreground)" }}>
               Escalation Board
             </h1>
-            <p className="text-xs mt-1 flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
-              <ArrowUpRight size={11} strokeWidth={2} />
+            <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
               Auto-escalates from L1 → L2 → L3 → L4 when SLA timers expire
             </p>
           </div>
+          <button
+            onClick={() => navigate("/mhe/escalation-settings")}
+            className="w-8 h-8 rounded-lg flex items-center justify-center border border-border hover:bg-muted transition-colors"
+            title="Notification Settings"
+            style={{ background: "var(--card)" }}
+          >
+            <Settings2 size={14} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+          </button>
+        </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <KpiCard label="Active"   value={totalActive}   color="var(--foreground)" icon={Activity} />
-            <KpiCard label="Breached" value={totalBreached} color="#ef4444"           icon={Ban} />
-            <KpiCard label="Pending"  value={totalPending}  color="#f59e0b"           icon={Clock} />
-            <KpiCard label="Resolved" value={totalResolved} color="#22c55e"           icon={CheckCircle2} />
-            <button
-              onClick={() => navigate("/mhe/escalation-settings")}
-              className="w-9 h-9 rounded-xl flex items-center justify-center border border-border hover:bg-muted transition-colors ml-1"
-              title="Notification Settings"
-              style={{ background: "var(--card)" }}
-            >
-              <Settings2 size={15} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
-            </button>
-          </div>
+        {/* KPI strip */}
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          <KpiCard label="Active"   value={totalActive}   sub={`${totalActive} open escalations`} />
+          <KpiCard label="Breached" value={totalBreached} sub="SLA window exceeded" />
+          <KpiCard label="Pending"  value={totalPending}  sub="Awaiting acknowledgement" />
+          <KpiCard label="Resolved" value={totalResolved} sub="Closed this period" />
         </div>
 
         {/* Tabs */}

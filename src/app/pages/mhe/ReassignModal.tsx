@@ -10,7 +10,7 @@ import {
 import {
   Search,
   CheckCircle2,
-  Clock,
+
   AlertTriangle,
   ArrowUpRight,
   Mail,
@@ -65,48 +65,33 @@ const USER_DIRECTORY: Assignee[] = [
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const LEVEL_META: Record<Level, { color: string; bg: string }> = {
-  L1: { color: "#64748b", bg: "#64748b12" },
-  L2: { color: "#3b82f6", bg: "#3b82f612" },
-  L3: { color: "#f59e0b", bg: "#f59e0b12" },
-  L4: { color: "#ef4444", bg: "#ef444412" },
-};
-
-const STATUS_META: Record<UserStatus, { label: string; color: string; dot: string }> = {
-  available: { label: "Available", color: "#22c55e", dot: "#22c55e" },
-  busy:      { label: "Busy",      color: "#f59e0b", dot: "#f59e0b" },
-  offline:   { label: "Offline",   color: "#94a3b8", dot: "#94a3b8" },
+const STATUS_META: Record<UserStatus, { label: string; dot: string }> = {
+  available: { label: "Available", dot: "#22c55e" },
+  busy:      { label: "Busy",      dot: "#f59e0b" },
+  offline:   { label: "Offline",   dot: "#94a3b8" },
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function Avatar({ initials, color, size = "md" }: { initials: string; color: string; size?: "sm" | "md" | "lg" }) {
+function Avatar({ initials, size = "md" }: { initials: string; size?: "sm" | "md" | "lg" }) {
   const sz = size === "lg" ? "w-11 h-11 text-sm" : size === "md" ? "w-9 h-9 text-xs" : "w-7 h-7 text-[10px]";
   return (
-    <div className={cn("rounded-full flex items-center justify-center font-black shrink-0 select-none", sz)}
-      style={{ background: color, color: "#fff" }}>
+    <div className={cn("rounded-full flex items-center justify-center font-bold shrink-0 select-none", sz)}
+      style={{ background: "var(--muted)", color: "var(--foreground)" }}>
       {initials}
     </div>
   );
 }
 
-function StatusDot({ status, animate = false }: { status: UserStatus; animate?: boolean }) {
+function StatusDot({ status }: { status: UserStatus }) {
   const { dot } = STATUS_META[status];
   return (
-    <span className={cn("w-2.5 h-2.5 rounded-full border-2 border-white shrink-0", animate && status === "available" && "animate-pulse")}
-      style={{ background: dot }} />
+    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: dot }} />
   );
 }
 
-function UserCard({
-  user, selected, onClick,
-}: {
-  user: Assignee;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  const lvl = LEVEL_META[user.level];
-  const st  = STATUS_META[user.status];
+function UserCard({ user, selected, onClick }: { user: Assignee; selected: boolean; onClick: () => void }) {
+  const st = STATUS_META[user.status];
   const isOffline = user.status === "offline";
 
   return (
@@ -114,76 +99,49 @@ function UserCard({
       onClick={onClick}
       disabled={isOffline}
       className={cn(
-        "w-full text-left rounded-xl border transition-all duration-100 overflow-hidden",
-        isOffline ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:shadow-sm"
+        "w-full text-left rounded-lg border transition-all duration-100",
+        isOffline ? "opacity-40 cursor-not-allowed" : "hover:bg-muted/50",
+        selected ? "border-foreground" : "border-border"
       )}
-      style={{
-        background: selected ? `${lvl.color}10` : "var(--card)",
-        borderColor: selected ? `${lvl.color}60` : "var(--border)",
-        borderWidth: selected ? 1.5 : 1,
-        boxShadow: selected ? `0 0 0 2px ${lvl.color}25` : undefined,
-      }}
+      style={{ background: selected ? "var(--muted)" : "var(--card)" }}
     >
-      <div className="flex items-start gap-3 p-3">
-        {/* Avatar + status dot */}
-        <div className="relative shrink-0">
-          <Avatar initials={user.initials} color={lvl.color} size="md" />
-          <div className="absolute -bottom-0.5 -right-0.5">
-            <StatusDot status={user.status} animate />
-          </div>
-        </div>
+      <div className="flex items-center gap-3 px-3 py-2.5">
+        {/* Avatar */}
+        <Avatar initials={user.initials} size="md" />
 
-        {/* Main info */}
+        {/* Name + role */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-[13px] font-bold truncate" style={{ color: "var(--foreground)" }}>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[12px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
               {user.name}
             </p>
             {selected && (
-              <CheckCircle2 size={13} strokeWidth={2} className="shrink-0" style={{ color: lvl.color }} />
+              <CheckCircle2 size={12} strokeWidth={2} className="shrink-0" style={{ color: "var(--foreground)" }} />
             )}
           </div>
-          <p className="text-[11px] truncate mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+          <p className="text-[11px] truncate" style={{ color: "var(--muted-foreground)" }}>
             {user.role} · {user.department}
           </p>
-
-          {/* Tags row */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Level badge */}
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-              style={{ color: lvl.color, background: lvl.bg, border: `1px solid ${lvl.color}30` }}>
-              {user.level}
-            </span>
-            {/* Status */}
-            <span className="text-[10px] font-semibold flex items-center gap-1"
-              style={{ color: st.color }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.color }} />
-              {st.label}
-            </span>
-            {/* Workload */}
-            {user.activeEscalations > 0 && (
-              <span className="text-[10px] font-semibold flex items-center gap-0.5"
-                style={{ color: user.activeEscalations >= 3 ? "#ef4444" : "var(--muted-foreground)" }}>
-                <Briefcase size={9} strokeWidth={1.5} />
-                {user.activeEscalations} active
-              </span>
-            )}
-          </div>
         </div>
 
-        {/* Contact info (right side) */}
-        <div className="shrink-0 flex flex-col gap-1 items-end">
-          <div className="flex items-center gap-1" style={{ color: "var(--muted-foreground)" }}>
-            <Mail size={10} strokeWidth={1.5} />
-            <span className="text-[10px] max-w-[140px] truncate">{user.email}</span>
+        {/* Right side: status + workload */}
+        <div className="shrink-0 flex flex-col items-end gap-1">
+          <div className="flex items-center gap-1">
+            <StatusDot status={user.status} />
+            <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>{st.label}</span>
           </div>
-          {user.phone && (
-            <div className="flex items-center gap-1" style={{ color: "var(--muted-foreground)" }}>
-              <Phone size={10} strokeWidth={1.5} />
-              <span className="text-[10px]">{user.phone}</span>
-            </div>
+          {user.activeEscalations > 0 && (
+            <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              {user.activeEscalations} active
+            </span>
           )}
         </div>
+      </div>
+
+      {/* Email row */}
+      <div className="px-3 pb-2.5 flex items-center gap-1" style={{ color: "var(--muted-foreground)" }}>
+        <Mail size={10} strokeWidth={1.5} className="shrink-0" />
+        <span className="text-[10px] truncate">{user.email}</span>
       </div>
     </button>
   );
@@ -243,7 +201,6 @@ export function ReassignModal({
     });
   }, [search, levelFilter, currentAssignee, visibleLevels]);
 
-  const lvlColor = selected ? LEVEL_META[selected.level].color : "var(--primary)";
 
   function handleConfirm() {
     if (!selected) return;
@@ -286,10 +243,6 @@ export function ReassignModal({
           background: "var(--background)",
         }}
       >
-        {/* Top accent */}
-        <div className="h-1 w-full shrink-0"
-          style={{ background: "linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 40%, transparent))" }} />
-
         {/* Header */}
         <DialogHeader className="px-5 pt-4 pb-3 border-b border-border shrink-0">
           <div className="flex items-start justify-between gap-3">
@@ -436,34 +389,25 @@ export function ReassignModal({
               {selected ? (
                 <div className="flex flex-col gap-2">
                   {/* Recipient card */}
-                  <div className="flex items-center gap-2.5 p-2.5 rounded-xl border border-border"
-                    style={{ background: `${lvlColor}08` }}>
-                    <div className="relative shrink-0">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs"
-                        style={{ background: lvlColor, color: "#fff" }}>
-                        {selected.initials}
-                      </div>
-                      <div className="absolute -bottom-0.5 -right-0.5">
-                        <StatusDot status={selected.status} />
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-border"
+                    style={{ background: "var(--muted)" }}>
+                    <Avatar initials={selected.initials} size="sm" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold truncate" style={{ color: "var(--foreground)" }}>
+                      <p className="text-[11px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
                         {selected.name}
                       </p>
                       <p className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
                         {selected.email}
                       </p>
                     </div>
+                    <StatusDot status={selected.status} />
                   </div>
 
                   {/* Email preview card */}
-                  <div className="rounded-xl border border-border overflow-hidden text-[10px]"
+                  <div className="rounded-lg border border-border overflow-hidden text-[10px]"
                     style={{ background: "var(--card)" }}>
-                    {/* Mini email header */}
-                    <div className="h-0.5 w-full" style={{ background: lvlColor }} />
                     <div className="px-3 py-2.5 border-b border-border">
-                      <p className="font-bold mb-0.5" style={{ color: "var(--foreground)" }}>
+                      <p className="font-semibold mb-0.5" style={{ color: "var(--foreground)" }}>
                         [RAMS] Escalation Reassigned — Action Required
                       </p>
                       <p style={{ color: "var(--muted-foreground)" }}>
@@ -481,8 +425,8 @@ export function ReassignModal({
                         <strong>{escalationId}</strong> has been reassigned to you from {currentAssignee}. Please acknowledge within your SLA window.
                       </p>
                       {note.trim() && (
-                        <div className="px-2 py-1.5 rounded mt-0.5"
-                          style={{ background: "var(--muted)", borderLeft: `2px solid ${lvlColor}` }}>
+                        <div className="px-2 py-1.5 rounded mt-0.5 border-l-2 border-border"
+                          style={{ background: "var(--muted)" }}>
                           <p className="font-semibold mb-0.5" style={{ color: "var(--foreground)" }}>
                             Handoff note:
                           </p>
@@ -491,10 +435,10 @@ export function ReassignModal({
                           </p>
                         </div>
                       )}
-                      {/* Mini CTA buttons */}
+                      {/* CTA buttons */}
                       <div className="flex gap-1.5 mt-1">
-                        <div className="flex-1 text-center py-1.5 rounded-md font-bold"
-                          style={{ background: lvlColor, color: "#fff" }}>
+                        <div className="flex-1 text-center py-1.5 rounded-md font-semibold"
+                          style={{ background: "var(--foreground)", color: "var(--background)" }}>
                           ✓ Acknowledge
                         </div>
                         <div className="flex-1 text-center py-1.5 rounded-md font-semibold border border-border"
@@ -507,17 +451,17 @@ export function ReassignModal({
 
                   {/* Workload warning */}
                   {selected.activeEscalations >= 2 && (
-                    <div className="flex items-start gap-2 px-2.5 py-2 rounded-lg"
-                      style={{ background: "#f59e0b12", border: "1px solid #f59e0b30" }}>
-                      <AlertTriangle size={12} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "#f59e0b" }} />
-                      <p className="text-[10px] leading-relaxed" style={{ color: "#f59e0b" }}>
-                        {selected.name.split(" ")[0]} already has {selected.activeEscalations} active escalation{selected.activeEscalations > 1 ? "s" : ""}. Consider someone with lower load.
+                    <div className="flex items-start gap-2 px-2.5 py-2 rounded-lg border border-border"
+                      style={{ background: "var(--muted)" }}>
+                      <AlertTriangle size={12} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "var(--muted-foreground)" }} />
+                      <p className="text-[10px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                        {selected.name.split(" ")[0]} already has {selected.activeEscalations} active escalations. Consider someone with lower load.
                       </p>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-8 gap-2 rounded-xl border border-dashed border-border">
+                <div className="flex flex-col items-center justify-center py-8 gap-2 rounded-lg border border-dashed border-border">
                   <Mail size={20} strokeWidth={1} style={{ color: "var(--muted-foreground)" }} />
                   <p className="text-[10px] text-center" style={{ color: "var(--muted-foreground)" }}>
                     Select a user to preview the notification email
@@ -532,7 +476,7 @@ export function ReassignModal({
                 className="w-full h-9 text-xs font-bold gap-1.5 transition-all"
                 disabled={!selected || confirmed}
                 onClick={handleConfirm}
-                style={selected ? { background: lvlColor, borderColor: lvlColor } : undefined}
+                style={selected ? { background: "var(--foreground)", color: "var(--background)" } : undefined}
               >
                 {confirmed ? (
                   <>
