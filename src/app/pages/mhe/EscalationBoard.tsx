@@ -988,22 +988,23 @@ export function EscalationBoard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-0.5 border-b border-border">
+        <div className="flex items-center border-b border-border">
           {TABS.map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all",
-                tab === t.key ? "border-primary" : "border-transparent"
+                "flex items-center gap-2 px-5 py-3 text-[13px] font-semibold border-b-2 transition-all",
+                tab === t.key ? "border-foreground" : "border-transparent"
               )}
-              style={{ color: tab === t.key ? "var(--primary)" : "var(--muted-foreground)" }}
+              style={{ color: tab === t.key ? "var(--foreground)" : "var(--muted-foreground)" }}
             >
               {t.label}
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+              <span
+                className="min-w-[20px] h-[20px] flex items-center justify-center text-[11px] font-bold rounded-md px-1.5"
                 style={{
-                  background: tab === t.key ? "var(--primary)" : "var(--muted)",
-                  color: tab === t.key ? "var(--primary-foreground)" : "var(--muted-foreground)",
+                  background: tab === t.key ? "var(--foreground)" : "var(--muted)",
+                  color: tab === t.key ? "var(--background)" : "var(--muted-foreground)",
                 }}>
                 {t.count}
               </span>
@@ -1013,24 +1014,27 @@ export function EscalationBoard() {
       </div>
 
       {/* Filter bar */}
-      <div className="px-6 py-2.5 flex items-center gap-2 shrink-0 border-b border-border"
+      <div className="px-6 py-3 flex items-center gap-3 shrink-0 border-b border-border"
         style={{ background: "var(--card)" }}>
-        <div className="relative flex-1 max-w-sm">
-          <Search size={12} strokeWidth={1.5}
+        {/* Search */}
+        <div className="relative flex-1 max-w-xs">
+          <Search size={14} strokeWidth={1.5}
             className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             style={{ color: "var(--muted-foreground)" }} />
           <Input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search ID, title, MHE, assignee…" className="pl-8 h-8 text-xs" />
+            placeholder="Search ID, title, MHE, assignee…" className="pl-9 h-9 text-[12px]" />
           {search && (
             <button onClick={() => setSearch("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100">
-              <X size={11} />
+              <X size={12} />
             </button>
           )}
         </div>
 
+        <div className="w-px h-5 bg-border" />
+
         <Select value={filterSource} onValueChange={setFilterSource}>
-          <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="Source" /></SelectTrigger>
+          <SelectTrigger className="h-9 text-[12px] w-36"><SelectValue placeholder="Source" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sources</SelectItem>
             <SelectItem value="Safety">Safety</SelectItem>
@@ -1041,7 +1045,7 @@ export function EscalationBoard() {
         </Select>
 
         <Select value={filterSeverity} onValueChange={setFilterSeverity}>
-          <SelectTrigger className="h-8 text-xs w-36"><SelectValue placeholder="Severity" /></SelectTrigger>
+          <SelectTrigger className="h-9 text-[12px] w-36"><SelectValue placeholder="Severity" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Severity</SelectItem>
             <SelectItem value="Critical">Critical</SelectItem>
@@ -1051,8 +1055,13 @@ export function EscalationBoard() {
           </SelectContent>
         </Select>
 
-        <span className="text-[11px] ml-auto font-medium" style={{ color: "var(--muted-foreground)" }}>
-          {filtered.length} {filtered.length === 1 ? "item" : "items"}
+        {/* Item count badge */}
+        <span className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg"
+          style={{ background: "var(--muted)", color: "var(--foreground)", border: "1px solid var(--border)" }}>
+          {filtered.length}
+          <span className="text-[11px] font-normal" style={{ color: "var(--muted-foreground)" }}>
+            {filtered.length === 1 ? "item" : "items"}
+          </span>
         </span>
       </div>
 
