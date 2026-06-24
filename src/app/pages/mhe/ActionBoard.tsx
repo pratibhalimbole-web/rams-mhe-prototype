@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 import { useSidebar } from "../../components/layout/SidebarLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -40,6 +41,9 @@ import {
   Calendar as CalendarIcon,
   ArrowRight,
   Filter,
+  AlertTriangle,
+  ArrowUpRight,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "../../components/ui/utils";
 import {
@@ -82,6 +86,26 @@ const MOCK_ACTIONS: Action[] = [
   { id: "a7", source: "system", issueId: "ix7", suite: "MMS",  issueTitle: "Operator compliance issue",         issueDescription: "Suresh Kumar · License expired · Vijay Nair · Medical",   issueLocation: "Fleet",       title: "Renew operator license — Suresh Kumar",   priority: "High",     assignedTo: "Admin",          assignedAvatar: "AD", dueDate: "2026-04-02T00:00", dueDateDisplay: "02 Apr",           status: "done",        isOverdue: false, notes: "", createdAt: "2026-03-31T09:00", updatedAt: "2026-04-02T14:00" },
   { id: "a8", source: "system", issueId: "ix8", suite: "RTSS", issueTitle: "Pedestrian proximity breach",       issueDescription: "MHE-007 · Cross-aisle junction · 0.6m clearance",         issueLocation: "Cross-aisle", title: "Fix pedestrian alert — Zone C",           priority: "High",     assignedTo: "Safety Officer", assignedAvatar: "SO", dueDate: "2026-04-03T00:00", dueDateDisplay: "03 Apr",           status: "done",        isOverdue: false, notes: "", createdAt: "2026-04-01T10:00", updatedAt: "2026-04-02T15:00" },
 ];
+
+// ─── Escalation Logic ────────────────────────────────────────────────────────
+
+// How many hours each overdue action has been past its due date (mock values)
+const OVERDUE_HOURS: Record<string, number> = {
+  a3: 3,   // "Today, 2:00 PM" — ~3h overdue
+  a4: 26,  // "Yesterday" — ~26h overdue
+  a6: 5,   // "Today, 1:00 PM" — ~5h overdue
+};
+
+type EscLevel = "L1" | "L2" | "L3" | "L4";
+
+function getEscalationInfo(actionId: string): { level: EscLevel; hours: number; role: string } | null {
+  const hours = OVERDUE_HOURS[actionId];
+  if (!hours) return null;
+  if (hours < 2)  return { level: "L1", hours, role: "Operator" };
+  if (hours < 6)  return { level: "L2", hours, role: "Supervisor" };
+  if (hours < 14) return { level: "L3", hours, role: "Ops Manager" };
+  return           { level: "L4", hours, role: "Director" };
+}
 
 // ─── Helper Components ───────────────────────────────────────────────────────
 
@@ -199,6 +223,7 @@ interface ActionCardProps {
 function ActionCard({ action, onClick, onDragStart }: ActionCardProps) {
   const priorityColor = SEVERITY_COLORS[action.priority];
   const suiteColor = SUITE_COLORS[action.suite];
+  const esc = action.isOverdue ? getEscalationInfo(action.id) : null;
 
   return (
     <div
@@ -266,6 +291,20 @@ function ActionCard({ action, onClick, onDragStart }: ActionCardProps) {
             {action.dueDateDisplay || action.dueDate}
           </span>
         </div>
+
+        {/* Escalation warning */}
+        {esc && (
+          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-border mt-0.5"
+            style={{ background: "var(--muted)" }}>
+            <AlertTriangle className="w-3 h-3 shrink-0" style={{ color: "var(--destructive)" }} strokeWidth={1.5} />
+            <span className="text-[10px] font-semibold flex-1" style={{ color: "var(--foreground)" }}>
+              Escalated to {esc.level} — {esc.role}
+            </span>
+            <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              {esc.hours}h overdue
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -948,6 +987,32 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
                   {action.status.replace("-", " ")}
                 </span>
               </div>
+
+              {/* Escalation section */}
+              {(() => {
+                const esc = getEscalationInfo(action.id);
+                if (!esc) return null;
+                return (
+                  <div className="flex flex-col gap-2 p-3 rounded-lg border border-border" style={{ background: "var(--muted)" }}>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle size={13} strokeWidth={1.5} style={{ color: "var(--destructive)" }} />
+                      <p className="text-[11px] font-bold" style={{ color: "var(--foreground)" }}>
+                        Auto-escalated to {esc.level} ({esc.role})
+                      </p>
+                    </div>
+                    <p className="text-[11px]" style={{ color: "var(--muted-foreground)", lineHeight: 1.5 }}>
+                      This action was {esc.hours}h overdue. The {esc.role} has been notified and the issue is now tracked on the Escalation Board.
+                    </p>
+                    <button
+                      onClick={() => navigate("/mhe/escalation-logs")}
+                      className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-md border border-border hover:bg-background transition-colors w-full justify-center mt-0.5"
+                      style={{ color: "var(--foreground)", background: "var(--card)" }}>
+                      <ExternalLink size={11} strokeWidth={1.5} />
+                      View on Escalation Board
+                    </button>
+                  </div>
+                );
+              })()}
             </>
           )}
 
@@ -1000,6 +1065,7 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
 
 export function ActionBoard() {
   const sidebar = useSidebar();
+  const navigate = useNavigate();
 
   // State — must be declared before any useEffect that references them
   const [issues, setIssues] = useState<Issue[]>(MOCK_ISSUES);
@@ -1160,6 +1226,34 @@ export function ActionBoard() {
           Create Action
         </Button>
       </div>
+
+      {/* ── Escalation Banner ── */}
+      {(() => {
+        const overdueActions = actions.filter(a => a.isOverdue && a.status !== "done");
+        if (overdueActions.length === 0) return null;
+        const escalated = overdueActions.filter(a => getEscalationInfo(a.id));
+        return (
+          <div className="mx-6 mt-4 flex items-center gap-3 px-4 py-3 rounded-lg border border-border"
+            style={{ background: "var(--muted)" }}>
+            <AlertTriangle size={15} strokeWidth={1.5} className="shrink-0" style={{ color: "var(--destructive)" }} />
+            <div className="flex-1 min-w-0">
+              <span className="text-[12px] font-semibold" style={{ color: "var(--foreground)" }}>
+                {escalated.length} action{escalated.length > 1 ? "s" : ""} overdue and auto-escalated
+              </span>
+              <span className="text-[11px] ml-2" style={{ color: "var(--muted-foreground)" }}>
+                — supervisor has been notified. Resolve or reassign to stop escalation.
+              </span>
+            </div>
+            <button
+              onClick={() => navigate("/mhe/escalation-logs")}
+              className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-md border border-border hover:bg-background transition-colors shrink-0"
+              style={{ color: "var(--foreground)", background: "var(--card)" }}>
+              <ExternalLink size={11} strokeWidth={1.5} />
+              View Escalation Board
+            </button>
+          </div>
+        );
+      })()}
 
       {/* ── Kanban Board ── */}
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
