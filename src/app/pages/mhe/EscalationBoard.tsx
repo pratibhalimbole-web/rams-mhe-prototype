@@ -670,8 +670,18 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
 
 // ─── Detail Drawer ────────────────────────────────────────────────────────────
 
-function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose: () => void }) {
-  const [note, setNote]               = useState("");
+function DetailDrawer({
+  item, onClose, onAcknowledge, onResolve, onEscalate, onFlagBreach, onSaveNote,
+}: {
+  item: EscalationItem | null;
+  onClose: () => void;
+  onAcknowledge: (id: string) => void;
+  onResolve: (id: string) => void;
+  onEscalate: (id: string, next: EscalationLevel) => void;
+  onFlagBreach: (id: string) => void;
+  onSaveNote: (id: string, note: string) => void;
+}) {
+  const [note, setNote]                 = useState("");
   const [reassignOpen, setReassignOpen] = useState(false);
 
   if (!item) return null;
@@ -826,27 +836,31 @@ function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose:
             style={{ background: "var(--card)" }}>
             <div className="flex gap-2">
               {item.status === "open" && (
-                <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5">
+                <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                  onClick={() => onAcknowledge(item.id)}>
                   <CheckCircle2 size={13} strokeWidth={1.5} />
                   Acknowledge
                 </Button>
               )}
               {(item.status === "acknowledged" || item.status === "in_progress") && (
-                <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5">
+                <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                  onClick={() => onResolve(item.id)}>
                   <CheckCircle2 size={13} strokeWidth={1.5} />
                   Mark Resolved
                 </Button>
               )}
               {!isL4 && (
                 <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                  style={{ color: "#f97316", borderColor: "#f9741660" }}>
+                  style={{ color: "#f97316", borderColor: "#f9741660" }}
+                  onClick={() => onEscalate(item.id, nextLevel as EscalationLevel)}>
                   <ArrowUpRight size={13} strokeWidth={1.5} />
                   Escalate to {nextLevel}
                 </Button>
               )}
               {isL4 && (
                 <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                  style={{ color: "#ef4444", borderColor: "#ef444460" }}>
+                  style={{ color: "#ef4444", borderColor: "#ef444460" }}
+                  onClick={() => onFlagBreach(item.id)}>
                   <AlertTriangle size={13} strokeWidth={1.5} />
                   Flag Critical Breach
                 </Button>
@@ -860,7 +874,8 @@ function DetailDrawer({ item, onClose }: { item: EscalationItem | null; onClose:
                 Reassign
               </Button>
               {note.trim() && (
-                <Button size="sm" variant="outline" className="flex-1 h-9 text-xs gap-1.5">
+                <Button size="sm" variant="outline" className="flex-1 h-9 text-xs gap-1.5"
+                  onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
                   <MessageSquare size={12} strokeWidth={1.5} />
                   Save Note
                 </Button>
@@ -916,9 +931,51 @@ export function EscalationBoard() {
   const [filterSource, setFilterSource]     = useState<string>("all");
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
   const [selected, setSelected]             = useState<EscalationItem | null>(null);
+  const [escalations, setEscalations]       = useState<EscalationItem[]>(MOCK_ESCALATIONS);
+
+  const patchItem = (id: string, patch: Partial<EscalationItem>) => {
+    setEscalations(prev => prev.map(e => e.id === id ? { ...e, ...patch } : e));
+    setSelected(prev => prev?.id === id ? { ...prev, ...patch } : prev);
+  };
+
+  const handleAcknowledge = (id: string) =>
+    patchItem(id, { status: "acknowledged" });
+
+  const handleResolve = (id: string) =>
+    patchItem(id, { status: "resolved" });
+
+  const handleEscalate = (id: string, next: EscalationLevel) =>
+    patchItem(id, { currentLevel: next, status: "open" });
+
+  const handleFlagBreach = (id: string) =>
+    patchItem(id, { status: "critical_breach" });
+
+  const handleSaveNote = (id: string, note: string) => {
+    const ts = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setEscalations(prev => prev.map(e => e.id === id ? {
+      ...e,
+      history: [...e.history, {
+        level: e.currentLevel, role: e.assignedRole, assignee: e.assignedTo,
+        initials: e.assignedInitials, assignedAt: ts, dueAt: "", outcome: "active",
+        comment: note,
+      }],
+    } : e));
+    setSelected(prev => {
+      if (!prev || prev.id !== id) return prev;
+      const ts2 = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      return {
+        ...prev,
+        history: [...prev.history, {
+          level: prev.currentLevel, role: prev.assignedRole, assignee: prev.assignedTo,
+          initials: prev.assignedInitials, assignedAt: ts2, dueAt: "", outcome: "active",
+          comment: note,
+        }],
+      };
+    });
+  };
 
   const filtered = useMemo(() => {
-    return MOCK_ESCALATIONS.filter(item => {
+    return escalations.filter(item => {
       if (tab === "active")      return item.status !== "resolved";
       if (tab === "pending_ack") return item.status === "open";
       if (tab === "resolved")    return item.status === "resolved";
@@ -937,21 +994,21 @@ export function EscalationBoard() {
       }
       return true;
     });
-  }, [tab, search, filterSource, filterSeverity]);
+  }, [tab, search, filterSource, filterSeverity, escalations]);
 
   const byLevel = (level: EscalationLevel) =>
     filtered.filter(i => i.currentLevel === level && i.status !== "resolved");
 
-  const totalActive   = MOCK_ESCALATIONS.filter(i => i.status !== "resolved").length;
-  const totalPending  = MOCK_ESCALATIONS.filter(i => i.status === "open").length;
-  const totalBreached = MOCK_ESCALATIONS.filter(i => i.slaPercent <= 0 && i.status !== "resolved").length;
-  const totalResolved = MOCK_ESCALATIONS.filter(i => i.status === "resolved").length;
+  const totalActive   = escalations.filter(i => i.status !== "resolved").length;
+  const totalPending  = escalations.filter(i => i.status === "open").length;
+  const totalBreached = escalations.filter(i => i.slaPercent <= 0 && i.status !== "resolved").length;
+  const totalResolved = escalations.filter(i => i.status === "resolved").length;
 
   const TABS: { key: TabKey; label: string; count: number }[] = [
     { key: "active",      label: "Active",      count: totalActive   },
     { key: "pending_ack", label: "Pending Ack", count: totalPending  },
     { key: "resolved",    label: "Resolved",    count: totalResolved },
-    { key: "all",         label: "All",         count: MOCK_ESCALATIONS.length },
+    { key: "all",         label: "All",         count: escalations.length },
   ];
 
   return (
@@ -1101,7 +1158,15 @@ export function EscalationBoard() {
         )}
       </div>
 
-      <DetailDrawer item={selected} onClose={() => setSelected(null)} />
+      <DetailDrawer
+        item={selected}
+        onClose={() => setSelected(null)}
+        onAcknowledge={handleAcknowledge}
+        onResolve={handleResolve}
+        onEscalate={handleEscalate}
+        onFlagBreach={handleFlagBreach}
+        onSaveNote={handleSaveNote}
+      />
     </div>
   );
 }
