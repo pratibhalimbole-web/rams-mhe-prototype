@@ -1016,13 +1016,13 @@ export function EscalationBoard() {
       {/* Filter bar */}
       <div className="px-6 py-3 flex items-center gap-3 shrink-0 border-b border-border"
         style={{ background: "var(--card)" }}>
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
+        {/* Search — fixed wide width */}
+        <div className="relative shrink-0" style={{ width: 360 }}>
           <Search size={14} strokeWidth={1.5}
             className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             style={{ color: "var(--muted-foreground)" }} />
           <Input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search ID, title, MHE, assignee…" className="pl-9 h-9 text-[12px]" />
+            placeholder="Search ID, title, MHE, assignee…" className="pl-9 h-9 text-[12px] w-full" />
           {search && (
             <button onClick={() => setSearch("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100">
@@ -1031,32 +1031,36 @@ export function EscalationBoard() {
           )}
         </div>
 
-        <div className="w-px h-5 bg-border" />
+        <div className="w-px h-5 bg-border shrink-0" />
 
-        <Select value={filterSource} onValueChange={setFilterSource}>
-          <SelectTrigger className="h-9 text-[12px] w-36"><SelectValue placeholder="Source" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Sources</SelectItem>
-            <SelectItem value="Safety">Safety</SelectItem>
-            <SelectItem value="Inspection">Inspection</SelectItem>
-            <SelectItem value="Compliance">Compliance</SelectItem>
-            <SelectItem value="Impact">Impact</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="shrink-0" style={{ width: 160 }}>
+          <Select value={filterSource} onValueChange={setFilterSource}>
+            <SelectTrigger className="h-9 text-[12px] w-full"><SelectValue placeholder="All Sources" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="Safety">Safety</SelectItem>
+              <SelectItem value="Inspection">Inspection</SelectItem>
+              <SelectItem value="Compliance">Compliance</SelectItem>
+              <SelectItem value="Impact">Impact</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Select value={filterSeverity} onValueChange={setFilterSeverity}>
-          <SelectTrigger className="h-9 text-[12px] w-36"><SelectValue placeholder="Severity" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Severity</SelectItem>
-            <SelectItem value="Critical">Critical</SelectItem>
-            <SelectItem value="High">High</SelectItem>
-            <SelectItem value="Medium">Medium</SelectItem>
-            <SelectItem value="Low">Low</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="shrink-0" style={{ width: 160 }}>
+          <Select value={filterSeverity} onValueChange={setFilterSeverity}>
+            <SelectTrigger className="h-9 text-[12px] w-full"><SelectValue placeholder="All Severity" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Severity</SelectItem>
+              <SelectItem value="Critical">Critical</SelectItem>
+              <SelectItem value="High">High</SelectItem>
+              <SelectItem value="Medium">Medium</SelectItem>
+              <SelectItem value="Low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Item count badge */}
-        <span className="ml-auto flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg"
+        <span className="ml-auto shrink-0 flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg"
           style={{ background: "var(--muted)", color: "var(--foreground)", border: "1px solid var(--border)" }}>
           {filtered.length}
           <span className="text-[11px] font-normal" style={{ color: "var(--muted-foreground)" }}>
