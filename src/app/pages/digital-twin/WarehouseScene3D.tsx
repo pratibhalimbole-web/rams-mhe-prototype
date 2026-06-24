@@ -1410,7 +1410,6 @@ function MHEInfoCard({ mheId, position, color, type, assignment }: {
   const statusLabel = deviated ? "⚠ Deviated" : isCompleted ? "✓ Completed" : "Active";
   const statusCol   = deviated ? "#ef4444" : isCompleted ? "#22c55e" : sc;
 
-  const portalRef = useRef(document.body);
   const { isDark } = useTheme();
 
   // Theme-aware palette — dark: slate-800/900, light: white/slate-50
@@ -1568,7 +1567,7 @@ function MHEInfoCard({ mheId, position, color, type, assignment }: {
   );
 
   return (
-    <Html position={[0, 3.5, 0]} center zIndexRange={[200, 0]} portal={portalRef}>
+    <Html position={[0, 3.5, 0]} center zIndexRange={[200, 0]}>
       {card}
     </Html>
   );
