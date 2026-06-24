@@ -1017,7 +1017,7 @@ export function EscalationBoard() {
       <div className="px-6 py-3 flex items-center gap-3 shrink-0 border-b border-border"
         style={{ background: "var(--card)" }}>
         {/* Search */}
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative flex-1 max-w-md">
           <Search size={14} strokeWidth={1.5}
             className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             style={{ color: "var(--muted-foreground)" }} />
