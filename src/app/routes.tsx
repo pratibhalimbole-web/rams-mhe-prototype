@@ -28,6 +28,7 @@ import { CommandCenter3D } from "./pages/mhe/CommandCenter3D";
 import { IMDSInspectionFindings } from "./pages/mhe/IMDSInspectionFindings";
 import { IMDSRulesAndAction } from "./pages/mhe/IMDSRulesAndAction";
 import { IMDSManageChecklists } from "./pages/mhe/IMDSManageChecklists";
+import { EscalationBoard } from "./pages/mhe/EscalationBoard";
 
 // Create a placeholder component for pages not yet implemented
 function PlaceholderPage({ title }: { title: string }) {
@@ -286,7 +287,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/escalation-logs",
-        element: <PlaceholderPage title="Escalation Logs" />,
+        element: <EscalationBoard />,
       },
       {
         path: "mhe/report",
