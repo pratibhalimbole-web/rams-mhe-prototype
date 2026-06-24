@@ -161,50 +161,44 @@ interface IssueCardProps {
 }
 
 function IssueCard({ issue, onAssign, onClick, isDragging }: IssueCardProps) {
-  const severityColor = SEVERITY_COLORS[issue.severity];
-
   return (
     <div
       onClick={() => onClick(issue)}
       className={cn(
-        "group relative bg-card border border-border rounded cursor-pointer transition-all duration-150",
-        isDragging ? "opacity-50 shadow-lg" : "hover:shadow-sm hover:border-border/80"
+        "group bg-card border border-border rounded-lg cursor-pointer transition-all duration-150",
+        isDragging ? "opacity-50 shadow-lg" : "hover:shadow-sm"
       )}
-      style={{ borderLeft: `3px solid ${severityColor}` }}
     >
-      <div className="p-3 flex flex-col gap-2">
-        {/* Top Row */}
+      <div className="p-4 flex flex-col gap-3">
+        {/* Suite + Severity */}
         <div className="flex items-center justify-between gap-2">
           <SuitePill suite={issue.suite} />
           <SeverityBadge severity={issue.severity} />
         </div>
 
-        {/* Title */}
-        <p
-          className="text-sm font-medium leading-snug line-clamp-2"
-          style={{ color: "var(--foreground)" }}
-        >
-          {issue.title}
-        </p>
+        {/* Title + Detail */}
+        <div className="flex flex-col gap-1">
+          <p className="text-[13px] font-semibold leading-snug line-clamp-2" style={{ color: "var(--foreground)" }}>
+            {issue.title}
+          </p>
+          <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: "var(--muted-foreground)" }}>
+            {issue.detail}
+          </p>
+        </div>
 
-        {/* Detail */}
-        <p className="text-xs leading-tight truncate" style={{ color: "var(--muted-foreground)" }}>
-          {issue.detail}
-        </p>
-
-        {/* Bottom Row */}
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+          <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
             {issue.raisedAt}
           </span>
           <Button
             size="sm"
             variant="outline"
-            className="h-6 text-xs px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-7 text-xs px-2.5 opacity-0 group-hover:opacity-100 transition-opacity gap-1"
             onClick={(e) => { e.stopPropagation(); onAssign(issue); }}
           >
             Assign
-            <ArrowRight className="w-3 h-3 ml-1" />
+            <ArrowRight className="w-3 h-3" />
           </Button>
         </div>
       </div>
@@ -230,77 +224,66 @@ function ActionCard({ action, onClick, onDragStart }: ActionCardProps) {
       draggable
       onDragStart={(e) => onDragStart(e, action)}
       onClick={() => onClick(action)}
-      className={cn(
-        "group bg-card border border-border rounded cursor-grab active:cursor-grabbing transition-all duration-150",
-        "hover:shadow-sm hover:border-border/80",
-        action.isOverdue && "border-l-[3px]"
-      )}
-      style={action.isOverdue ? { borderLeftColor: "var(--destructive)" } : {}}
+      className="group bg-card border border-border rounded-lg cursor-grab active:cursor-grabbing transition-all duration-150 hover:shadow-sm"
     >
-      <div className="p-3 flex flex-col gap-2.5">
-        {/* Top — title + priority */}
+      <div className="p-4 flex flex-col gap-3">
+        {/* Title + drag handle */}
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium leading-snug line-clamp-2 flex-1" style={{ color: "var(--foreground)" }}>
+          <p className="text-[13px] font-semibold leading-snug line-clamp-2 flex-1" style={{ color: "var(--foreground)" }}>
             {action.title}
           </p>
-          <GripVertical className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-0 group-hover:opacity-40 transition-opacity" style={{ color: "var(--muted-foreground)" }} />
+          <GripVertical className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-0 group-hover:opacity-30 transition-opacity" style={{ color: "var(--muted-foreground)" }} />
         </div>
 
-        {/* Priority + Suite tags */}
+        {/* Badges */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span
-            className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-            style={{ color: priorityColor, backgroundColor: `color-mix(in srgb, ${priorityColor} 12%, transparent)` }}
-          >
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded"
+            style={{ color: priorityColor, background: `color-mix(in srgb, ${priorityColor} 10%, transparent)` }}>
             {action.priority}
           </span>
-          <span
-            className="text-[10px] font-medium px-1.5 py-0.5 rounded"
-            style={{ color: suiteColor, backgroundColor: `color-mix(in srgb, ${suiteColor} 10%, transparent)` }}
-          >
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded"
+            style={{ color: suiteColor, background: `color-mix(in srgb, ${suiteColor} 10%, transparent)` }}>
             {action.suite}
           </span>
           {action.isOverdue && (
-            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded" style={{ color: "var(--destructive)", backgroundColor: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded"
+              style={{ color: "var(--destructive)", background: `color-mix(in srgb, var(--destructive) 10%, transparent)` }}>
               Overdue
             </span>
           )}
         </div>
 
         {/* Divider */}
-        <div className="border-t border-border/60" />
+        <div className="border-t border-border" />
 
         {/* Assignee */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Avatar initials={action.assignedAvatar} />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: "var(--foreground)" }}>{action.assignedTo}</p>
-            <p className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
-              {action.issueTitle}
-            </p>
+            <p className="text-[12px] font-medium truncate" style={{ color: "var(--foreground)" }}>{action.assignedTo}</p>
+            <p className="text-[11px] truncate mt-0.5" style={{ color: "var(--muted-foreground)" }}>{action.issueTitle}</p>
           </div>
         </div>
 
-        {/* Due Date */}
+        {/* Due date */}
         <div className="flex items-center gap-1.5">
-          <CalendarIcon className="w-3 h-3" style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }} />
-          <span
-            className="text-xs"
-            style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }}
-          >
+          <CalendarIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5}
+            style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }} />
+          <span className="text-[11px]"
+            style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }}>
             {action.dueDateDisplay || action.dueDate}
           </span>
         </div>
 
         {/* Escalation warning */}
         {esc && (
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-border mt-0.5"
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border"
             style={{ background: "var(--muted)" }}>
-            <AlertTriangle className="w-3 h-3 shrink-0" style={{ color: "var(--destructive)" }} strokeWidth={1.5} />
-            <span className="text-[10px] font-semibold flex-1" style={{ color: "var(--foreground)" }}>
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} style={{ color: "var(--destructive)" }} />
+            <span className="text-[11px] font-semibold flex-1" style={{ color: "var(--foreground)" }}>
               Escalated to {esc.level} — {esc.role}
             </span>
-            <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+            <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
               {esc.hours}h overdue
             </span>
           </div>
@@ -917,100 +900,111 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="right" className="w-[420px] p-0 flex flex-col">
-        <SheetHeader className="px-5 py-4 border-b border-border">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="text-base font-semibold">
-              {isIssue ? "Issue Details" : "Action Details"}
-            </SheetTitle>
+        <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
+          <SheetTitle className="text-[13px] font-semibold mb-3" style={{ color: "var(--foreground)" }}>
+            {isIssue ? "Issue Details" : "Action Details"}
+          </SheetTitle>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {isIssue && issue && (
+              <>
+                <SuitePill suite={issue.suite} />
+                <SeverityBadge severity={issue.severity} />
+              </>
+            )}
+            {!isIssue && action && (
+              <>
+                <SuitePill suite={action.suite} />
+                <SeverityBadge severity={action.priority} />
+                {action.isOverdue && (
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded"
+                    style={{ color: "var(--destructive)", background: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
+                    Overdue
+                  </span>
+                )}
+              </>
+            )}
           </div>
-          {isIssue && issue && (
-            <div className="flex items-center gap-2 pt-1">
-              <SuitePill suite={issue.suite} />
-              <SeverityBadge severity={issue.severity} />
-            </div>
-          )}
-          {!isIssue && action && (
-            <div className="flex items-center gap-2 pt-1">
-              <SuitePill suite={action.suite} />
-              <SeverityBadge severity={action.priority} />
-              {action.isOverdue && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded" style={{ color: "var(--destructive)", backgroundColor: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
-                  Overdue
-                </span>
-              )}
-            </div>
-          )}
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
-          {/* Title */}
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted-foreground)" }}>Title</p>
-            <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-              {isIssue ? issue!.title : action!.title}
-            </p>
+        <div className="flex-1 overflow-y-auto flex flex-col divide-y divide-border">
+
+          {/* Title + context */}
+          <div className="px-5 py-5 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
+                {isIssue ? "Issue" : "Action"}
+              </p>
+              <p className="text-[14px] font-semibold leading-snug" style={{ color: "var(--foreground)" }}>
+                {isIssue ? issue!.title : action!.title}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
+                {isIssue ? "Details" : "Linked Issue"}
+              </p>
+              <p className="text-[12px] leading-relaxed" style={{ color: "var(--foreground)" }}>
+                {isIssue ? issue!.detail : action!.linkedIssue}
+              </p>
+            </div>
           </div>
 
-          {/* Detail / Context */}
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted-foreground)" }}>
-              {isIssue ? "Context" : "Linked Issue"}
-            </p>
-            <p className="text-sm" style={{ color: "var(--foreground)" }}>
-              {isIssue ? issue!.detail : action!.linkedIssue}
-            </p>
-          </div>
-
+          {/* Action-specific fields */}
           {!isIssue && action && (
             <>
-              {/* Assignee */}
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--muted-foreground)" }}>Assigned To</p>
-                <div className="flex items-center gap-2">
-                  <Avatar initials={action.assignedAvatar} size="md" />
-                  <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{action.assignedTo}</span>
+              <div className="px-5 py-5 grid grid-cols-2 gap-x-6 gap-y-5">
+                {/* Assigned to */}
+                <div className="col-span-2 flex flex-col gap-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
+                    Assigned To
+                  </p>
+                  <div className="flex items-center gap-2.5">
+                    <Avatar initials={action.assignedAvatar} size="md" />
+                    <span className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>{action.assignedTo}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Due Date */}
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted-foreground)" }}>Due Date</p>
-                <div className="flex items-center gap-1.5">
-                  <CalendarIcon className="w-3.5 h-3.5" style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }} />
-                  <span className="text-sm" style={{ color: action.isOverdue ? "var(--destructive)" : "var(--foreground)" }}>
-                    {action.dueDateDisplay || action.dueDate}
+                {/* Due date */}
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Due Date</p>
+                  <div className="flex items-center gap-1.5">
+                    <CalendarIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5}
+                      style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }} />
+                    <span className="text-[12px]" style={{ color: action.isOverdue ? "var(--destructive)" : "var(--foreground)" }}>
+                      {action.dueDateDisplay || action.dueDate}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Status</p>
+                  <span className="text-[12px] font-medium capitalize" style={{ color: "var(--foreground)" }}>
+                    {action.status.replace("-", " ")}
                   </span>
                 </div>
               </div>
 
-              {/* Status */}
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted-foreground)" }}>Status</p>
-                <span className="text-sm font-medium capitalize" style={{ color: "var(--foreground)" }}>
-                  {action.status.replace("-", " ")}
-                </span>
-              </div>
-
-              {/* Escalation section */}
+              {/* Escalation block */}
               {(() => {
                 const esc = getEscalationInfo(action.id);
                 if (!esc) return null;
                 return (
-                  <div className="flex flex-col gap-2 p-3 rounded-lg border border-border" style={{ background: "var(--muted)" }}>
+                  <div className="px-5 py-5 flex flex-col gap-3">
                     <div className="flex items-center gap-2">
                       <AlertTriangle size={13} strokeWidth={1.5} style={{ color: "var(--destructive)" }} />
-                      <p className="text-[11px] font-bold" style={{ color: "var(--foreground)" }}>
-                        Auto-escalated to {esc.level} ({esc.role})
+                      <p className="text-[12px] font-semibold" style={{ color: "var(--foreground)" }}>
+                        Auto-escalated to {esc.level} — {esc.role}
                       </p>
                     </div>
-                    <p className="text-[11px]" style={{ color: "var(--muted-foreground)", lineHeight: 1.5 }}>
-                      This action was {esc.hours}h overdue. The {esc.role} has been notified and the issue is now tracked on the Escalation Board.
+                    <p className="text-[12px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                      This action was {esc.hours}h past its due date. The {esc.role} has been notified and it is now tracked on the Escalation Board.
                     </p>
                     <button
                       onClick={() => navigate("/mhe/escalation-logs")}
-                      className="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-md border border-border hover:bg-background transition-colors w-full justify-center mt-0.5"
+                      className="flex items-center justify-center gap-1.5 w-full h-9 rounded-lg border border-border text-[12px] font-semibold transition-colors hover:bg-muted"
                       style={{ color: "var(--foreground)", background: "var(--card)" }}>
-                      <ExternalLink size={11} strokeWidth={1.5} />
+                      <ExternalLink size={12} strokeWidth={1.5} />
                       View on Escalation Board
                     </button>
                   </div>
@@ -1019,26 +1013,23 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
             </>
           )}
 
-          {/* Divider */}
-          <div className="border-t border-border" />
-
-          {/* Activity Timeline */}
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--muted-foreground)" }}>Activity</p>
-            <div className="flex flex-col gap-3">
+          {/* Activity */}
+          <div className="px-5 py-5 flex flex-col gap-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Activity</p>
+            <div className="flex flex-col gap-0">
               {[
                 { time: "Just now", text: "Issue detected by system" },
                 { time: "5m ago",   text: "Notification sent to supervisors" },
                 { time: "10m ago",  text: "Issue escalated — severity: Critical" },
-              ].map((entry, i) => (
+              ].map((entry, i, arr) => (
                 <div key={i} className="flex gap-3">
                   <div className="flex flex-col items-center">
-                    <div className="w-1.5 h-1.5 rounded-full mt-1.5" style={{ backgroundColor: "var(--primary)" }} />
-                    {i < 2 && <div className="w-px flex-1 mt-1" style={{ backgroundColor: "var(--border)" }} />}
+                    <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ background: "var(--border)", border: "1.5px solid var(--muted-foreground)" }} />
+                    {i < arr.length - 1 && <div className="w-px flex-1 my-1" style={{ background: "var(--border)" }} />}
                   </div>
-                  <div className="pb-2">
-                    <p className="text-xs font-medium" style={{ color: "var(--foreground)" }}>{entry.text}</p>
-                    <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>{entry.time}</p>
+                  <div className="pb-4">
+                    <p className="text-[12px] font-medium" style={{ color: "var(--foreground)" }}>{entry.text}</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>{entry.time}</p>
                   </div>
                 </div>
               ))}
@@ -1048,14 +1039,13 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
 
         {/* Footer */}
         {isIssue && onAssign && issue && (
-          <div className="px-5 py-4 border-t border-border">
+          <div className="px-5 py-4 border-t border-border shrink-0">
             <Button
-              className="w-full"
-              size="sm"
+              className="w-full h-9 font-semibold gap-1.5"
               onClick={() => { onClose(); onAssign(issue); }}
             >
               Assign Action
-              <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
         )}
