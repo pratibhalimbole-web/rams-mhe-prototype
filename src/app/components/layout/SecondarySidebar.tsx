@@ -32,8 +32,8 @@ export function SecondarySidebar({
   sidebarMode,
   onToggleMode,
 }: SecondarySidebarProps) {
-  // Helper to render a feature button
-  const renderFeature = (feature: Feature) => (
+  // Helper to render a feature button — hidden features are registered for breadcrumbs but not shown
+  const renderFeature = (feature: Feature) => feature.hidden ? null : (
     <Button
       key={feature.id}
       type="button"

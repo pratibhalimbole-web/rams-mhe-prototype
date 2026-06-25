@@ -70,7 +70,7 @@
   --progress-bar-height-md: 6px;
   
   /* The default background color for the application. */
-  --background: rgba(255, 255, 255, 1.00);
+  --background: rgba(241, 245, 249, 1.00);  /* slate-100 — gives card surfaces lift */
   /* The default color for elements or text that appears on top of the background. */
   --foreground: rgba(15, 23, 42, 1.00);
   /* The background color for cards, modals, and other containers. */
@@ -150,7 +150,7 @@
 }
 
 .dark {
-  /* Status badge tokens — dark (slate theme) */
+  /* Status badge tokens — dark (neutral theme) */
   --w-red-bg:      rgba(220, 38, 38, 0.15);
   --w-red-border:  rgba(220, 38, 38, 0.30);
   --w-green-bg:    rgba(22, 163, 74, 0.15);
@@ -160,39 +160,39 @@
   --w-blue-bg:     rgba(59, 130, 246, 0.15);
   --w-blue-border: rgba(59, 130, 246, 0.30);
 
-  /* Widget color tokens — slate theme */
-  --w-bg:        rgba(30, 41, 59, 1);      /* slate-800  card background      */
-  --w-bg-page:   rgba(15, 23, 42, 1);      /* slate-900  page background      */
-  --w-bg-muted:  rgba(51, 65, 85, 1);      /* slate-700  chips / dividers     */
-  --w-border:    rgba(51, 65, 85, 1);      /* slate-700  main borders         */
-  --w-divider:   rgba(44, 57, 76, 1);      /* slate-750  internal dividers    */
-  --w-text-1:    rgba(255, 255, 255, 1);   /* white      primary text         */
-  --w-text-2:    rgba(203, 213, 225, 1);   /* slate-300  secondary text       */
-  --w-text-3:    rgba(148, 163, 184, 1);   /* slate-400  tertiary text        */
-  --w-text-4:    rgba(100, 116, 139, 1);   /* slate-500  muted text           */
-  --w-text-5:    rgba(71, 85, 105, 1);     /* slate-600  subtle text          */
+  /* Widget color tokens — shadcn neutral */
+  --w-bg:        rgba(23, 23, 23, 1);      /* neutral-900  card background    */
+  --w-bg-page:   rgba(10, 10, 10, 1);      /* neutral-950  page background    */
+  --w-bg-muted:  rgba(38, 38, 38, 1);      /* neutral-800  chips / dividers   */
+  --w-border:    rgba(64, 64, 64, 1);      /* neutral-700  main borders       */
+  --w-divider:   rgba(38, 38, 38, 1);      /* neutral-800  internal dividers  */
+  --w-text-1:    rgba(250, 250, 250, 1);   /* neutral-50   primary text       */
+  --w-text-2:    rgba(229, 229, 229, 1);   /* neutral-200  secondary text     */
+  --w-text-3:    rgba(163, 163, 163, 1);   /* neutral-400  tertiary text      */
+  --w-text-4:    rgba(115, 115, 115, 1);   /* neutral-500  muted text         */
+  --w-text-5:    rgba(82, 82, 82, 1);      /* neutral-600  subtle text        */
 
-  --background: rgba(15, 23, 42, 1.00);        /* slate-900 */
-  --foreground: rgba(255, 255, 255, 1.00);
-  --card: rgba(30, 41, 59, 1.00);              /* slate-800 */
-  --card-foreground: rgba(255, 255, 255, 1.00);
-  --popover: rgba(30, 41, 59, 1.00);           /* slate-800 */
-  --popover-foreground: rgba(255, 255, 255, 1.00);
+  --background: rgba(10, 10, 10, 1.00);        /* neutral-950 */
+  --foreground: rgba(250, 250, 250, 1.00);     /* neutral-50  */
+  --card: rgba(23, 23, 23, 1.00);              /* neutral-900 */
+  --card-foreground: rgba(250, 250, 250, 1.00);
+  --popover: rgba(23, 23, 23, 1.00);           /* neutral-900 */
+  --popover-foreground: rgba(250, 250, 250, 1.00);
   --primary: rgba(59, 130, 246, 1.00);         /* blue-500 */
   --primary-foreground: rgba(255, 255, 255, 1.00);
-  --secondary: rgba(51, 65, 85, 1.00);         /* slate-700 */
-  --secondary-foreground: rgba(255, 255, 255, 1.00);
-  --muted: rgba(51, 65, 85, 1.00);             /* slate-700 */
-  --muted-foreground: rgba(148, 163, 184, 1.00); /* slate-400 */
-  --accent: rgba(51, 65, 85, 1.00);            /* slate-700 */
-  --accent-foreground: rgba(255, 255, 255, 1.00);
+  --secondary: rgba(38, 38, 38, 1.00);         /* neutral-800 */
+  --secondary-foreground: rgba(250, 250, 250, 1.00);
+  --muted: rgba(38, 38, 38, 1.00);             /* neutral-800 */
+  --muted-foreground: rgba(163, 163, 163, 1.00); /* neutral-400 */
+  --accent: rgba(38, 38, 38, 1.00);            /* neutral-800 */
+  --accent-foreground: rgba(250, 250, 250, 1.00);
   --destructive: rgba(225, 29, 72, 1.00);
   --destructive-foreground: rgba(255, 255, 255, 1.00);
   --warning: rgba(245, 158, 11, 1.00);
   --success: rgba(22, 163, 74, 1.00);
-  --border: rgba(51, 65, 85, 1.00);            /* slate-700 */
-  --input: rgba(51, 65, 85, 1.00);             /* slate-700 */
-  --input-background: rgba(30, 41, 59, 1.00);  /* slate-800 */
+  --border: rgba(38, 38, 38, 1.00);            /* neutral-800 */
+  --input: rgba(38, 38, 38, 1.00);             /* neutral-800 */
+  --input-background: rgba(23, 23, 23, 1.00);  /* neutral-900 */
   --ring: rgba(59, 130, 246, 1.00);            /* blue-500 */
   /* Chart colors */
   --chart-1: rgba(59, 130, 246, 1.00);
@@ -200,14 +200,14 @@
   --chart-3: rgba(16, 185, 129, 1.00);
   --chart-4: rgba(6, 182, 212, 1.00);
   --chart-5: rgba(99, 102, 241, 1.00);
-  --sidebar: rgba(22, 33, 56, 1.00);           /* slate-850 — distinct from bg */
-  --sidebar-foreground: rgba(255, 255, 255, 1.00);
+  --sidebar: rgba(15, 15, 15, 1.00);           /* neutral-950+ — distinct from bg */
+  --sidebar-foreground: rgba(250, 250, 250, 1.00);
   --sidebar-primary: rgba(59, 130, 246, 1.00); /* blue-500 — active icon fill */
   --sidebar-primary-foreground: rgba(255, 255, 255, 1.00);
-  --sidebar-accent: rgba(30, 41, 59, 1.00);    /* slate-800 — hover / active item */
-  --sidebar-accent-foreground: rgba(203, 213, 225, 1.00); /* slate-300 */
-  --sidebar-border: rgba(51, 65, 85, 1.00);    /* slate-700 */
-  --sidebar-ring: rgba(100, 116, 139, 1.00);   /* slate-500 */
+  --sidebar-accent: rgba(23, 23, 23, 1.00);    /* neutral-900 — hover / active item */
+  --sidebar-accent-foreground: rgba(229, 229, 229, 1.00); /* neutral-200 */
+  --sidebar-border: rgba(38, 38, 38, 1.00);    /* neutral-800 */
+  --sidebar-ring: rgba(115, 115, 115, 1.00);   /* neutral-500 */
 }
 
 @theme inline {
@@ -343,25 +343,33 @@ html {
   font-size: var(--font-size);
 }
 
+/* ─── Light mode structural overrides ─────────────────────────────────────── */
+
+body,
+.bg-background,
+[class*="bg-background"] {
+  background-color: #f1f5f9; /* slate-100 page background */
+}
+
 /* ─── Dark mode structural overrides ─────────────────────────────────────── */
 
 /* Page & layout backgrounds */
 .dark body,
 .dark .bg-background,
 .dark [class*="bg-background"] {
-  background-color: #0f172a; /* slate-900 */
+  background-color: #0a0a0a; /* neutral-950 */
 }
 
 /* Tab bar in CommandDashboard */
 .dark .bg-card {
-  background-color: #1e293b !important; /* slate-800 */
-  border-color: #334155 !important;     /* slate-700 */
+  background-color: #171717 !important; /* neutral-900 */
+  border-color: #262626 !important;     /* neutral-800 */
 }
 
 /* Primary & Secondary navigation sidebars */
 .dark .bg-sidebar {
-  background-color: #162138 !important; /* slate-850 — sits between bg(900) and card(800) */
-  border-color: #334155 !important;     /* slate-700 */
+  background-color: #0f0f0f !important; /* neutral-950+ — sits distinct from card */
+  border-color: #262626 !important;     /* neutral-800 */
 }
 
 /* Active tab underline text */
@@ -413,7 +421,7 @@ html {
 /* Chart tooltip backgrounds — Recharts renders portals outside the styled tree */
 .recharts-tooltip-wrapper .recharts-default-tooltip,
 .dark .recharts-tooltip-wrapper * {
-  background: #1e293b !important; /* slate-800 */
-  border-color: #334155 !important; /* slate-700 */
-  color: #cbd5e1 !important; /* slate-300 */
+  background: #171717 !important; /* neutral-900 */
+  border-color: #262626 !important; /* neutral-800 */
+  color: #e5e5e5 !important; /* neutral-200 */
 }

@@ -14,6 +14,7 @@ import {
 export type Feature = {
   id: string;
   label: string;
+  hidden?: boolean;  // registered for breadcrumb resolution but not shown in nav
 };
 
 export type Suite = {
@@ -131,6 +132,7 @@ export const domains: Domain[] = [
     sharedFeatures: [
       { id: "action-board", label: "Action Board" },
       { id: "escalation-logs", label: "Escalation Logs" },
+      { id: "escalation-settings", label: "Escalation Logs", hidden: true },
       { id: "report", label: "Report" },
     ],
   },

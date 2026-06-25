@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useSidebar } from "../../components/layout/SidebarLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import {
@@ -10,8 +11,8 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import {
-  ArrowLeft,
   Mail,
+
   Bell,
   Users,
   Settings2,
@@ -25,10 +26,12 @@ import {
   FileText,
   Send,
   Eye,
-  ChevronRight,
   Plus,
   Trash2,
   PlugZap,
+  Timer,
+  RefreshCw,
+  Info,
 } from "lucide-react";
 import { cn } from "../../components/ui/utils";
 
@@ -171,10 +174,11 @@ const DEFAULT_CONTACTS: LevelContact[] = [
 // ─── Sidebar Nav ──────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: "rules",     label: "Notification Rules",  icon: Bell      },
-  { id: "contacts",  label: "Level Contacts",       icon: Users     },
-  { id: "email",     label: "Email Setup",          icon: Mail      },
-  { id: "templates", label: "Email Templates",      icon: FileCode2 },
+  { id: "sla",       label: "SLA & Routing",        icon: Timer     },
+  { id: "rules",     label: "Notification Rules",   icon: Bell      },
+  { id: "contacts",  label: "Level Contacts",        icon: Users     },
+  { id: "email",     label: "Email Setup",           icon: Mail      },
+  { id: "templates", label: "Email Templates",       icon: FileCode2 },
 ];
 
 // ─── Toggle ───────────────────────────────────────────────────────────────────
@@ -201,6 +205,255 @@ const CHANNEL_META: Record<Channel, { label: string; icon: React.ElementType; co
   in_app: { label: "In-App",  icon: Bell,    color: "#8b5cf6" },
   sms:    { label: "SMS",     icon: Send,    color: "#f59e0b" },
 };
+
+// ─── SLA & Routing Section ────────────────────────────────────────────────────
+
+interface LevelSLARule {
+  level: Level;
+  role: string;
+  color: string;
+  slaHours: number;               // resolve window
+  onBreach: "escalate" | "reassign" | "both";
+  reassignAfterHours: number;     // how many hours overdue before reassigning within level
+  maxReassigns: number;           // max reassigns before auto-escalating
+}
+
+const DEFAULT_SLA_RULES: LevelSLARule[] = [
+  { level: "L1", role: "Operator / Technician", color: "#64748b", slaHours: 2,  onBreach: "escalate", reassignAfterHours: 24,  maxReassigns: 1 },
+  { level: "L2", role: "Supervisor",            color: "#3b82f6", slaHours: 4,  onBreach: "escalate", reassignAfterHours: 48,  maxReassigns: 2 },
+  { level: "L3", role: "Operations Manager",    color: "#f59e0b", slaHours: 8,  onBreach: "both",     reassignAfterHours: 72,  maxReassigns: 1 },
+  { level: "L4", role: "Director",              color: "#ef4444", slaHours: 24, onBreach: "both",     reassignAfterHours: 168, maxReassigns: 1 },
+];
+
+function SLARoutingSection() {
+  const [rules, setRules] = useState<LevelSLARule[]>(DEFAULT_SLA_RULES);
+  const [criticalBreachDays, setCriticalBreachDays] = useState(3);
+  const [autoCloseDays, setAutoCloseDays] = useState(7);
+  const [saved, setSaved] = useState(false);
+
+  function patch(level: Level, update: Partial<LevelSLARule>) {
+    setRules(prev => prev.map(r => r.level === level ? { ...r, ...update } : r));
+  }
+
+  function handleSave() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="mb-1">
+        <h2 className="text-sm font-bold" style={{ color: "var(--foreground)" }}>SLA & Routing Rules</h2>
+        <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+          Configure the SLA window for each escalation level, what happens when it's breached, and when overdue issues get reassigned.
+        </p>
+      </div>
+
+      {/* Info banner */}
+      <div className="flex items-start gap-3 px-4 py-3 rounded-xl"
+        style={{ background: "#3b82f60C", border: "1px solid #3b82f625" }}>
+        <Info size={14} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "#3b82f6" }} />
+        <p className="text-[11px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+          <strong style={{ color: "var(--foreground)" }}>How it works:</strong> When an assignee misses their SLA window, the system checks the "On Breach" rule.
+          If <em>Escalate</em>, it moves to the next level immediately. If <em>Reassign</em>, it re-routes to another person at the same level first.
+          If <em>Both</em>, it reassigns and then escalates if the reassigned person also misses the window.
+        </p>
+      </div>
+
+      {/* Per-level SLA rules */}
+      <div className="flex flex-col gap-3">
+        {rules.map(rule => (
+          <div key={rule.level} className="rounded-xl border border-border overflow-hidden"
+            style={{ background: "var(--card)" }}>
+
+            {/* Level header */}
+            <div className="flex items-center gap-3 px-4 py-3"
+              style={{ background: "var(--muted)" }}>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shrink-0"
+                style={{ background: "var(--muted)", color: "#fff" }}>
+                {rule.level}
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>
+                  {rule.level} — {rule.role}
+                </p>
+                <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+                  Current window: <strong>{rule.slaHours}h</strong>
+                  {" · "}Reassign after: <strong>
+                    {rule.reassignAfterHours >= 24
+                      ? `${rule.reassignAfterHours / 24}d`
+                      : `${rule.reassignAfterHours}h`}
+                  </strong> overdue
+                </p>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="px-4 py-4 grid grid-cols-4 gap-4 items-end">
+
+              {/* SLA window */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-wide"
+                  style={{ color: "var(--muted-foreground)" }}>
+                  SLA Window (hours)
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="number" min={1} max={168}
+                    value={rule.slaHours}
+                    onChange={e => patch(rule.level, { slaHours: Math.max(1, Number(e.target.value)) })}
+                    className="h-8 text-xs w-full"
+                  />
+                  <span className="text-[11px] shrink-0" style={{ color: "var(--muted-foreground)" }}>h</span>
+                </div>
+              </div>
+
+              {/* Reassign after overdue */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-wide"
+                  style={{ color: "var(--muted-foreground)" }}>
+                  Reassign After Overdue
+                </label>
+                <div className="flex gap-1.5">
+                  <Select
+                    value={String(rule.reassignAfterHours)}
+                    onValueChange={v => patch(rule.level, { reassignAfterHours: Number(v) })}>
+                    <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="4">4 hours</SelectItem>
+                      <SelectItem value="8">8 hours</SelectItem>
+                      <SelectItem value="12">12 hours</SelectItem>
+                      <SelectItem value="24">1 day</SelectItem>
+                      <SelectItem value="48">2 days</SelectItem>
+                      <SelectItem value="72">3 days</SelectItem>
+                      <SelectItem value="120">5 days</SelectItem>
+                      <SelectItem value="168">7 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Max reassigns before escalating */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-wide"
+                  style={{ color: "var(--muted-foreground)" }}>
+                  Max Reassigns
+                </label>
+                <Select
+                  value={String(rule.maxReassigns)}
+                  onValueChange={v => patch(rule.level, { maxReassigns: Number(v) })}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 attempt</SelectItem>
+                    <SelectItem value="2">2 attempts</SelectItem>
+                    <SelectItem value="3">3 attempts</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* On breach action */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-wide"
+                  style={{ color: "var(--muted-foreground)" }}>
+                  On SLA Breach
+                </label>
+                <div className="flex gap-1">
+                  {(["escalate", "reassign", "both"] as const).map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => patch(rule.level, { onBreach: opt })}
+                      className="flex-1 py-1.5 rounded-md text-[10px] font-bold capitalize transition-all"
+                      style={{
+                        background: rule.onBreach === opt ? "var(--foreground)" : "var(--muted)",
+                        color: rule.onBreach === opt ? "var(--background)" : "var(--muted-foreground)",
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Explanation row */}
+            <div className="px-4 pb-3 flex items-center gap-2">
+              <RefreshCw size={11} strokeWidth={1.5} style={{ color: rule.color }} />
+              <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+                {rule.onBreach === "escalate" &&
+                  `When SLA expires → immediately escalate to next level. No reassign attempted.`}
+                {rule.onBreach === "reassign" &&
+                  `When SLA expires → reassign to another ${rule.role} (up to ${rule.maxReassigns}×). Escalate only if all reassigns also miss SLA.`}
+                {rule.onBreach === "both" &&
+                  `When SLA expires → reassign first (${rule.maxReassigns}× max). If still unresolved after ${rule.reassignAfterHours >= 24 ? `${rule.reassignAfterHours / 24}d` : `${rule.reassignAfterHours}h`}, escalate to next level.`}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Global rules */}
+      <div className="flex flex-col gap-3">
+        <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>Global Rules</p>
+
+        <div className="rounded-xl border border-border p-4 grid grid-cols-2 gap-6"
+          style={{ background: "var(--card)" }}>
+
+          {/* Critical breach days */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-semibold uppercase tracking-wide"
+              style={{ color: "var(--muted-foreground)" }}>
+              Flag as Critical Breach after
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number" min={1} max={30}
+                value={criticalBreachDays}
+                onChange={e => setCriticalBreachDays(Math.max(1, Number(e.target.value)))}
+                className="h-8 text-xs w-24"
+              />
+              <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                days overdue (any level)
+              </span>
+            </div>
+            <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              Any issue overdue longer than this gets a Critical Breach flag and triggers an all-hands SMS alert.
+            </p>
+          </div>
+
+          {/* Auto-close resolved */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-semibold uppercase tracking-wide"
+              style={{ color: "var(--muted-foreground)" }}>
+              Auto-archive Resolved Issues after
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number" min={1} max={90}
+                value={autoCloseDays}
+                onChange={e => setAutoCloseDays(Math.max(1, Number(e.target.value)))}
+                className="h-8 text-xs w-24"
+              />
+              <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                days after resolution
+              </span>
+            </div>
+            <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              Resolved escalations move to the archive after this window. They remain searchable in history.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end mt-1">
+        <Button size="sm" className="h-8 text-xs px-5 gap-1.5" onClick={handleSave}>
+          {saved
+            ? <><CheckCircle2 size={12} strokeWidth={1.5} /> Saved</>
+            : "Save SLA Rules"}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 // ─── Notification Rules Section ───────────────────────────────────────────────
 
@@ -343,13 +596,13 @@ function LevelContactsSection() {
 
       {contacts.map(lc => (
         <div key={lc.level} className="rounded-xl border border-border overflow-hidden"
-          style={{ background: "var(--card)", borderLeft: `4px solid ${lc.color}` }}>
+          style={{ background: "var(--card)" }}>
 
           {/* Level header */}
           <div className="flex items-center gap-3 px-4 py-3"
-            style={{ background: `${lc.color}0A` }}>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shrink-0"
-              style={{ background: lc.color, color: "#fff" }}>
+            style={{ background: "var(--muted)" }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shrink-0"
+              style={{ background: "var(--muted)", color: "#fff" }}>
               {lc.level}
             </div>
             <div className="flex-1">
@@ -372,7 +625,7 @@ function LevelContactsSection() {
             {lc.contacts.map((c, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
-                  style={{ background: `${lc.color}20`, color: lc.color }}>
+                  style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
                   {c.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -782,63 +1035,56 @@ function TemplatesSection() {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function EscalationSettings() {
-  const navigate   = useNavigate();
-  const [section, setSection] = useState("rules");
+  const navigate = useNavigate();
+  const sidebar  = useSidebar();
+  const [section, setSection] = useState("sla");
+
+  useEffect(() => {
+    sidebar.setSubPageTitle("Escalation Settings");
+    sidebar.setSubPageBack(() => navigate("/mhe/escalation-logs"));
+    return () => { sidebar.setSubPageTitle(null); sidebar.setSubPageBack(null); };
+  }, []);
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--background)" }}>
 
-      {/* Header */}
-      <div className="px-6 pt-5 pb-4 border-b border-border shrink-0"
+      {/* Segmented tab control — matches IMDS Condition Definitions style */}
+      <div className="px-6 py-4 border-b border-border shrink-0"
         style={{ background: "var(--card)" }}>
-        <div className="flex items-center gap-3 mb-1">
-          <button
-            onClick={() => navigate("/mhe/escalation-logs")}
-            className="flex items-center gap-1.5 text-xs font-medium hover:opacity-80 transition-opacity"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            <ArrowLeft size={13} strokeWidth={1.5} />
-            Escalation Board
-          </button>
-          <span style={{ color: "var(--muted-foreground)" }}>/</span>
-          <span className="text-xs font-semibold" style={{ color: "var(--foreground)" }}>Settings</span>
-        </div>
-        <h1 className="text-lg font-black" style={{ color: "var(--foreground)" }}>
-          Escalation Notification Settings
-        </h1>
-        <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-          Configure how assignees are notified — channels, contacts, email provider, and templates
-        </p>
-      </div>
-
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-52 shrink-0 border-r border-border flex flex-col gap-1 p-3"
-          style={{ background: "var(--card)" }}>
+        <div
+          className="flex gap-1 p-1 rounded-[var(--radius)]"
+          style={{ background: "var(--muted)" }}
+        >
           {NAV_ITEMS.map(item => {
             const Icon = item.icon;
             const active = section === item.id;
             return (
-              <button key={item.id} onClick={() => setSection(item.id)}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all"
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setSection(item.id)}
+                className="flex flex-1 items-center justify-center gap-2 py-2 px-4 rounded-[calc(var(--radius)+1px)] text-[13px] font-medium transition-all"
                 style={{
-                  background: active ? "var(--primary)" : "transparent",
-                  color: active ? "var(--primary-foreground)" : "var(--muted-foreground)",
-                }}>
-                <Icon size={14} strokeWidth={1.5} />
-                <span className="text-xs font-semibold">{item.label}</span>
+                  background: active ? "var(--card)" : "transparent",
+                  color: active ? "var(--foreground)" : "var(--muted-foreground)",
+                  boxShadow: active ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
+                }}
+              >
+                <Icon size={13} strokeWidth={1.5} />
+                {item.label}
               </button>
             );
           })}
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          {section === "rules"     && <NotificationRulesSection />}
-          {section === "contacts"  && <LevelContactsSection />}
-          {section === "email"     && <EmailSetupSection />}
-          {section === "templates" && <TemplatesSection />}
-        </div>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-5">
+        {section === "sla"       && <SLARoutingSection />}
+        {section === "rules"     && <NotificationRulesSection />}
+        {section === "contacts"  && <LevelContactsSection />}
+        {section === "email"     && <EmailSetupSection />}
+        {section === "templates" && <TemplatesSection />}
       </div>
     </div>
   );

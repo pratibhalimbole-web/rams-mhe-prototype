@@ -5,6 +5,7 @@ export type Severity = "Critical" | "High" | "Medium" | "Low";
 export type KanbanStatus = "incoming" | "assigned" | "in-progress" | "review" | "done";
 export type ActionSource = "system" | "manual";
 export type ActionType = "Safety" | "Compliance" | "Maintenance" | "Operational" | "Follow-up";
+export type IssueSource = "Safety" | "Inspection" | "Compliance" | "Impact";
 
 // ─── Issue (system-generated raw event — Incoming column) ────────────────────
 // Maps to: issues table
@@ -13,6 +14,7 @@ export interface Issue {
   id: string;
   suite: Suite;
   severity: Severity;
+  issueSource: IssueSource;
   title: string;
   detail: string;         // MHE / Operator / Zone context
   raisedAt: string;
@@ -34,6 +36,7 @@ export interface Action {
   issueDetail: string;        // system: issue.detail | manual: location/MHE entered by user
   suite: Suite;
   severity: Severity;         // system: issue.severity | manual: user-selected
+  issueSource: IssueSource;   // Safety / Inspection / Compliance / Impact
 
   // Action details (always present)
   actionType: ActionType;     // Safety / Compliance / Maintenance / Operational / Follow-up

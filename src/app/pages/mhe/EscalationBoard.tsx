@@ -33,6 +33,9 @@ import {
   Activity,
   Ban,
   Settings2,
+  Bot,
+  SlidersHorizontal,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "../../components/ui/utils";
 import { ReassignModal } from "./ReassignModal";
@@ -361,7 +364,7 @@ function LevelBadge({ level, size = "sm" }: { level: EscalationLevel; size?: "sm
   if (size === "md") {
     return (
       <div className="flex items-center justify-center rounded-lg font-black text-sm w-10 h-10 shrink-0"
-        style={{ background: meta.color, color: "#fff" }}>
+        style={{ background: "var(--muted)", color: "#fff" }}>
         {level}
       </div>
     );
@@ -418,7 +421,7 @@ function StatusPill({ status }: { status: EscalationStatus }) {
 
 // ─── Escalation Card ──────────────────────────────────────────────────────────
 
-function EscalationCard({ item, onClick }: { item: EscalationItem; onClick: () => void }) {
+function EscalationCard({ item, onClick, mode }: { item: EscalationItem; onClick: () => void; mode: EscalationMode }) {
   const breached   = item.slaPercent <= 0;
   const critBreach = item.status === "critical_breach";
   const activeNode = item.history[item.history.length - 1];
@@ -430,11 +433,11 @@ function EscalationCard({ item, onClick }: { item: EscalationItem; onClick: () =
   return (
     <div
       onClick={onClick}
-      className="group relative flex flex-col overflow-hidden rounded-xl cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative flex flex-col overflow-hidden rounded-xl cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg"
       style={{
         background: "var(--card)",
-        border: `1.5px solid var(--border)`,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.10)",
+        border: `1px solid var(--border)`,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.04)",
       }}
     >
 
@@ -445,6 +448,13 @@ function EscalationCard({ item, onClick }: { item: EscalationItem; onClick: () =
           <SeverityChip severity={item.severity} />
           <LevelBadge level={item.currentLevel} />
           <StatusPill status={item.status} />
+          {mode === "auto" && (
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md"
+              style={{ color: "#3b82f6", background: "#3b82f615", border: "1px solid #3b82f630" }}>
+              <Bot size={8} strokeWidth={2} />
+              Auto-routed
+            </span>
+          )}
           <span className="ml-auto text-[10px] font-mono tabular-nums shrink-0 opacity-60"
             style={{ color: "var(--foreground)" }}>
             {item.id}
@@ -511,10 +521,11 @@ function EscalationCard({ item, onClick }: { item: EscalationItem; onClick: () =
 
 // ─── Swimlane ─────────────────────────────────────────────────────────────────
 
-function Swimlane({ level, items, onCardClick }: {
+function Swimlane({ level, items, onCardClick, mode }: {
   level: EscalationLevel;
   items: EscalationItem[];
   onCardClick: (item: EscalationItem) => void;
+  mode: EscalationMode;
 }) {
   const [open, setOpen]   = useState(true);
   const meta              = LEVEL_META[level];
@@ -523,19 +534,21 @@ function Swimlane({ level, items, onCardClick }: {
   return (
     <div className="rounded-xl overflow-hidden"
       style={{
-        border: `1px solid ${meta.color}30`,
+        border: "1px solid var(--border)",
         background: "var(--card)",
-        boxShadow: breachedCount > 0 ? `0 0 0 1px ${meta.color}20` : "0 1px 3px rgba(0,0,0,0.04)",
+        boxShadow: breachedCount > 0
+          ? `0 0 0 1px ${meta.color}25, 0 2px 6px rgba(0,0,0,0.07)`
+          : "0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.03)",
       }}>
 
       {/* Header */}
       <button
         onClick={() => setOpen(p => !p)}
         className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:opacity-90"
-        style={{ background: `linear-gradient(90deg, ${meta.color}12, ${meta.color}04 70%, transparent)` }}
+        style={{ background: "var(--muted)" }}
       >
         <div className="flex items-center justify-center w-9 h-9 rounded-lg font-black text-sm shrink-0"
-          style={{ background: meta.color, color: "#fff" }}>
+          style={{ background: "var(--muted)", color: "#fff" }}>
           {level}
         </div>
 
@@ -579,7 +592,7 @@ function Swimlane({ level, items, onCardClick }: {
           ) : (
             <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))" }}>
               {items.map(item => (
-                <EscalationCard key={item.id} item={item} onClick={() => onCardClick(item)} />
+                <EscalationCard key={item.id} item={item} onClick={() => onCardClick(item)} mode={mode} />
               ))}
             </div>
           )}
@@ -606,7 +619,7 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
       {/* Spine */}
       <div className="flex flex-col items-center shrink-0" style={{ width: 32 }}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs"
-          style={{ background: meta.color, color: "#fff" }}>
+          style={{ background: "var(--muted)", color: "#fff" }}>
           {node.level}
         </div>
         {!isLast && (
@@ -655,7 +668,7 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
 
         {node.comment && (
           <div className="flex items-start gap-2 px-3 py-2 rounded-lg"
-            style={{ background: "var(--muted)", borderLeft: `3px solid ${meta.color}50` }}>
+            style={{ background: "var(--muted)", borderLeft: "3px solid var(--border)" }}>
             <MessageSquare size={10} strokeWidth={1.5} className="shrink-0 mt-0.5"
               style={{ color: "var(--muted-foreground)" }} />
             <p className="text-[10px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
@@ -671,7 +684,7 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
 // ─── Detail Drawer ────────────────────────────────────────────────────────────
 
 function DetailDrawer({
-  item, onClose, onAcknowledge, onResolve, onEscalate, onFlagBreach, onSaveNote,
+  item, onClose, onAcknowledge, onResolve, onEscalate, onFlagBreach, onSaveNote, mode, onOverride,
 }: {
   item: EscalationItem | null;
   onClose: () => void;
@@ -680,6 +693,8 @@ function DetailDrawer({
   onEscalate: (id: string, next: EscalationLevel) => void;
   onFlagBreach: (id: string) => void;
   onSaveNote: (id: string, note: string) => void;
+  mode: EscalationMode;
+  onOverride: () => void;
 }) {
   const [note, setNote]                 = useState("");
   const [reassignOpen, setReassignOpen] = useState(false);
@@ -698,7 +713,7 @@ function DetailDrawer({
       <SheetContent
         side="right"
         className="w-full max-w-[540px] flex flex-col gap-0 p-0 overflow-hidden"
-        style={{ background: "var(--background)" }}
+        style={{ background: "var(--card)" }}
       >
         {/* Top color accent */}
         <div className="h-1 w-full shrink-0"
@@ -753,7 +768,7 @@ function DetailDrawer({
 
           {/* Current assignee card */}
           <div className="flex items-center gap-3 mt-3 px-3 py-2.5 rounded-xl"
-            style={{ background: `${lvlMeta.color}10`, border: `1px solid ${lvlMeta.color}25` }}>
+            style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
             <Avatar initials={item.assignedInitials} size="md" color={lvlMeta.color} />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>{item.assignedTo}</p>
@@ -766,7 +781,8 @@ function DetailDrawer({
         </SheetHeader>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5">
+        <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5"
+          style={{ background: "var(--background)" }}>
 
           {/* SLA block */}
           {!isResolved && (
@@ -834,53 +850,94 @@ function DetailDrawer({
         {!isResolved && (
           <div className="px-5 py-4 border-t border-border shrink-0 flex flex-col gap-2"
             style={{ background: "var(--card)" }}>
-            <div className="flex gap-2">
-              {item.status === "open" && (
-                <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                  onClick={() => onAcknowledge(item.id)}>
-                  <CheckCircle2 size={13} strokeWidth={1.5} />
-                  Acknowledge
-                </Button>
-              )}
-              {(item.status === "acknowledged" || item.status === "in_progress") && (
-                <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                  onClick={() => onResolve(item.id)}>
-                  <CheckCircle2 size={13} strokeWidth={1.5} />
-                  Mark Resolved
-                </Button>
-              )}
-              {!isL4 && (
-                <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                  style={{ color: "#f97316", borderColor: "#f9741660" }}
-                  onClick={() => onEscalate(item.id, nextLevel as EscalationLevel)}>
-                  <ArrowUpRight size={13} strokeWidth={1.5} />
-                  Escalate to {nextLevel}
-                </Button>
-              )}
-              {isL4 && (
-                <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                  style={{ color: "#ef4444", borderColor: "#ef444460" }}
-                  onClick={() => onFlagBreach(item.id)}>
-                  <AlertTriangle size={13} strokeWidth={1.5} />
-                  Flag Critical Breach
-                </Button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" className="flex-1 h-9 text-xs font-bold gap-1.5"
-                onClick={() => setReassignOpen(true)}
-                style={{ background: "var(--foreground)", color: "var(--background)" }}>
-                <User size={13} strokeWidth={1.5} />
-                Reassign
-              </Button>
-              {note.trim() && (
-                <Button size="sm" variant="outline" className="flex-1 h-9 text-xs gap-1.5"
-                  onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
-                  <MessageSquare size={12} strokeWidth={1.5} />
-                  Save Note
-                </Button>
-              )}
-            </div>
+
+            {mode === "auto" ? (
+              /* Auto mode footer */
+              <>
+                {/* Next auto-escalation indicator */}
+                {!isL4 && item.slaPercent > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg mb-1"
+                    style={{ background: "#3b82f610", border: "1px solid #3b82f630" }}>
+                    <Bot size={12} strokeWidth={1.5} style={{ color: "#3b82f6" }} />
+                    <span className="text-[11px] font-semibold flex-1" style={{ color: "#3b82f6" }}>
+                      Auto-escalates to {nextLevel} if SLA expires
+                    </span>
+                    <Clock size={11} strokeWidth={1.5} style={{ color: "#3b82f6" }} />
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                    onClick={() => onResolve(item.id)}>
+                    <CheckCircle2 size={13} strokeWidth={1.5} />
+                    Mark Resolved
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                    style={{ color: "#f97316", borderColor: "#f9741660" }}
+                    onClick={onOverride}>
+                    <SlidersHorizontal size={12} strokeWidth={1.5} />
+                    Override to Manual
+                  </Button>
+                </div>
+                {note.trim() && (
+                  <Button size="sm" variant="outline" className="w-full h-9 text-xs gap-1.5"
+                    onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
+                    <MessageSquare size={12} strokeWidth={1.5} />
+                    Save Note
+                  </Button>
+                )}
+              </>
+            ) : (
+              /* Manual mode footer — original buttons */
+              <>
+                <div className="flex gap-2">
+                  {item.status === "open" && (
+                    <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                      onClick={() => onAcknowledge(item.id)}>
+                      <CheckCircle2 size={13} strokeWidth={1.5} />
+                      Acknowledge
+                    </Button>
+                  )}
+                  {(item.status === "acknowledged" || item.status === "in_progress") && (
+                    <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                      onClick={() => onResolve(item.id)}>
+                      <CheckCircle2 size={13} strokeWidth={1.5} />
+                      Mark Resolved
+                    </Button>
+                  )}
+                  {!isL4 && (
+                    <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                      style={{ color: "#f97316", borderColor: "#f9741660" }}
+                      onClick={() => onEscalate(item.id, nextLevel as EscalationLevel)}>
+                      <ArrowUpRight size={13} strokeWidth={1.5} />
+                      Escalate to {nextLevel}
+                    </Button>
+                  )}
+                  {isL4 && (
+                    <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                      style={{ color: "#ef4444", borderColor: "#ef444460" }}
+                      onClick={() => onFlagBreach(item.id)}>
+                      <AlertTriangle size={13} strokeWidth={1.5} />
+                      Flag Critical Breach
+                    </Button>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1 h-9 text-xs font-bold gap-1.5"
+                    onClick={() => setReassignOpen(true)}
+                    style={{ background: "var(--foreground)", color: "var(--background)" }}>
+                    <User size={13} strokeWidth={1.5} />
+                    Reassign
+                  </Button>
+                  {note.trim() && (
+                    <Button size="sm" variant="outline" className="flex-1 h-9 text-xs gap-1.5"
+                      onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
+                      <MessageSquare size={12} strokeWidth={1.5} />
+                      Save Note
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -902,12 +959,126 @@ function DetailDrawer({
   );
 }
 
+// ─── Mode Toggle ──────────────────────────────────────────────────────────────
+
+type EscalationMode = "manual" | "auto";
+
+function ModeToggle({ mode, setMode }: { mode: EscalationMode; setMode: (m: EscalationMode) => void }) {
+  return (
+    <div className="flex items-center gap-1 p-1 rounded-xl shrink-0"
+      style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+      {(["manual", "auto"] as EscalationMode[]).map(m => {
+        const active = mode === m;
+        return (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] font-semibold transition-all duration-150",
+            )}
+            style={{
+              background: active ? "var(--card)" : "transparent",
+              color: active ? "var(--foreground)" : "var(--muted-foreground)",
+              boxShadow: active ? "0 1px 3px rgba(0,0,0,0.10)" : "none",
+            }}
+          >
+            {m === "manual"
+              ? <SlidersHorizontal size={12} strokeWidth={1.5} />
+              : <Bot size={12} strokeWidth={1.5} style={{ color: active ? "#3b82f6" : undefined }} />}
+            {m === "manual" ? "Manual" : "Auto-Route"}
+            {m === "auto" && (
+              <span className="ml-0.5 text-[9px] font-bold px-1 py-0.5 rounded"
+                style={{ background: "#3b82f618", color: "#3b82f6" }}>
+                SMART
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Auto Rules Panel ─────────────────────────────────────────────────────────
+
+const AUTO_ROUTING_RULES = [
+  { source: "Safety",     icon: Shield,    color: "#ef4444", chain: "Safety Officer (L1·2h) → Supervisor (L2·4h) → Ops Manager (L3·8h) → Director (L4·24h)" },
+  { source: "Impact",     icon: Zap,       color: "#f97316", chain: "Safety Officer (L1·1h) → Shift Supervisor (L2·2h) → Ops Manager (L3·4h) → Director (L4·8h)" },
+  { source: "Inspection", icon: FileText,  color: "#8b5cf6", chain: "Maintenance Tech (L1·4h) → Maintenance Lead (L2·8h) → Ops Manager (L3·12h) → Director (L4·24h)" },
+  { source: "Compliance", icon: CheckCircle2, color: "#f59e0b", chain: "Admin Officer (L1·2h) → Compliance Supervisor (L2·4h) → Ops Manager (L3·8h) → Director (L4·24h)" },
+];
+
+function AutoRulesPanel() {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mx-0 rounded-xl overflow-hidden border"
+      style={{ borderColor: "#3b82f630", background: "#3b82f606" }}>
+      {/* Header */}
+      <button
+        onClick={() => setExpanded(p => !p)}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left"
+      >
+        <div className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0"
+          style={{ background: "#3b82f618" }}>
+          <Bot size={14} strokeWidth={1.5} style={{ color: "#3b82f6" }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[12px] font-bold" style={{ color: "#3b82f6" }}>
+            Auto-routing active
+          </p>
+          <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+            Issues are auto-assigned by source and role. SLA breach triggers automatic escalation — no manager action needed.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: "#22c55e18", color: "#22c55e" }}>
+            Active
+          </span>
+          {expanded
+            ? <ChevronUp size={13} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+            : <ChevronDown size={13} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />}
+        </div>
+      </button>
+
+      {/* Routing rules */}
+      {expanded && (
+        <div className="px-4 pb-4 border-t flex flex-col gap-2" style={{ borderColor: "#3b82f620" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wide mt-3 mb-1"
+            style={{ color: "var(--muted-foreground)" }}>
+            Routing Rules
+          </p>
+          {AUTO_ROUTING_RULES.map(r => {
+            const Icon = r.icon;
+            return (
+              <div key={r.source} className="flex items-start gap-2.5 px-3 py-2 rounded-lg"
+                style={{ background: `${r.color}08`, border: `1px solid ${r.color}20` }}>
+                <Icon size={12} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: r.color }} />
+                <div className="min-w-0">
+                  <span className="text-[11px] font-bold mr-2" style={{ color: r.color }}>{r.source}</span>
+                  <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>{r.chain}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
 function KpiCard({ label, value, sub }: { label: string; value: number; sub: string }) {
   return (
-    <div className="flex flex-col px-4 py-3 rounded-lg shrink-0"
-      style={{ background: "var(--card)", border: "1px solid var(--border)", minWidth: 100 }}>
+    <div className="flex flex-col px-4 py-3 rounded-xl shrink-0"
+      style={{
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04)",
+        minWidth: 100,
+      }}>
       <p className="text-[10px] font-semibold mb-2 uppercase tracking-wide"
         style={{ color: "var(--muted-foreground)", letterSpacing: "0.07em" }}>
         {label}
@@ -926,6 +1097,7 @@ type TabKey = "active" | "pending_ack" | "resolved" | "all";
 
 export function EscalationBoard() {
   const navigate                            = useNavigate();
+  const [mode, setMode]                     = useState<EscalationMode>("manual");
   const [tab, setTab]                       = useState<TabKey>("active");
   const [search, setSearch]                 = useState("");
   const [filterSource, setFilterSource]     = useState<string>("all");
@@ -1014,8 +1186,9 @@ export function EscalationBoard() {
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--background)" }}>
 
-      {/* Header */}
-      <div className="px-6 pt-5 pb-0 shrink-0">
+      {/* Header — sits on card surface so it pops off the slate-100 page bg */}
+      <div className="px-6 pt-5 pb-0 shrink-0"
+        style={{ background: "var(--card)" }}>
         {/* Title row */}
         <div className="flex items-center justify-between gap-4 mb-4">
           <div>
@@ -1042,6 +1215,16 @@ export function EscalationBoard() {
           <KpiCard label="Breached" value={totalBreached} sub="SLA window exceeded" />
           <KpiCard label="Pending"  value={totalPending}  sub="Awaiting acknowledgement" />
           <KpiCard label="Resolved" value={totalResolved} sub="Closed this period" />
+        </div>
+
+        {/* Mode toggle row */}
+        <div className="flex items-center justify-between mb-4">
+          <ModeToggle mode={mode} setMode={setMode} />
+          <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+            {mode === "auto"
+              ? "System auto-assigns and auto-escalates. You only need to resolve."
+              : "Manually assign, acknowledge, and escalate each item."}
+          </p>
         </div>
 
         {/* Tabs */}
@@ -1127,15 +1310,17 @@ export function EscalationBoard() {
       </div>
 
       {/* Board */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4" style={{ background: "var(--background)" }}>
         {tab === "active" ? (
           <div className="flex flex-col gap-3">
+            {mode === "auto" && <AutoRulesPanel />}
             {(["L1", "L2", "L3", "L4"] as EscalationLevel[]).map(level => (
-              <Swimlane key={level} level={level} items={byLevel(level)} onCardClick={setSelected} />
+              <Swimlane key={level} level={level} items={byLevel(level)} onCardClick={setSelected} mode={mode} />
             ))}
           </div>
         ) : (
-          <div>
+          <div className="flex flex-col gap-3">
+            {mode === "auto" && <AutoRulesPanel />}
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 gap-3">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center"
@@ -1150,7 +1335,7 @@ export function EscalationBoard() {
               <div className="grid gap-3"
                 style={{ gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))" }}>
                 {filtered.map(item => (
-                  <EscalationCard key={item.id} item={item} onClick={() => setSelected(item)} />
+                  <EscalationCard key={item.id} item={item} onClick={() => setSelected(item)} mode={mode} />
                 ))}
               </div>
             )}
@@ -1166,6 +1351,8 @@ export function EscalationBoard() {
         onEscalate={handleEscalate}
         onFlagBreach={handleFlagBreach}
         onSaveNote={handleSaveNote}
+        mode={mode}
+        onOverride={() => setMode("manual")}
       />
     </div>
   );

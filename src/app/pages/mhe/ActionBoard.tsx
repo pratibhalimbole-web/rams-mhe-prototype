@@ -52,6 +52,7 @@ import {
   KanbanStatus,
   ActionSource,
   ActionType,
+  IssueSource,
   Issue,
   Action,
   ActionFormPayload,
@@ -64,27 +65,27 @@ import {
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
 const MOCK_ISSUES: Issue[] = [
-  { id: "i1",  suite: "MEPS", severity: "Critical", title: "Unauthorized / invalid operation",    detail: "MHE-003 · Bay 4 · Auth failure + wrong MHE type",         raisedAt: "5m ago",  isAssigned: false },
-  { id: "i2",  suite: "MEPS", severity: "Critical", title: "Unsafe operation detected",           detail: "MHE-001 · Overload: 2,100kg · Fork height unsafe",          raisedAt: "15m ago", isAssigned: false },
-  { id: "i3",  suite: "MEPS", severity: "High",     title: "Driving limit / fatigue risk",        detail: "Operator: Ajay Malhotra · 180 min continuous driving",       raisedAt: "1h ago",  isAssigned: false },
-  { id: "i4",  suite: "MEPS", severity: "High",     title: "Speed violation",                     detail: "Operator: Prashant Rao · MHE-005 · Zone B",                 raisedAt: "2h ago",  isAssigned: false },
-  { id: "i5",  suite: "RTSS", severity: "Critical", title: "Collision risk event",                detail: "MHE-008 · Impact: 12G · Zone C · 5 near-misses in 30 min",  raisedAt: "45m ago", isAssigned: false },
-  { id: "i6",  suite: "RTSS", severity: "Critical", title: "Pedestrian proximity breach",         detail: "MHE-007 · Cross-aisle junction · 0.6m clearance",           raisedAt: "2h ago",  isAssigned: false },
-  { id: "i7",  suite: "RTSS", severity: "Critical", title: "Repeat safety offender",             detail: "Operator: Deepak Singh · 5 violations this week",            raisedAt: "1h ago",  isAssigned: false },
-  { id: "i8",  suite: "MMS",  severity: "Critical", title: "Operator compliance issue",           detail: "Suresh Kumar · License expired · Vijay Nair · Medical expired", raisedAt: "5d ago", isAssigned: false },
-  { id: "i9",  suite: "MMS",  severity: "Critical", title: "MHE compliance issue",               detail: "MHE-011 · Fitness cert expired · MHE-006 · Insurance lapsed", raisedAt: "8d ago", isAssigned: false },
-  { id: "i10", suite: "MMS",  severity: "Critical", title: "System health issue",                detail: "MHE-010 · Jetson offline · 68hr buffer · MHE-005 · LiDAR offline", raisedAt: "11h ago", isAssigned: false },
+  { id: "i1",  suite: "MEPS", severity: "Critical", issueSource: "Safety",     title: "Unauthorized / invalid operation",    detail: "MHE-003 · Bay 4 · Auth failure + wrong MHE type",         raisedAt: "5m ago",  isAssigned: false },
+  { id: "i2",  suite: "MEPS", severity: "Critical", issueSource: "Safety",     title: "Unsafe operation detected",           detail: "MHE-001 · Overload: 2,100kg · Fork height unsafe",          raisedAt: "15m ago", isAssigned: false },
+  { id: "i3",  suite: "MEPS", severity: "High",     issueSource: "Safety",     title: "Driving limit / fatigue risk",        detail: "Operator: Ajay Malhotra · 180 min continuous driving",       raisedAt: "1h ago",  isAssigned: false },
+  { id: "i4",  suite: "MEPS", severity: "High",     issueSource: "Safety",     title: "Speed violation",                     detail: "Operator: Prashant Rao · MHE-005 · Zone B",                 raisedAt: "2h ago",  isAssigned: false },
+  { id: "i5",  suite: "RTSS", severity: "Critical", issueSource: "Impact",     title: "Collision risk event",                detail: "MHE-008 · Impact: 12G · Zone C · 5 near-misses in 30 min",  raisedAt: "45m ago", isAssigned: false },
+  { id: "i6",  suite: "RTSS", severity: "Critical", issueSource: "Safety",     title: "Pedestrian proximity breach",         detail: "MHE-007 · Cross-aisle junction · 0.6m clearance",           raisedAt: "2h ago",  isAssigned: false },
+  { id: "i7",  suite: "RTSS", severity: "Critical", issueSource: "Safety",     title: "Repeat safety offender",              detail: "Operator: Deepak Singh · 5 violations this week",            raisedAt: "1h ago",  isAssigned: false },
+  { id: "i8",  suite: "MMS",  severity: "Critical", issueSource: "Compliance", title: "Operator compliance issue",           detail: "Suresh Kumar · License expired · Vijay Nair · Medical expired", raisedAt: "5d ago", isAssigned: false },
+  { id: "i9",  suite: "MMS",  severity: "Critical", issueSource: "Compliance", title: "MHE compliance issue",                detail: "MHE-011 · Fitness cert expired · MHE-006 · Insurance lapsed", raisedAt: "8d ago", isAssigned: false },
+  { id: "i10", suite: "MMS",  severity: "Critical", issueSource: "Inspection", title: "System health issue",                 detail: "MHE-010 · Jetson offline · 68hr buffer · MHE-005 · LiDAR offline", raisedAt: "11h ago", isAssigned: false },
 ];
 
 const MOCK_ACTIONS: Action[] = [
-  { id: "a1", source: "system", issueId: "ix1", suite: "MEPS", issueTitle: "Unauthorized / invalid operation",  issueDescription: "MHE-003 · Bay 4 · Auth failure + wrong MHE type",       issueLocation: "Bay 4",       title: "Investigate unauthorized MHE start",      priority: "Critical", assignedTo: "Rahul Sharma",   assignedAvatar: "RS", dueDate: "2026-04-02T15:00", dueDateDisplay: "Today, 3:00 PM",  status: "assigned",    isOverdue: false, notes: "", createdAt: "2026-04-02T08:00", updatedAt: "2026-04-02T08:00" },
-  { id: "a2", source: "system", issueId: "ix2", suite: "MMS",  issueTitle: "MHE compliance issue",               issueDescription: "MHE-011 · Fitness cert expired · MHE-006 · Insurance",    issueLocation: "Fleet",       title: "Ground MHE-011 and renew certifications", priority: "Critical", assignedTo: "Neha Kapoor",    assignedAvatar: "NK", dueDate: "2026-04-02T17:00", dueDateDisplay: "Today, 5:00 PM",  status: "assigned",    isOverdue: false, notes: "", createdAt: "2026-04-02T07:00", updatedAt: "2026-04-02T07:00" },
-  { id: "a3", source: "system", issueId: "ix3", suite: "RTSS", issueTitle: "Collision risk event",               issueDescription: "MHE-008 · Impact: 12G · Zone D · 09:47 AM",               issueLocation: "Zone D",      title: "Review collision footage Zone D",          priority: "Critical", assignedTo: "Amit Desai",     assignedAvatar: "AD", dueDate: "2026-04-02T14:00", dueDateDisplay: "Today, 2:00 PM",  status: "in-progress", isOverdue: true,  notes: "", createdAt: "2026-04-02T06:00", updatedAt: "2026-04-02T10:00" },
-  { id: "a4", source: "system", issueId: "ix4", suite: "RTSS", issueTitle: "High-risk driver score",             issueDescription: "Operator: Mohan Verma · Safety score: 19% · Bottom 5%",   issueLocation: "Fleet",       title: "Suspend operator — safety score 19%",     priority: "Critical", assignedTo: "HR Team",        assignedAvatar: "HR", dueDate: "2026-04-01T17:00", dueDateDisplay: "Yesterday",        status: "in-progress", isOverdue: true,  notes: "", createdAt: "2026-04-01T09:00", updatedAt: "2026-04-02T09:00" },
-  { id: "a5", source: "system", issueId: "ix5", suite: "MEPS", issueTitle: "Speed violation",                   issueDescription: "Operator: Prashant Rao · MHE-005 · Zone B",                issueLocation: "Zone B",      title: "Speed violation coaching — Prashant Rao", priority: "High",     assignedTo: "Ops Manager",    assignedAvatar: "OM", dueDate: "2026-04-03T10:00", dueDateDisplay: "Tomorrow, 10 AM", status: "review",      isOverdue: false, notes: "", createdAt: "2026-04-02T05:00", updatedAt: "2026-04-02T11:00" },
-  { id: "a6", source: "system", issueId: "ix6", suite: "MMS",  issueTitle: "System health issue",               issueDescription: "MHE-010 · Jetson offline · 68hr buffer · MHE-005 LiDAR",  issueLocation: "MHE-010",     title: "Dispatch technician — Jetson Nano",       priority: "Critical", assignedTo: "IoT Team",       assignedAvatar: "IT", dueDate: "2026-04-02T13:00", dueDateDisplay: "Today, 1:00 PM",  status: "review",      isOverdue: true,  notes: "", createdAt: "2026-04-01T22:00", updatedAt: "2026-04-02T12:00" },
-  { id: "a7", source: "system", issueId: "ix7", suite: "MMS",  issueTitle: "Operator compliance issue",         issueDescription: "Suresh Kumar · License expired · Vijay Nair · Medical",   issueLocation: "Fleet",       title: "Renew operator license — Suresh Kumar",   priority: "High",     assignedTo: "Admin",          assignedAvatar: "AD", dueDate: "2026-04-02T00:00", dueDateDisplay: "02 Apr",           status: "done",        isOverdue: false, notes: "", createdAt: "2026-03-31T09:00", updatedAt: "2026-04-02T14:00" },
-  { id: "a8", source: "system", issueId: "ix8", suite: "RTSS", issueTitle: "Pedestrian proximity breach",       issueDescription: "MHE-007 · Cross-aisle junction · 0.6m clearance",         issueLocation: "Cross-aisle", title: "Fix pedestrian alert — Zone C",           priority: "High",     assignedTo: "Safety Officer", assignedAvatar: "SO", dueDate: "2026-04-03T00:00", dueDateDisplay: "03 Apr",           status: "done",        isOverdue: false, notes: "", createdAt: "2026-04-01T10:00", updatedAt: "2026-04-02T15:00" },
+  { id: "a1", source: "system", issueId: "ix1", suite: "MEPS", issueSource: "Safety",     issueTitle: "Unauthorized / invalid operation",  issueDescription: "MHE-003 · Bay 4 · Auth failure + wrong MHE type",       issueLocation: "Bay 4",       title: "Investigate unauthorized MHE start",      priority: "Critical", assignedTo: "Rahul Sharma",   assignedAvatar: "RS", dueDate: "2026-04-02T15:00", dueDateDisplay: "Today, 3:00 PM",  status: "assigned",    isOverdue: false, notes: "", createdAt: "2026-04-02T08:00", updatedAt: "2026-04-02T08:00" },
+  { id: "a2", source: "system", issueId: "ix2", suite: "MMS",  issueSource: "Compliance", issueTitle: "MHE compliance issue",               issueDescription: "MHE-011 · Fitness cert expired · MHE-006 · Insurance",    issueLocation: "Fleet",       title: "Ground MHE-011 and renew certifications", priority: "Critical", assignedTo: "Neha Kapoor",    assignedAvatar: "NK", dueDate: "2026-04-02T17:00", dueDateDisplay: "Today, 5:00 PM",  status: "assigned",    isOverdue: false, notes: "", createdAt: "2026-04-02T07:00", updatedAt: "2026-04-02T07:00" },
+  { id: "a3", source: "system", issueId: "ix3", suite: "RTSS", issueSource: "Impact",     issueTitle: "Collision risk event",               issueDescription: "MHE-008 · Impact: 12G · Zone D · 09:47 AM",               issueLocation: "Zone D",      title: "Review collision footage Zone D",          priority: "Critical", assignedTo: "Amit Desai",     assignedAvatar: "AD", dueDate: "2026-04-02T14:00", dueDateDisplay: "Today, 2:00 PM",  status: "in-progress", isOverdue: true,  notes: "", createdAt: "2026-04-02T06:00", updatedAt: "2026-04-02T10:00" },
+  { id: "a4", source: "system", issueId: "ix4", suite: "RTSS", issueSource: "Safety",     issueTitle: "High-risk driver score",             issueDescription: "Operator: Mohan Verma · Safety score: 19% · Bottom 5%",   issueLocation: "Fleet",       title: "Suspend operator — safety score 19%",     priority: "Critical", assignedTo: "HR Team",        assignedAvatar: "HR", dueDate: "2026-04-01T17:00", dueDateDisplay: "Yesterday",        status: "in-progress", isOverdue: true,  notes: "", createdAt: "2026-04-01T09:00", updatedAt: "2026-04-02T09:00" },
+  { id: "a5", source: "system", issueId: "ix5", suite: "MEPS", issueSource: "Safety",     issueTitle: "Speed violation",                   issueDescription: "Operator: Prashant Rao · MHE-005 · Zone B",                issueLocation: "Zone B",      title: "Speed violation coaching — Prashant Rao", priority: "High",     assignedTo: "Ops Manager",    assignedAvatar: "OM", dueDate: "2026-04-03T10:00", dueDateDisplay: "Tomorrow, 10 AM", status: "review",      isOverdue: false, notes: "", createdAt: "2026-04-02T05:00", updatedAt: "2026-04-02T11:00" },
+  { id: "a6", source: "system", issueId: "ix6", suite: "MMS",  issueSource: "Inspection", issueTitle: "System health issue",               issueDescription: "MHE-010 · Jetson offline · 68hr buffer · MHE-005 LiDAR",  issueLocation: "MHE-010",     title: "Dispatch technician — Jetson Nano",       priority: "Critical", assignedTo: "IoT Team",       assignedAvatar: "IT", dueDate: "2026-04-02T13:00", dueDateDisplay: "Today, 1:00 PM",  status: "review",      isOverdue: true,  notes: "", createdAt: "2026-04-01T22:00", updatedAt: "2026-04-02T12:00" },
+  { id: "a7", source: "system", issueId: "ix7", suite: "MMS",  issueSource: "Compliance", issueTitle: "Operator compliance issue",         issueDescription: "Suresh Kumar · License expired · Vijay Nair · Medical",   issueLocation: "Fleet",       title: "Renew operator license — Suresh Kumar",   priority: "High",     assignedTo: "Admin",          assignedAvatar: "AD", dueDate: "2026-04-02T00:00", dueDateDisplay: "02 Apr",           status: "done",        isOverdue: false, notes: "", createdAt: "2026-03-31T09:00", updatedAt: "2026-04-02T14:00" },
+  { id: "a8", source: "system", issueId: "ix8", suite: "RTSS", issueSource: "Safety",     issueTitle: "Pedestrian proximity breach",       issueDescription: "MHE-007 · Cross-aisle junction · 0.6m clearance",         issueLocation: "Cross-aisle", title: "Fix pedestrian alert — Zone C",           priority: "High",     assignedTo: "Safety Officer", assignedAvatar: "SO", dueDate: "2026-04-03T00:00", dueDateDisplay: "03 Apr",           status: "done",        isOverdue: false, notes: "", createdAt: "2026-04-01T10:00", updatedAt: "2026-04-02T15:00" },
 ];
 
 // ─── Escalation Logic ────────────────────────────────────────────────────────
@@ -1065,6 +1066,7 @@ export function ActionBoard() {
   const [actions, setActions] = useState<Action[]>(MOCK_ACTIONS);
   const [search, setSearch] = useState("");
   const [filterSuite, setFilterSuite] = useState<Suite | "all">("all");
+  const [filterSource, setFilterSource] = useState<IssueSource | "all">("all");
   const [filterPriority, setFilterPriority] = useState<Severity | "all">("all");
   const [filterStatus, setFilterStatus] = useState<KanbanStatus | "all">("all");
 
@@ -1090,6 +1092,7 @@ export function ActionBoard() {
   // ── Filtered data ─────────────────────────────────────────────────────────
   const filteredIssues = issues.filter(i => {
     if (filterSuite !== "all" && i.suite !== filterSuite) return false;
+    if (filterSource !== "all" && i.issueSource !== filterSource) return false;
     if (filterPriority !== "all" && i.severity !== filterPriority) return false;
     if (search && !i.title.toLowerCase().includes(search.toLowerCase()) && !i.detail.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
@@ -1099,6 +1102,7 @@ export function ActionBoard() {
     actions.filter(a => {
       if (a.status !== status) return false;
       if (filterSuite !== "all" && a.suite !== filterSuite) return false;
+      if (filterSource !== "all" && a.issueSource !== filterSource) return false;
       if (filterPriority !== "all" && a.priority !== filterPriority) return false;
       if (filterStatus !== "all" && a.status !== filterStatus) return false;
       if (search && !a.title.toLowerCase().includes(search.toLowerCase())) return false;
@@ -1155,7 +1159,7 @@ export function ActionBoard() {
     setDragOverCol(null);
   };
 
-  const hasActiveFilters = filterSuite !== "all" || filterPriority !== "all" || filterStatus !== "all" || search !== "";
+  const hasActiveFilters = filterSuite !== "all" || filterSource !== "all" || filterPriority !== "all" || filterStatus !== "all" || search !== "";
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -1216,6 +1220,17 @@ export function ActionBoard() {
             </SelectContent>
           </Select>
 
+          <Select value={filterSource} onValueChange={v => setFilterSource(v as IssueSource | "all")}>
+            <SelectTrigger className="h-9 text-[12px] w-36"><SelectValue placeholder="All Sources" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="Safety">Safety</SelectItem>
+              <SelectItem value="Inspection">Inspection</SelectItem>
+              <SelectItem value="Compliance">Compliance</SelectItem>
+              <SelectItem value="Impact">Impact</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select value={filterPriority} onValueChange={v => setFilterPriority(v as Severity | "all")}>
             <SelectTrigger className="h-9 text-[12px] w-32"><SelectValue placeholder="Priority" /></SelectTrigger>
             <SelectContent>
@@ -1240,7 +1255,7 @@ export function ActionBoard() {
 
           {hasActiveFilters && (
             <button
-              onClick={() => { setFilterSuite("all"); setFilterPriority("all"); setFilterStatus("all"); setSearch(""); }}
+              onClick={() => { setFilterSuite("all"); setFilterSource("all"); setFilterPriority("all"); setFilterStatus("all"); setSearch(""); }}
               className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-[12px] font-medium hover:bg-muted transition-colors"
               style={{ color: "var(--muted-foreground)" }}>
               <X className="w-3 h-3" />
@@ -1252,7 +1267,7 @@ export function ActionBoard() {
           {hasActiveFilters && (
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
               style={{ background: "var(--foreground)", color: "var(--background)" }}>
-              {[filterSuite !== "all", filterPriority !== "all", filterStatus !== "all", search !== ""].filter(Boolean).length} active
+              {[filterSuite !== "all", filterSource !== "all", filterPriority !== "all", filterStatus !== "all", search !== ""].filter(Boolean).length} active
             </span>
           )}
         </div>

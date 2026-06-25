@@ -222,8 +222,8 @@ const handleDomainSelect = (domainId: string) => {
     activeFeatureId
   };
 
-  // Determine the page title
-  const pageTitle = activeFeature?.label || activeSuite?.label || activeDomain.label;
+  // Determine the page title — sub-pages override with their own title
+  const pageTitle = subPageTitle || activeFeature?.label || activeSuite?.label || activeDomain.label;
 
   return (
     <SidebarContext.Provider value={contextValue}>
