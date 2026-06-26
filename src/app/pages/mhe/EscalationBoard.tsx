@@ -626,67 +626,94 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
   const OcIcon = oc.icon;
 
   return (
-    <div className="flex gap-3.5">
+    <div className="flex gap-3">
       {/* Spine */}
-      <div className="flex flex-col items-center shrink-0" style={{ width: 32 }}>
-        <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs"
-          style={{ background: "var(--muted)", color: "#fff" }}>
+      <div className="flex flex-col items-center shrink-0" style={{ width: 28 }}>
+        <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-[11px] shrink-0"
+          style={{ background: meta.color, color: "#fff" }}>
           {node.level}
         </div>
         {!isLast && (
-          <div className="flex-1 w-px my-1.5" style={{ background: `${meta.color}40`, minHeight: 20 }} />
+          <div className="w-px flex-1 my-2" style={{ background: `${meta.color}30`, minHeight: 28 }} />
         )}
       </div>
 
-      {/* Content */}
-      <div className={cn("flex-1 pb-5 min-w-0", isLast && "pb-1")}>
-        <div className="flex items-center gap-2 mb-2">
+      {/* Node card */}
+      <div className={cn("flex-1 min-w-0 rounded-[var(--radius)] border border-[var(--border)] overflow-hidden", isLast ? "mb-0" : "mb-3")}>
+
+        {/* Card header: assignee + outcome badge */}
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[var(--card)] border-b border-[var(--border)]">
           <Avatar initials={node.initials} size="sm" color={meta.color} />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold truncate" style={{ color: "var(--foreground)" }}>{node.assignee}</p>
-            <p className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>{node.role}</p>
+            <p className="text-[12px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+              {node.assignee}
+            </p>
+            <p className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
+              {node.role}
+            </p>
           </div>
           <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md shrink-0"
-            style={{ color: oc.color, background: `${oc.color}15` }}>
-            <OcIcon size={10} strokeWidth={2} />
+            style={{ color: oc.color, background: `${oc.color}14`, border: `1px solid ${oc.color}25` }}>
+            <OcIcon size={9} strokeWidth={2} />
             {oc.label}
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-0.5 mb-2">
-          <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-            Assigned <span className="font-semibold" style={{ color: "var(--foreground)" }}>{node.assignedAt}</span>
-          </span>
-          <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-            Due <span className="font-semibold"
-              style={{ color: node.outcome === "breached" ? "#ef4444" : "var(--foreground)" }}>{node.dueAt}</span>
-          </span>
-          {node.acknowledgedAt && (
-            <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-              Ack <span className="font-semibold" style={{ color: "#22c55e" }}>{node.acknowledgedAt}</span>
-            </span>
+        {/* Card body: timestamps + SLA + comment */}
+        <div className="px-3.5 py-3 flex flex-col gap-2.5 bg-[var(--background)]">
+
+          {/* Time row */}
+          <div className="flex items-center flex-wrap gap-x-5 gap-y-1">
+            <div className="flex items-center gap-1.5">
+              <Clock size={10} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+              <span className="text-[11px] text-[var(--muted-foreground)]">
+                Assigned <span className="font-medium text-[var(--foreground)]">{node.assignedAt}</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock size={10} strokeWidth={1.5}
+                style={{ color: node.outcome === "breached" ? "#ef4444" : "var(--muted-foreground)" }} />
+              <span className="text-[11px] text-[var(--muted-foreground)]">
+                Due{" "}
+                <span className="font-medium"
+                  style={{ color: node.outcome === "breached" ? "#ef4444" : "var(--foreground)" }}>
+                  {node.dueAt}
+                </span>
+              </span>
+            </div>
+            {node.acknowledgedAt && (
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 size={10} strokeWidth={1.5} style={{ color: "#22c55e" }} />
+                <span className="text-[11px] text-[var(--muted-foreground)]">
+                  Ack'd <span className="font-medium" style={{ color: "#22c55e" }}>{node.acknowledgedAt}</span>
+                </span>
+              </div>
+            )}
+            {node.outcome === "active" && node.timeRemaining && (
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md"
+                style={{ color: slaColor(node.slaPercent ?? 0), background: `${slaColor(node.slaPercent ?? 0)}14` }}>
+                {node.timeRemaining === "Overdue" ? "Overdue" : `${node.timeRemaining} left`}
+              </span>
+            )}
+          </div>
+
+          {/* SLA bar */}
+          {node.outcome === "active" && node.slaPercent !== undefined && (
+            <SLABar pct={node.slaPercent} height={5} />
           )}
-          {node.outcome === "active" && node.timeRemaining && (
-            <span className="text-[10px] font-bold" style={{ color: slaColor(node.slaPercent ?? 0) }}>
-              {node.timeRemaining === "Overdue" ? "⚠ Overdue" : `⏱ ${node.timeRemaining} left`}
-            </span>
+
+          {/* Comment */}
+          {node.comment && (
+            <div className="flex items-start gap-2 px-3 py-2.5 rounded-[var(--radius-sm)]"
+              style={{ background: "var(--muted)" }}>
+              <MessageSquare size={11} strokeWidth={1.5} className="shrink-0 mt-0.5"
+                style={{ color: "var(--muted-foreground)" }} />
+              <p className="text-[11px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
+                {node.comment}
+              </p>
+            </div>
           )}
         </div>
-
-        {node.outcome === "active" && node.slaPercent !== undefined && (
-          <div className="mb-2"><SLABar pct={node.slaPercent} height={4} /></div>
-        )}
-
-        {node.comment && (
-          <div className="flex items-start gap-2 px-3 py-2 rounded-lg"
-            style={{ background: "var(--muted)", borderLeft: "3px solid var(--border)" }}>
-            <MessageSquare size={10} strokeWidth={1.5} className="shrink-0 mt-0.5"
-              style={{ color: "var(--muted-foreground)" }} />
-            <p className="text-[10px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-              {node.comment}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
