@@ -10,12 +10,9 @@ import {
 import {
   Search,
   CheckCircle2,
-
   AlertTriangle,
   ArrowUpRight,
   Mail,
-  Phone,
-  Briefcase,
   X,
   ChevronRight,
 } from "lucide-react";
@@ -237,26 +234,21 @@ export function ReassignModal({
       <DialogContent
         className="p-0 gap-0 overflow-hidden flex flex-col"
         style={{
-          maxWidth: 680,
+          maxWidth: 900,
           width: "95vw",
-          maxHeight: "88vh",
+          maxHeight: "92vh",
           background: "var(--background)",
         }}
       >
         {/* Header */}
         <DialogHeader className="px-5 pt-4 pb-3 border-b border-border shrink-0">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <DialogTitle className="text-sm font-black" style={{ color: "var(--foreground)" }}>
-                Reassign Escalation
-              </DialogTitle>
-              <p className="text-[11px] mt-0.5 line-clamp-1" style={{ color: "var(--muted-foreground)" }}>
-                {escalationId} · {escalationTitle}
-              </p>
-            </div>
-            <button onClick={handleClose} className="shrink-0 p-1 rounded-lg hover:bg-muted transition-colors mt-0.5">
-              <X size={14} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
-            </button>
+          <div>
+            <DialogTitle className="text-sm font-black" style={{ color: "var(--foreground)" }}>
+              Reassign Escalation
+            </DialogTitle>
+            <p className="text-[11px] mt-0.5 line-clamp-1" style={{ color: "var(--muted-foreground)" }}>
+              {escalationId} · {escalationTitle}
+            </p>
           </div>
 
           {/* Current assignee */}
@@ -359,7 +351,7 @@ export function ReassignModal({
           </div>
 
           {/* RIGHT: Handoff note + email preview */}
-          <div className="w-64 shrink-0 flex flex-col overflow-hidden">
+          <div className="w-80 shrink-0 flex flex-col overflow-hidden">
 
             {/* Handoff note */}
             <div className="px-4 pt-3 pb-3 flex flex-col gap-2 border-b border-border">

@@ -64,7 +64,7 @@ interface HistoryNode {
 interface EscalationItem {
   id: string;
   source: EscalationSource;
-  suite: "MEPS" | "RTSS" | "MMS" | "FMS";
+  suite: "MEPS" | "RTSS" | "FMS";
   severity: Severity;
   currentLevel: EscalationLevel;
   status: EscalationStatus;
@@ -185,7 +185,7 @@ const MOCK_ESCALATIONS: EscalationItem[] = [
   {
     id: "ESC-0039",
     source: "Compliance",
-    suite: "MMS",
+    suite: "FMS",
     severity: "Critical",
     currentLevel: "L2",
     status: "open",
@@ -256,7 +256,7 @@ const MOCK_ESCALATIONS: EscalationItem[] = [
   {
     id: "ESC-0029",
     source: "Compliance",
-    suite: "MMS",
+    suite: "FMS",
     severity: "Critical",
     currentLevel: "L4",
     status: "open",
@@ -618,19 +618,21 @@ function Swimlane({ level, items, onCardClick, mode }: {
 function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) {
   const meta = LEVEL_META[node.level];
   const oc = {
-    resolved:  { icon: CheckCircle2, color: "#22c55e", label: "Resolved"     },
-    escalated: { icon: ArrowUpRight, color: "#f97316", label: "Escalated"    },
-    breached:  { icon: Ban,          color: "#ef4444", label: "SLA Breached" },
-    active:    { icon: Activity,     color: meta.color, label: "Active"      },
+    resolved:  { icon: CheckCircle2, color: "#22c55e", label: "Resolved",     sub: "Issue resolved at this level",         headerBg: "#22c55e09" },
+    escalated: { icon: ArrowUpRight, color: "#f97316", label: "Escalated",    sub: "Passed up to the next level",          headerBg: "#f9731609" },
+    breached:  { icon: Ban,          color: "#ef4444", label: "SLA Breached", sub: "No response — deadline passed",        headerBg: "#ef444409" },
+    active:    { icon: Activity,     color: meta.color, label: "Responding",  sub: "Currently assigned — deadline active", headerBg: `${meta.color}09` },
   }[node.outcome];
-  const OcIcon = oc.icon;
+  const OcIcon  = oc.icon;
+  const isActive = node.outcome === "active";
+  const slaCol   = slaColor(node.slaPercent ?? 0);
 
   return (
     <div className="flex gap-3">
       {/* Spine */}
       <div className="flex flex-col items-center shrink-0" style={{ width: 28 }}>
         <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-[11px] shrink-0"
-          style={{ background: meta.color, color: "#fff" }}>
+          style={{ background: isActive ? meta.color : "var(--muted)", color: isActive ? "#fff" : "var(--muted-foreground)" }}>
           {node.level}
         </div>
         {!isLast && (
@@ -639,11 +641,18 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
       </div>
 
       {/* Node card */}
-      <div className={cn("flex-1 min-w-0 rounded-[var(--radius)] border border-[var(--border)] overflow-hidden", isLast ? "mb-0" : "mb-3")}>
-
-        {/* Card header: assignee + outcome badge */}
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[var(--card)] border-b border-[var(--border)]">
-          <Avatar initials={node.initials} size="sm" color={meta.color} />
+      <div
+        className={cn("flex-1 min-w-0 rounded-[var(--radius)] border overflow-hidden", isLast ? "mb-0" : "mb-3")}
+        style={{
+          borderColor: isActive ? `${meta.color}50` : "var(--border)",
+          borderLeftWidth: isActive ? 3 : 1,
+          borderLeftColor: isActive ? meta.color : "var(--border)",
+        }}
+      >
+        {/* Header — tinted by outcome */}
+        <div className="flex items-start gap-2.5 px-3.5 py-2.5 border-b border-[var(--border)]"
+          style={{ background: oc.headerBg }}>
+          <Avatar initials={node.initials} size="sm" color={isActive ? meta.color : "#94a3b8"} />
           <div className="flex-1 min-w-0">
             <p className="text-[12px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
               {node.assignee}
@@ -652,17 +661,20 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
               {node.role}
             </p>
           </div>
-          <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md shrink-0"
-            style={{ color: oc.color, background: `${oc.color}14`, border: `1px solid ${oc.color}25` }}>
-            <OcIcon size={9} strokeWidth={2} />
-            {oc.label}
-          </span>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md"
+              style={{ color: oc.color, background: `${oc.color}14`, border: `1px solid ${oc.color}25` }}>
+              <OcIcon size={9} strokeWidth={2} />
+              {oc.label}
+            </span>
+            <p className="text-[9px]" style={{ color: "var(--muted-foreground)" }}>{oc.sub}</p>
+          </div>
         </div>
 
-        {/* Card body: timestamps + SLA + comment */}
+        {/* Body */}
         <div className="px-3.5 py-3 flex flex-col gap-2.5 bg-[var(--background)]">
 
-          {/* Time row */}
+          {/* Timestamps */}
           <div className="flex items-center flex-wrap gap-x-5 gap-y-1">
             <div className="flex items-center gap-1.5">
               <Clock size={10} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
@@ -670,36 +682,41 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
                 Assigned <span className="font-medium text-[var(--foreground)]">{node.assignedAt}</span>
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Clock size={10} strokeWidth={1.5}
-                style={{ color: node.outcome === "breached" ? "#ef4444" : "var(--muted-foreground)" }} />
-              <span className="text-[11px] text-[var(--muted-foreground)]">
-                Due{" "}
-                <span className="font-medium"
-                  style={{ color: node.outcome === "breached" ? "#ef4444" : "var(--foreground)" }}>
-                  {node.dueAt}
+            {node.dueAt && (
+              <div className="flex items-center gap-1.5">
+                <Clock size={10} strokeWidth={1.5}
+                  style={{ color: node.outcome === "breached" ? "#ef4444" : "var(--muted-foreground)" }} />
+                <span className="text-[11px] text-[var(--muted-foreground)]">
+                  Deadline{" "}
+                  <span className="font-medium"
+                    style={{ color: node.outcome === "breached" ? "#ef4444" : "var(--foreground)" }}>
+                    {node.dueAt}
+                  </span>
                 </span>
-              </span>
-            </div>
+              </div>
+            )}
             {node.acknowledgedAt && (
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 size={10} strokeWidth={1.5} style={{ color: "#22c55e" }} />
                 <span className="text-[11px] text-[var(--muted-foreground)]">
-                  Ack'd <span className="font-medium" style={{ color: "#22c55e" }}>{node.acknowledgedAt}</span>
+                  Acknowledged <span className="font-medium" style={{ color: "#22c55e" }}>{node.acknowledgedAt}</span>
                 </span>
               </div>
             )}
-            {node.outcome === "active" && node.timeRemaining && (
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md"
-                style={{ color: slaColor(node.slaPercent ?? 0), background: `${slaColor(node.slaPercent ?? 0)}14` }}>
-                {node.timeRemaining === "Overdue" ? "Overdue" : `${node.timeRemaining} left`}
-              </span>
-            )}
           </div>
 
-          {/* SLA bar */}
-          {node.outcome === "active" && node.slaPercent !== undefined && (
-            <SLABar pct={node.slaPercent} height={5} />
+          {/* Active SLA — time left + bar */}
+          {isActive && node.slaPercent !== undefined && (
+            <div className="flex flex-col gap-1.5 pt-1 border-t border-[var(--border)]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-[var(--muted-foreground)]">Time remaining to respond</span>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md"
+                  style={{ color: slaCol, background: `${slaCol}14` }}>
+                  {node.timeRemaining === "Overdue" ? "Overdue" : `${node.timeRemaining} left`}
+                </span>
+              </div>
+              <SLABar pct={node.slaPercent} height={6} />
+            </div>
           )}
 
           {/* Comment */}
@@ -741,9 +758,7 @@ function DetailDrawer({
 
   const isResolved = item.status === "resolved";
   const isL4       = item.currentLevel === "L4";
-  const srcColor   = SOURCE_COLOR[item.source];
   const lvlMeta    = LEVEL_META[item.currentLevel];
-  const slaCol     = slaColor(item.slaPercent);
   const nextLevel  = item.currentLevel === "L1" ? "L2" : item.currentLevel === "L2" ? "L3" : "L4";
 
   return (
@@ -822,38 +837,16 @@ function DetailDrawer({
             <LevelBadge level={item.currentLevel} size="md" />
           </div>
 
-          {/* SLA */}
-          {!isResolved && (
-            <div className="flex flex-col gap-3">
-              <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
-                Current SLA
-              </h3>
-              <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock size={13} strokeWidth={1.5} style={{ color: slaCol }} />
-                    <span className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
-                      {item.slaPercent <= 0 ? "SLA Overdue" : `${item.slaPercent}% remaining`}
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md"
-                    style={{ color: slaCol, background: `${slaCol}15` }}>
-                    Window: {lvlMeta.resolve}
-                  </span>
-                </div>
-                <SLABar pct={item.slaPercent} height={8} />
-                <p className="text-[11px] text-[var(--muted-foreground)]">
-                  Due <span className="font-medium text-[var(--foreground)]">{item.dueAt}</span>
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Escalation History */}
+          {/* Escalation Chain */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
-              Escalation History
-            </h3>
+            <div>
+              <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+                Escalation Chain
+              </h3>
+              <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
+                Each level shows who was assigned, the response deadline, and the outcome. The active step shows time remaining.
+              </p>
+            </div>
             <div className="flex flex-col">
               {item.history.map((node, i) => (
                 <TimelineNode key={i} node={node} isLast={i === item.history.length - 1} />
