@@ -392,8 +392,8 @@ function SourceChip({ source }: { source: EscalationSource }) {
 function SeverityChip({ severity }: { severity: Severity }) {
   const color = SEVERITY_COLOR[severity];
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
-      style={{ color, background: `${color}15` }}>
+    <span className="inline-flex items-center justify-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+      style={{ color, background: `${color}15`, minWidth: 68 }}>
       <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
       {severity}
     </span>
@@ -423,9 +423,7 @@ function StatusPill({ status }: { status: EscalationStatus }) {
 
 function EscalationCard({ item, onClick, mode }: { item: EscalationItem; onClick: () => void; mode: EscalationMode }) {
   const breached   = item.slaPercent <= 0;
-  const critBreach = item.status === "critical_breach";
   const activeNode = item.history[item.history.length - 1];
-  const srcColor   = SOURCE_COLOR[item.source];
   const slaCol     = slaColor(item.slaPercent);
   const sevColor   = SEVERITY_COLOR[item.severity];
   const lvlColor   = LEVEL_META[item.currentLevel].color;
@@ -433,87 +431,105 @@ function EscalationCard({ item, onClick, mode }: { item: EscalationItem; onClick
   return (
     <div
       onClick={onClick}
-      className="group relative flex flex-col overflow-hidden rounded-xl cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg"
+      className="group relative flex flex-col overflow-hidden rounded-2xl cursor-pointer transition-all duration-200 hover:shadow-xl"
       style={{
         background: "var(--card)",
         border: `1px solid var(--border)`,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.04)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.04)",
       }}
     >
 
-      <div className="p-3.5 flex flex-col gap-2.5">
-        {/* Badges row */}
-        <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="p-5 flex flex-col gap-4">
+
+        {/* ── Row 1: source chip + severity ── */}
+        <div className="flex items-center justify-between gap-2">
           <SourceChip source={item.source} />
           <SeverityChip severity={item.severity} />
-          <LevelBadge level={item.currentLevel} />
-          <StatusPill status={item.status} />
-          {mode === "auto" && (
-            <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md"
-              style={{ color: "#3b82f6", background: "#3b82f615", border: "1px solid #3b82f630" }}>
-              <Bot size={8} strokeWidth={2} />
-              Auto-routed
-            </span>
-          )}
-          <span className="ml-auto text-[10px] font-mono tabular-nums shrink-0 opacity-60"
-            style={{ color: "var(--foreground)" }}>
-            {item.id}
-          </span>
         </div>
 
-        {/* Title */}
-        <div>
-          <p className="text-[13px] font-semibold leading-snug line-clamp-2 mb-0.5"
+        {/* ── Row 2: title + detail ── */}
+        <div className="flex flex-col gap-1.5">
+          <p className="text-[15px] font-bold leading-snug line-clamp-2"
             style={{ color: "var(--foreground)" }}>
             {item.title}
           </p>
-          <p className="text-[11px] truncate" style={{ color: "var(--muted-foreground)" }}>
+          <p className="text-[12px] truncate"
+            style={{ color: "var(--muted-foreground)" }}>
             {item.detail}
           </p>
         </div>
 
-        {/* Assignee */}
-        <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg"
-          style={{ background: `${lvlColor}0D` }}>
-          <Avatar initials={item.assignedInitials} size="sm" color={lvlColor} />
+        {/* ── Row 3: assignee block ── */}
+        <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
+          style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+          <Avatar initials={item.assignedInitials} size="md" color={lvlColor} />
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+            <p className="text-[12px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
               {item.assignedTo}
             </p>
-            <p className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>
+            <p className="text-[11px] truncate" style={{ color: "var(--muted-foreground)" }}>
               {item.assignedRole}
             </p>
           </div>
-          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md shrink-0"
-            style={{ background: "var(--muted)", color: "var(--foreground)" }}>
+          <span className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-lg shrink-0"
+            style={{ background: "var(--card)", color: "var(--foreground)", border: "1px solid var(--border)" }}>
             {item.mheRef}
           </span>
         </div>
 
-        {/* SLA section */}
-        <div className="pt-1 flex flex-col gap-1.5 border-t border-dashed" style={{ borderColor: "var(--border)" }}>
-          <div className="flex items-center justify-between">
+        {/* ── Row 4: level · severity · status · auto/escalation ── */}
+        {(() => {
+          const lvlMeta   = LEVEL_META[item.currentLevel];
+          const sevColor2 = SEVERITY_COLOR[item.severity];
+          const stCfg: Record<EscalationStatus, { label: string; color: string }> = {
+            open:            { label: "Open",     color: "#64748b" },
+            acknowledged:    { label: "Ack'd",    color: "#3b82f6" },
+            in_progress:     { label: "In Prog",  color: "#f59e0b" },
+            escalated:       { label: "Escalated",color: "#f97316" },
+            resolved:        { label: "Resolved", color: "#22c55e" },
+            critical_breach: { label: "Breach",   color: "#ef4444" },
+          };
+          const st = stCfg[item.status];
+          const chips = [
+            { label: item.currentLevel, color: lvlMeta.color },
+            { label: item.id,           color: "#64748b", mono: true },
+            { label: st.label,          color: st.color },
+          ];
+
+          return (
+            <div className="flex items-center gap-2 w-full">
+              {chips.map(({ label, color, mono }: { label: string; color: string; mono?: boolean }) => (
+                <div key={label}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1 rounded-md"
+                  style={{ background: "var(--muted)" }}>
+                  {!mono && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />}
+                  <span className={`text-[10px] truncate ${mono ? "font-mono font-medium" : "font-medium"}`}
+                    style={{ color: "var(--foreground)" }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* ── Row 5: SLA ── */}
+        <div className="flex flex-col gap-2 py-3 border-t" style={{ borderColor: "var(--border)" }}>
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
-              <Clock size={11} strokeWidth={1.5} style={{ color: slaCol }} />
-              <span className="text-[11px] font-bold" style={{ color: slaCol }}>
-                {breached ? "SLA Overdue" : activeNode.timeRemaining ?? "—"}
+              <Clock size={11} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+              <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                Due <span className="font-semibold" style={{ color: "var(--muted-foreground)" }}>{item.dueAt}</span>
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              {item.escalationCount > 0 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-                  style={{ color: "#f97316", background: "#f9741615" }}>
-                  <ArrowUpRight size={9} strokeWidth={2.5} />
-                  {item.escalationCount}×
-                </span>
-              )}
-              <span className="text-[10px] font-bold tabular-nums" style={{ color: slaCol }}>
-                {breached ? "—" : `${item.slaPercent}%`}
-              </span>
-            </div>
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg shrink-0"
+              style={{ color: slaCol, background: `${slaCol}15`, border: `1px solid ${slaCol}25` }}>
+              {breached ? "Overdue" : `${activeNode.timeRemaining ?? "—"} left`}
+            </span>
           </div>
-          <SLABar pct={item.slaPercent} height={5} />
+          <SLABar pct={item.slaPercent} height={7} />
         </div>
+
       </div>
     </div>
   );
@@ -547,11 +563,6 @@ function Swimlane({ level, items, onCardClick, mode }: {
         className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:opacity-90"
         style={{ background: "var(--muted)" }}
       >
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg font-black text-sm shrink-0"
-          style={{ background: "var(--muted)", color: "#fff" }}>
-          {level}
-        </div>
-
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>
             {level} — {meta.label}
@@ -590,7 +601,7 @@ function Swimlane({ level, items, onCardClick, mode }: {
               <p className="text-sm">No active escalations at this level</p>
             </div>
           ) : (
-            <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))" }}>
+            <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))" }}>
               {items.map(item => (
                 <EscalationCard key={item.id} item={item} onClick={() => onCardClick(item)} mode={mode} />
               ))}
@@ -712,115 +723,110 @@ function DetailDrawer({
     <Sheet open={!!item} onOpenChange={v => { if (!v) { onClose(); setNote(""); } }}>
       <SheetContent
         side="right"
-        className="w-full max-w-[540px] flex flex-col gap-0 p-0 overflow-hidden"
-        style={{ background: "var(--card)" }}
+        className="w-[620px] p-0 flex flex-col bg-[var(--card)] border-l border-[var(--border)] gap-0 overflow-hidden"
       >
-        {/* Top color accent */}
-        <div className="h-1 w-full shrink-0"
-          style={{ background: `linear-gradient(90deg, ${srcColor}, ${srcColor}60, transparent)` }} />
+        {/* ── Header ── */}
+        <SheetHeader className="px-5 py-4 border-b border-[var(--border)] shrink-0">
 
-        {/* Header */}
-        <SheetHeader className="px-5 pt-4 pb-4 border-b border-border shrink-0"
-          style={{ background: `linear-gradient(135deg, ${srcColor}09, transparent 55%)` }}>
+          {/* Title */}
+          <SheetTitle className="text-[length:var(--text-base)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)] mb-1">
+            {item.title}
+          </SheetTitle>
+          <p className="text-[length:var(--text-sm)] text-[var(--muted-foreground)] mb-3">
+            {item.detail}
+          </p>
 
-          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+          {/* Chips row — below the heading */}
+          <div className="flex items-center gap-1.5 flex-wrap">
             <SourceChip source={item.source} />
             <SeverityChip severity={item.severity} />
             <LevelBadge level={item.currentLevel} />
             <StatusPill status={item.status} />
             {item.escalationCount > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-                style={{ color: "#f97316", background: "#f9741618" }}>
-                <ArrowUpRight size={9} strokeWidth={2.5} />
+              <span className="flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+                style={{ color: "#f97316", background: "#f9741612", border: "1px solid #f9741625" }}>
+                <ArrowUpRight size={9} strokeWidth={2} />
                 {item.escalationCount}× escalated
               </span>
             )}
-            <span className="ml-auto text-[10px] font-mono opacity-60" style={{ color: "var(--foreground)" }}>
+            <span className="ml-auto text-[10px] font-mono font-medium px-2 py-0.5 rounded-md"
+              style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
               {item.id}
             </span>
           </div>
+        </SheetHeader>
 
-          <SheetTitle className="text-[15px] font-bold leading-snug mb-1" style={{ color: "var(--foreground)" }}>
-            {item.title}
-          </SheetTitle>
-          <p className="text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-            {item.detail}
-          </p>
+        {/* ── Scrollable body ── */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6 bg-[var(--background)]">
 
           {/* Meta grid */}
-          <div className="grid grid-cols-4 gap-3 mt-3 pt-3 border-t border-dashed" style={{ borderColor: "var(--border)" }}>
+          <div className="grid grid-cols-4 gap-4">
             {[
-              { label: "ID",      value: item.id },
               { label: "MHE Ref", value: item.mheRef },
               { label: "Suite",   value: item.suite },
               { label: "Created", value: item.createdAt },
+              { label: "Due",     value: item.dueAt },
             ].map(({ label, value }) => (
               <div key={label} className="min-w-0">
-                <p className="text-[9px] uppercase tracking-wide mb-0.5" style={{ color: "var(--muted-foreground)" }}>
+                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5"
+                  style={{ color: "var(--muted-foreground)" }}>
                   {label}
                 </p>
-                <p className="text-[11px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
+                <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] truncate"
+                  style={{ color: "var(--foreground)" }}>
                   {value}
                 </p>
               </div>
             ))}
           </div>
 
-          {/* Current assignee card */}
-          <div className="flex items-center gap-3 mt-3 px-3 py-2.5 rounded-xl"
-            style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+          {/* Assignee block */}
+          <div className="flex items-center gap-3 px-3.5 py-3 rounded-[var(--radius)] bg-[var(--card)] border border-[var(--border)]">
             <Avatar initials={item.assignedInitials} size="md" color={lvlMeta.color} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>{item.assignedTo}</p>
-              <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+              <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] truncate"
+                style={{ color: "var(--foreground)" }}>
+                {item.assignedTo}
+              </p>
+              <p className="text-[11px] text-[var(--muted-foreground)]">
                 {item.assignedRole} · Currently assigned
               </p>
             </div>
             <LevelBadge level={item.currentLevel} size="md" />
           </div>
-        </SheetHeader>
 
-        {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5"
-          style={{ background: "var(--background)" }}>
-
-          {/* SLA block */}
+          {/* SLA */}
           {!isResolved && (
-            <div className="rounded-xl p-4"
-              style={{
-                background: "var(--card)",
-                border: `1px solid ${slaCol}35`,
-              }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Clock size={13} strokeWidth={1.5} style={{ color: slaCol }} />
-                  <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>Current SLA</p>
+            <div className="flex flex-col gap-3">
+              <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+                Current SLA
+              </h3>
+              <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock size={13} strokeWidth={1.5} style={{ color: slaCol }} />
+                    <span className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+                      {item.slaPercent <= 0 ? "SLA Overdue" : `${item.slaPercent}% remaining`}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md"
+                    style={{ color: slaCol, background: `${slaCol}15` }}>
+                    Window: {lvlMeta.resolve}
+                  </span>
                 </div>
-                <span className="text-sm font-black" style={{ color: slaCol }}>
-                  {item.slaPercent <= 0 ? "OVERDUE" : `${item.slaPercent}% remaining`}
-                </span>
-              </div>
-              <SLABar pct={item.slaPercent} height={8} />
-              <div className="flex justify-between mt-2">
-                <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                  Due: <strong style={{ color: slaCol }}>{item.dueAt}</strong>
-                </span>
-                <span className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
-                  Window: <strong>{lvlMeta.resolve}</strong>
-                </span>
+                <SLABar pct={item.slaPercent} height={8} />
+                <p className="text-[11px] text-[var(--muted-foreground)]">
+                  Due <span className="font-medium text-[var(--foreground)]">{item.dueAt}</span>
+                </p>
               </div>
             </div>
           )}
 
-          {/* Timeline */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-4 h-px shrink-0" style={{ background: "var(--border)" }} />
-              <p className="text-xs font-bold whitespace-nowrap" style={{ color: "var(--foreground)" }}>
-                Escalation History
-              </p>
-              <span className="flex-1 h-px" style={{ background: "var(--border)" }} />
-            </div>
+          {/* Escalation History */}
+          <div className="flex flex-col gap-3">
+            <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+              Escalation History
+            </h3>
             <div className="flex flex-col">
               {item.history.map((node, i) => (
                 <TimelineNode key={i} node={node} isLast={i === item.history.length - 1} />
@@ -828,111 +834,102 @@ function DetailDrawer({
             </div>
           </div>
 
-          {/* Note */}
+          {/* Add Note */}
           {!isResolved && (
-            <div>
-              <p className="text-xs font-bold mb-2" style={{ color: "var(--foreground)" }}>Add Note</p>
+            <div className="flex flex-col gap-2">
+              <h3 className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] text-[var(--foreground)]">
+                Add Note
+              </h3>
               <textarea
                 value={note}
                 onChange={e => setNote(e.target.value)}
                 placeholder="Add context, actions taken, or update…"
                 rows={3}
-                className="w-full text-xs rounded-xl border px-3 py-2.5 resize-none outline-none transition-colors"
-                style={{ background: "var(--card)", color: "var(--foreground)", borderColor: "var(--border)" }}
-                onFocus={e  => { e.currentTarget.style.borderColor = srcColor; }}
-                onBlur={e   => { e.currentTarget.style.borderColor = "var(--border)"; }}
+                className="w-full resize-none rounded-[var(--radius)] text-[var(--foreground)] text-[length:var(--text-sm)] placeholder:text-[var(--muted-foreground)] px-3 py-2.5 outline-none border border-[var(--border)] focus:border-[#9ca3af] transition-colors bg-[var(--card)]"
               />
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {/* ── Footer ── */}
         {!isResolved && (
-          <div className="px-5 py-4 border-t border-border shrink-0 flex flex-col gap-2"
-            style={{ background: "var(--card)" }}>
+          <div className="px-5 py-4 border-t border-[var(--border)] shrink-0 flex flex-col gap-2 bg-[var(--card)]">
 
             {mode === "auto" ? (
-              /* Auto mode footer */
               <>
-                {/* Next auto-escalation indicator */}
                 {!isL4 && item.slaPercent > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg mb-1"
-                    style={{ background: "#3b82f610", border: "1px solid #3b82f630" }}>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius)] mb-1"
+                    style={{ background: "#3b82f610", border: "1px solid #3b82f625" }}>
                     <Bot size={12} strokeWidth={1.5} style={{ color: "#3b82f6" }} />
-                    <span className="text-[11px] font-semibold flex-1" style={{ color: "#3b82f6" }}>
+                    <span className="text-[11px] font-medium flex-1" style={{ color: "#3b82f6" }}>
                       Auto-escalates to {nextLevel} if SLA expires
                     </span>
                     <Clock size={11} strokeWidth={1.5} style={{ color: "#3b82f6" }} />
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                <div className="flex items-center justify-end gap-2">
+                  {note.trim() && (
+                    <Button variant="outline" className="h-9 gap-1.5 border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none text-[length:var(--text-sm)]"
+                      onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
+                      <MessageSquare size={13} strokeWidth={1.5} />
+                      Save Note
+                    </Button>
+                  )}
+                  <Button variant="outline" className="h-9 gap-1.5 border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none text-[length:var(--text-sm)]"
+                    onClick={onOverride}>
+                    <SlidersHorizontal size={13} strokeWidth={1.5} />
+                    Override to Manual
+                  </Button>
+                  <Button className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
                     onClick={() => onResolve(item.id)}>
                     <CheckCircle2 size={13} strokeWidth={1.5} />
                     Mark Resolved
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                    style={{ color: "#f97316", borderColor: "#f9741660" }}
-                    onClick={onOverride}>
-                    <SlidersHorizontal size={12} strokeWidth={1.5} />
-                    Override to Manual
-                  </Button>
                 </div>
-                {note.trim() && (
-                  <Button size="sm" variant="outline" className="w-full h-9 text-xs gap-1.5"
-                    onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
-                    <MessageSquare size={12} strokeWidth={1.5} />
-                    Save Note
-                  </Button>
-                )}
               </>
             ) : (
-              /* Manual mode footer — original buttons */
               <>
-                <div className="flex gap-2">
-                  {item.status === "open" && (
-                    <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                      onClick={() => onAcknowledge(item.id)}>
-                      <CheckCircle2 size={13} strokeWidth={1.5} />
-                      Acknowledge
-                    </Button>
-                  )}
-                  {(item.status === "acknowledged" || item.status === "in_progress") && (
-                    <Button size="sm" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                      onClick={() => onResolve(item.id)}>
-                      <CheckCircle2 size={13} strokeWidth={1.5} />
-                      Mark Resolved
+                <div className="flex items-center justify-end gap-2">
+                  <Button variant="outline" className="h-9 gap-1.5 border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none text-[length:var(--text-sm)]"
+                    onClick={() => setReassignOpen(true)}>
+                    <User size={13} strokeWidth={1.5} />
+                    Reassign
+                  </Button>
+                  {note.trim() && (
+                    <Button variant="outline" className="h-9 gap-1.5 border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)] shadow-none text-[length:var(--text-sm)]"
+                      onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
+                      <MessageSquare size={13} strokeWidth={1.5} />
+                      Save Note
                     </Button>
                   )}
                   {!isL4 && (
-                    <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                      style={{ color: "#f97316", borderColor: "#f9741660" }}
+                    <Button variant="outline" className="h-9 gap-1.5 shadow-none text-[length:var(--text-sm)]"
+                      style={{ color: "#f97316", borderColor: "#f9741650", background: "transparent" }}
                       onClick={() => onEscalate(item.id, nextLevel as EscalationLevel)}>
                       <ArrowUpRight size={13} strokeWidth={1.5} />
                       Escalate to {nextLevel}
                     </Button>
                   )}
                   {isL4 && (
-                    <Button size="sm" variant="outline" className="flex-1 h-9 text-xs font-semibold gap-1.5"
-                      style={{ color: "#ef4444", borderColor: "#ef444460" }}
+                    <Button variant="outline" className="h-9 gap-1.5 shadow-none text-[length:var(--text-sm)]"
+                      style={{ color: "#ef4444", borderColor: "#ef444450", background: "transparent" }}
                       onClick={() => onFlagBreach(item.id)}>
                       <AlertTriangle size={13} strokeWidth={1.5} />
                       Flag Critical Breach
                     </Button>
                   )}
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 h-9 text-xs font-bold gap-1.5"
-                    onClick={() => setReassignOpen(true)}
-                    style={{ background: "var(--foreground)", color: "var(--background)" }}>
-                    <User size={13} strokeWidth={1.5} />
-                    Reassign
-                  </Button>
-                  {note.trim() && (
-                    <Button size="sm" variant="outline" className="flex-1 h-9 text-xs gap-1.5"
-                      onClick={() => { onSaveNote(item.id, note); setNote(""); }}>
-                      <MessageSquare size={12} strokeWidth={1.5} />
-                      Save Note
+                  {item.status === "open" && (
+                    <Button className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
+                      onClick={() => onAcknowledge(item.id)}>
+                      <CheckCircle2 size={13} strokeWidth={1.5} />
+                      Acknowledge
+                    </Button>
+                  )}
+                  {(item.status === "acknowledged" || item.status === "in_progress") && (
+                    <Button className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
+                      onClick={() => onResolve(item.id)}>
+                      <CheckCircle2 size={13} strokeWidth={1.5} />
+                      Mark Resolved
                     </Button>
                   )}
                 </div>
@@ -949,7 +946,6 @@ function DetailDrawer({
           escalationId={item.id}
           escalationTitle={item.title}
           onConfirm={(user, handoffNote) => {
-            // In a real app: PATCH /api/escalations/:id/reassign
             console.log("Reassigned to:", user.name, "Note:", handoffNote);
             setReassignOpen(false);
           }}
@@ -1333,7 +1329,7 @@ export function EscalationBoard() {
               </div>
             ) : (
               <div className="grid gap-3"
-                style={{ gridTemplateColumns: "repeat(auto-fill, minmax(290px, 1fr))" }}>
+                style={{ gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))" }}>
                 {filtered.map(item => (
                   <EscalationCard key={item.id} item={item} onClick={() => setSelected(item)} mode={mode} />
                 ))}
