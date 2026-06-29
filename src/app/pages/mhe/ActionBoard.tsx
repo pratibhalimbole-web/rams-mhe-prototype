@@ -1168,22 +1168,8 @@ export function ActionBoard() {
 
       {/* ── Header ── */}
       <div className="shrink-0 border-b border-border" style={{ background: "var(--card)" }}>
-        {/* Row 1 — title + create */}
-        <div className="flex items-center justify-between px-6 pt-4 pb-3">
-          <div>
-            <h1 className="text-[15px] font-bold" style={{ color: "var(--foreground)" }}>Action Board</h1>
-            <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              Assign, track and resolve issues across MHE suites
-            </p>
-          </div>
-          <Button className="h-9 gap-2 text-[12px] font-semibold px-4" onClick={() => setCreateOpen(true)}>
-            <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-            Create Action
-          </Button>
-        </div>
-
-        {/* Row 2 — search + filters */}
-        <div className="flex items-center gap-2 px-6 pb-3">
+        {/* Search + filters + create */}
+        <div className="flex items-center gap-2 px-6 py-3">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" strokeWidth={1.5}
@@ -1270,6 +1256,13 @@ export function ActionBoard() {
               {[filterSuite !== "all", filterSource !== "all", filterPriority !== "all", filterStatus !== "all", search !== ""].filter(Boolean).length} active
             </span>
           )}
+
+          <div className="ml-auto">
+            <Button className="h-9 gap-2 text-[12px] font-semibold px-4" onClick={() => setCreateOpen(true)}>
+              <Plus className="w-3.5 h-3.5" strokeWidth={2} />
+              Create Action
+            </Button>
+          </div>
         </div>
       </div>
 

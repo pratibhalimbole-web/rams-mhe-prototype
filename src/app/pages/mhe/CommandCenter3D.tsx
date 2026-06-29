@@ -38,12 +38,13 @@ const BOTTOM_BTNS = [
 ] as const;
 
 function IconBtn({
-  icon: Icon, active, onClick, label, disabled,
+  icon: Icon, active, onClick, label, disabled, disabledHint,
 }: {
   icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
-  active: boolean; onClick: () => void; label: string; disabled?: boolean;
+  active: boolean; onClick: () => void; label: string; disabled?: boolean; disabledHint?: string;
 }) {
   const [hovered, setHovered] = useState(false);
+  const tooltipBg = disabled ? "#64748b" : "#1b59f8";
   return (
     <div style={{ position: "relative" }}>
       <button
@@ -51,33 +52,33 @@ function IconBtn({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          width: 34, height: 34, borderRadius: 8, border: "1px solid var(--border)",
-          background: disabled ? "transparent" : active ? "#1b59f8" : hovered ? "var(--muted)" : "var(--card)",
-          color: disabled ? "var(--border)" : active ? "white" : "var(--muted-foreground)",
+          width: 34, height: 34, borderRadius: 8,
+          border: `1px solid ${disabled ? "var(--border)" : "var(--border)"}`,
+          background: disabled ? "var(--card)" : active ? "#1b59f8" : hovered ? "var(--muted)" : "var(--card)",
+          color: disabled ? "var(--muted-foreground)" : active ? "white" : "var(--muted-foreground)",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: disabled ? "not-allowed" : "pointer", flexShrink: 0,
-          opacity: disabled ? 0.4 : 1,
+          opacity: disabled ? 0.5 : 1,
           transition: "background 0.15s, color 0.15s",
         }}
       >
         <Icon size={15} strokeWidth={1.6} />
       </button>
-      {hovered && !disabled && (
+      {hovered && (
         <div style={{
           position: "absolute", left: "calc(100% + 9px)", top: "50%",
           transform: "translateY(-50%)", zIndex: 50, pointerEvents: "none",
-          background: "#1b59f8", color: "white", borderRadius: 6,
+          background: tooltipBg, color: "white", borderRadius: 6,
           padding: "4px 10px", fontSize: 11, fontWeight: 500,
-          whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(27,89,248,0.25)",
+          whiteSpace: "nowrap", boxShadow: `0 2px 8px ${tooltipBg}40`,
         }}>
-          {/* arrow */}
           <div style={{
             position: "absolute", right: "100%", top: "50%", transform: "translateY(-50%)",
             width: 0, height: 0,
             borderTop: "4px solid transparent", borderBottom: "4px solid transparent",
-            borderRight: "4px solid #1b59f8",
+            borderRight: `4px solid ${tooltipBg}`,
           }} />
-          {label}
+          {disabled && disabledHint ? disabledHint : label}
         </div>
       )}
     </div>
@@ -756,6 +757,7 @@ function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onR
           <IconBtn key={b.id} icon={b.icon} label={b.label}
             active={topActive === b.id}
             disabled={b.id === "schedule" && mode === "live"}
+            disabledHint={b.id === "schedule" ? "Available in History mode" : undefined}
             onClick={() => handleTopClick(b.id)}
           />
         ))}

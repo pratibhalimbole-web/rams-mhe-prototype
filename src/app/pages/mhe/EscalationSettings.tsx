@@ -32,6 +32,7 @@ import {
   Timer,
   RefreshCw,
   Info,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "../../components/ui/utils";
 
@@ -201,9 +202,9 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 // ─── Channel Toggle Row ───────────────────────────────────────────────────────
 
 const CHANNEL_META: Record<Channel, { label: string; icon: React.ElementType; color: string }> = {
-  email:  { label: "Email",   icon: Mail,    color: "#3b82f6" },
-  in_app: { label: "In-App",  icon: Bell,    color: "#8b5cf6" },
-  sms:    { label: "SMS",     icon: Send,    color: "#f59e0b" },
+  email:  { label: "Email",   icon: Mail,    color: "var(--muted-foreground)" },
+  in_app: { label: "In-App",  icon: Bell,    color: "var(--muted-foreground)" },
+  sms:    { label: "SMS",     icon: Send,    color: "var(--muted-foreground)" },
 };
 
 // ─── SLA & Routing Section ────────────────────────────────────────────────────
@@ -251,8 +252,8 @@ function SLARoutingSection() {
 
       {/* Info banner */}
       <div className="flex items-start gap-3 px-4 py-3 rounded-xl"
-        style={{ background: "#3b82f60C", border: "1px solid #3b82f625" }}>
-        <Info size={14} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "#3b82f6" }} />
+        style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
+        <Info size={14} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: "var(--muted-foreground)" }} />
         <p className="text-[11px] leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
           <strong style={{ color: "var(--foreground)" }}>How it works:</strong> When an assignee misses their SLA window, the system checks the "On Breach" rule.
           If <em>Escalate</em>, it moves to the next level immediately. If <em>Reassign</em>, it re-routes to another person at the same level first.
@@ -269,10 +270,6 @@ function SLARoutingSection() {
             {/* Level header */}
             <div className="flex items-center gap-3 px-4 py-3"
               style={{ background: "var(--muted)" }}>
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shrink-0"
-                style={{ background: "var(--muted)", color: "#fff" }}>
-                {rule.level}
-              </div>
               <div className="flex-1">
                 <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>
                   {rule.level} — {rule.role}
@@ -357,19 +354,20 @@ function SLARoutingSection() {
                   style={{ color: "var(--muted-foreground)" }}>
                   On SLA Breach
                 </label>
-                <div className="flex gap-1">
+                <div className="flex items-center gap-4 py-1">
                   {(["escalate", "reassign", "both"] as const).map(opt => (
-                    <button
-                      key={opt}
-                      onClick={() => patch(rule.level, { onBreach: opt })}
-                      className="flex-1 py-1.5 rounded-md text-[10px] font-bold capitalize transition-all"
-                      style={{
-                        background: rule.onBreach === opt ? "var(--foreground)" : "var(--muted)",
-                        color: rule.onBreach === opt ? "var(--background)" : "var(--muted-foreground)",
-                      }}
-                    >
-                      {opt}
-                    </button>
+                    <label key={opt} className="flex items-center gap-1.5 cursor-pointer" onClick={() => patch(rule.level, { onBreach: opt })}>
+                      <div className="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
+                        style={{ borderColor: rule.onBreach === opt ? "#3b82f6" : "var(--muted-foreground)" }}>
+                        {rule.onBreach === opt && (
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#3b82f6" }} />
+                        )}
+                      </div>
+                      <span className="text-[11px] font-medium capitalize"
+                        style={{ color: rule.onBreach === opt ? "var(--foreground)" : "var(--muted-foreground)" }}>
+                        {opt}
+                      </span>
+                    </label>
                   ))}
                 </div>
               </div>
@@ -377,7 +375,7 @@ function SLARoutingSection() {
 
             {/* Explanation row */}
             <div className="px-4 pb-3 flex items-center gap-2">
-              <RefreshCw size={11} strokeWidth={1.5} style={{ color: rule.color }} />
+              <RefreshCw size={11} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
               <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
                 {rule.onBreach === "escalate" &&
                   `When SLA expires → immediately escalate to next level. No reassign attempted.`}
@@ -487,7 +485,7 @@ function NotificationRulesSection() {
           const Icon = meta.icon;
           return (
             <div key={key} className="flex items-center gap-1.5">
-              <Icon size={12} strokeWidth={1.5} style={{ color: meta.color }} />
+              <Icon size={12} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
               <span className="text-[11px] font-medium" style={{ color: "var(--foreground)" }}>{meta.label}</span>
             </div>
           );
@@ -507,8 +505,8 @@ function NotificationRulesSection() {
               <div className="flex items-start gap-3 p-4">
                 {/* Icon */}
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                  style={{ background: `${rule.iconColor}15` }}>
-                  <Icon size={14} strokeWidth={1.5} style={{ color: rule.iconColor }} />
+                  style={{ background: "var(--muted)" }}>
+                  <Icon size={14} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
                 </div>
 
                 {/* Label + description */}
@@ -540,8 +538,7 @@ function NotificationRulesSection() {
 
                   {/* Notify chain */}
                   <div className="flex flex-col items-center gap-1.5">
-                    <Users size={12} strokeWidth={1.5}
-                      style={{ color: rule.notifyChain ? "#f97316" : "var(--muted-foreground)" }} />
+                    <Users size={12} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
                     <Toggle checked={rule.notifyChain} onChange={() => toggleChain(rule.id)} />
                   </div>
                 </div>
@@ -601,10 +598,6 @@ function LevelContactsSection() {
           {/* Level header */}
           <div className="flex items-center gap-3 px-4 py-3"
             style={{ background: "var(--muted)" }}>
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shrink-0"
-              style={{ background: "var(--muted)", color: "#fff" }}>
-              {lc.level}
-            </div>
             <div className="flex-1">
               <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>
                 {lc.level} — {lc.role}
@@ -708,19 +701,19 @@ function EmailSetupSection() {
           <p className="text-xs font-bold mb-2" style={{ color: "var(--foreground)" }}>Email Provider</p>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { id: "sendgrid", label: "SendGrid",  color: "#1a82e2" },
-              { id: "mailgun",  label: "Mailgun",   color: "#f06b33" },
-              { id: "ses",      label: "AWS SES",   color: "#f90"    },
-              { id: "smtp",     label: "SMTP",      color: "#64748b" },
+              { id: "sendgrid", label: "SendGrid" },
+              { id: "mailgun",  label: "Mailgun"  },
+              { id: "ses",      label: "AWS SES"  },
+              { id: "smtp",     label: "SMTP"     },
             ].map(p => (
               <button key={p.id} onClick={() => setProvider(p.id)}
                 className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border transition-all"
                 style={{
-                  borderColor: provider === p.id ? p.color : "var(--border)",
-                  background: provider === p.id ? `${p.color}10` : "var(--muted)",
+                  borderColor: provider === p.id ? "var(--foreground)" : "var(--border)",
+                  background: provider === p.id ? "var(--card)" : "var(--muted)",
                 }}>
-                <PlugZap size={18} strokeWidth={1.5} style={{ color: provider === p.id ? p.color : "var(--muted-foreground)" }} />
-                <span className="text-[11px] font-bold" style={{ color: provider === p.id ? p.color : "var(--muted-foreground)" }}>
+                <PlugZap size={18} strokeWidth={1.5} style={{ color: provider === p.id ? "var(--foreground)" : "var(--muted-foreground)" }} />
+                <span className="text-[11px] font-bold" style={{ color: provider === p.id ? "var(--foreground)" : "var(--muted-foreground)" }}>
                   {p.label}
                 </span>
               </button>
@@ -948,10 +941,10 @@ function TemplatesSection() {
   const [tab, setTab] = useState<"preview" | "html">("preview");
 
   const templates = [
-    { id: "escalation",  label: "SLA Breach / Escalation", color: "#ef4444" },
-    { id: "assigned",    label: "New Assignment",           color: "#3b82f6" },
-    { id: "warning",     label: "SLA Warning (25% left)",  color: "#f59e0b" },
-    { id: "resolved",    label: "Issue Resolved",           color: "#22c55e" },
+    { id: "escalation",  label: "SLA Breach / Escalation" },
+    { id: "assigned",    label: "New Assignment"           },
+    { id: "warning",     label: "SLA Warning (25% left)"  },
+    { id: "resolved",    label: "Issue Resolved"           },
   ];
 
   return (
@@ -970,15 +963,14 @@ function TemplatesSection() {
             <button key={t.id} onClick={() => setActiveTemplate(t.id)}
               className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-left transition-all"
               style={{
-                background: activeTemplate === t.id ? `${t.color}12` : "var(--muted)",
-                border: `1px solid ${activeTemplate === t.id ? `${t.color}40` : "transparent"}`,
+                background: activeTemplate === t.id ? "var(--card)" : "var(--muted)",
+                border: `1px solid ${activeTemplate === t.id ? "var(--border)" : "transparent"}`,
               }}>
-              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: t.color }} />
-              <span className="text-[11px] font-semibold" style={{ color: activeTemplate === t.id ? t.color : "var(--muted-foreground)" }}>
+              <span className="text-[11px] font-semibold" style={{ color: activeTemplate === t.id ? "var(--foreground)" : "var(--muted-foreground)" }}>
                 {t.label}
               </span>
               {activeTemplate === t.id && (
-                <ChevronRight size={11} strokeWidth={2} className="ml-auto shrink-0" style={{ color: t.color }} />
+                <ChevronRight size={11} strokeWidth={2} className="ml-auto shrink-0" style={{ color: "var(--muted-foreground)" }} />
               )}
             </button>
           ))}

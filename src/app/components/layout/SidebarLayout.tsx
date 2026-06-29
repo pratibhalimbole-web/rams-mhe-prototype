@@ -292,7 +292,7 @@ const handleDomainSelect = (domainId: string) => {
               </div>
               <Breadcrumb>
                 <BreadcrumbList>
-                  {subPageTitle ? (
+                  {!subPageTitle && !activeSuite && activeFeature ? null : subPageTitle ? (
                     <>
                       <BreadcrumbItem>
                         <BreadcrumbLink
