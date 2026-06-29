@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { fetchActions, insertAction, updateActionStatus, subscribeToActions } from "../../lib/actions-db";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useSidebar } from "../../components/layout/SidebarLayout";
@@ -1064,6 +1065,7 @@ export function ActionBoard() {
   // State — must be declared before any useEffect that references them
   const [issues, setIssues] = useState<Issue[]>(MOCK_ISSUES);
   const [actions, setActions] = useState<Action[]>(MOCK_ACTIONS);
+  const [dbLoaded, setDbLoaded] = useState(false);
   const [search, setSearch] = useState("");
   const [filterSuite, setFilterSuite] = useState<Suite | "all">("all");
   const [filterSource, setFilterSource] = useState<IssueSource | "all">("all");
@@ -1086,6 +1088,16 @@ export function ActionBoard() {
       if (sidebar) sidebar.setHeaderActions(null);
     };
   }, [sidebar]);
+
+  // ── Load actions from Supabase + subscribe to realtime ────────────────────
+  useEffect(() => {
+    fetchActions()
+      .then(data => { setActions(data); setDbLoaded(true); })
+      .catch(() => setDbLoaded(true)); // fall back to mock data on error
+
+    const unsubscribe = subscribeToActions(data => setActions(data));
+    return unsubscribe;
+  }, []);
 
 
 
@@ -1110,23 +1122,31 @@ export function ActionBoard() {
     });
 
   // ── Unified action handler ───────────────────────────────────────────────
-  const handleActionConfirm = (payload: ActionFormPayload) => {
+  const handleActionConfirm = async (payload: ActionFormPayload) => {
     const initials = payload.assignedTo.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
     const newAction: Action = {
       id: `a${Date.now()}`,
+      source: payload.source,
       issueId: payload.issueId,
+      issueTitle: payload.issueTitle,
+      issueDetail: payload.issueDetail,
+      suite: payload.suite,
+      severity: payload.severity,
+      issueSource: payload.issueSource,
+      actionType: payload.actionType,
       title: payload.title,
       priority: payload.priority,
       assignedTo: payload.assignedTo,
       assignedAvatar: initials,
-      linkedIssue: payload.issueTitle,
       dueDate: payload.dueDate || "TBD",
+      notes: payload.notes ?? "",
       status: "assigned",
-      suite: payload.suite,
       isOverdue: false,
-      createdAt: "Just now",
+      createdAt: new Date().toISOString(),
+      createdBy: "user",
     };
-    setActions(prev => [...prev, newAction]);
+    // Optimistic update
+    setActions(prev => [newAction, ...prev]);
     if (payload.source === "system" && payload.issueId) {
       setIssues(prev => prev.filter(i => i.id !== payload.issueId));
     }
@@ -1136,6 +1156,12 @@ export function ActionBoard() {
       payload.source === "system" ? "Action assigned" : "Action created",
       { description: `${payload.title} → ${payload.assignedTo}` }
     );
+    // Persist to Supabase
+    try {
+      await insertAction(newAction);
+    } catch {
+      toast.error("Failed to save action — will retry on next refresh");
+    }
   };
 
     // ── Drag & Drop ───────────────────────────────────────────────────────────
@@ -1149,14 +1175,20 @@ export function ActionBoard() {
     e.dataTransfer.dropEffect = "move";
   };
 
-  const handleDrop = (e: React.DragEvent, status: KanbanStatus) => {
+  const handleDrop = async (e: React.DragEvent, status: KanbanStatus) => {
     e.preventDefault();
     if (!dragAction || status === "incoming") return;
-    setActions(prev =>
-      prev.map(a => a.id === dragAction.id ? { ...a, status } : a)
-    );
+    const id = dragAction.id;
+    // Optimistic update
+    setActions(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     setDragAction(null);
     setDragOverCol(null);
+    // Persist to Supabase
+    try {
+      await updateActionStatus(id, status);
+    } catch {
+      toast.error("Failed to update status — please refresh");
+    }
   };
 
   const hasActiveFilters = filterSuite !== "all" || filterSource !== "all" || filterPriority !== "all" || filterStatus !== "all" || search !== "";
@@ -1164,7 +1196,7 @@ export function ActionBoard() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: "var(--background)" }}>
+    <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: "var(--card)" }}>
 
       {/* ── Header ── */}
       <div className="shrink-0 border-b border-border" style={{ background: "var(--card)" }}>

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useEscalationSettings } from "../../lib/useEscalationSettings";
+import { saveSLARules, saveGlobalSettings, saveContactsForLevel } from "../../lib/escalation-settings-db";
+import type { SLARule, LevelContact as DBContact } from "../../lib/escalation-settings-db";
 import { useSidebar } from "../../components/layout/SidebarLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -227,18 +230,49 @@ const DEFAULT_SLA_RULES: LevelSLARule[] = [
 ];
 
 function SLARoutingSection() {
+  const { settings } = useEscalationSettings();
   const [rules, setRules] = useState<LevelSLARule[]>(DEFAULT_SLA_RULES);
   const [criticalBreachDays, setCriticalBreachDays] = useState(3);
   const [autoCloseDays, setAutoCloseDays] = useState(7);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Sync from Supabase once loaded
+  useEffect(() => {
+    if (settings.slaRules.length) {
+      setRules(settings.slaRules.map(r => ({
+        level: r.level,
+        role: r.role,
+        color: DEFAULT_SLA_RULES.find(d => d.level === r.level)?.color ?? "#64748b",
+        slaHours: r.slaHours,
+        onBreach: r.onBreach,
+        reassignAfterHours: r.reassignAfterHours,
+        maxReassigns: r.maxReassigns,
+      })));
+    }
+    setCriticalBreachDays(settings.criticalBreachDays);
+    setAutoCloseDays(settings.autoCloseDays);
+  }, [settings]);
 
   function patch(level: Level, update: Partial<LevelSLARule>) {
     setRules(prev => prev.map(r => r.level === level ? { ...r, ...update } : r));
   }
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await saveSLARules(rules.map(r => ({
+        level: r.level, role: r.role, slaHours: r.slaHours,
+        onBreach: r.onBreach, reassignAfterHours: r.reassignAfterHours, maxReassigns: r.maxReassigns,
+      })));
+      await saveGlobalSettings(criticalBreachDays, autoCloseDays);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      // silently fall back
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -443,10 +477,10 @@ function SLARoutingSection() {
       </div>
 
       <div className="flex justify-end mt-1">
-        <Button size="sm" className="h-8 text-xs px-5 gap-1.5" onClick={handleSave}>
+        <Button size="sm" className="h-8 text-xs px-5 gap-1.5" onClick={handleSave} disabled={saving}>
           {saved
             ? <><CheckCircle2 size={12} strokeWidth={1.5} /> Saved</>
-            : "Save SLA Rules"}
+            : saving ? "Saving…" : "Save SLA Rules"}
         </Button>
       </div>
     </div>
@@ -558,11 +592,33 @@ function NotificationRulesSection() {
 // ─── Level Contacts Section ───────────────────────────────────────────────────
 
 function LevelContactsSection() {
+  const { settings } = useEscalationSettings();
   const [contacts, setContacts] = useState<LevelContact[]>(DEFAULT_CONTACTS);
   const [adding, setAdding] = useState<Level | null>(null);
   const [newName, setNewName]   = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [savingLevel, setSavingLevel] = useState<Level | null>(null);
+
+  // Sync from Supabase
+  useEffect(() => {
+    if (!settings.contacts.length) return;
+    const LEVEL_META: Record<Level, { role: string; color: string }> = {
+      L1: { role: "Operator / Technician", color: "#64748b" },
+      L2: { role: "Supervisor",            color: "#3b82f6" },
+      L3: { role: "Operations Manager",    color: "#f59e0b" },
+      L4: { role: "Director",              color: "#ef4444" },
+    };
+    const grouped = (["L1","L2","L3","L4"] as Level[]).map(lvl => ({
+      level: lvl,
+      role:  LEVEL_META[lvl].role,
+      color: LEVEL_META[lvl].color,
+      contacts: settings.contacts
+        .filter(c => c.level === lvl)
+        .map(c => ({ name: c.name, email: c.email, phone: c.phone || undefined })),
+    }));
+    setContacts(grouped);
+  }, [settings.contacts]);
 
   function addContact(level: Level) {
     if (!newEmail.trim()) return;
@@ -580,6 +636,19 @@ function LevelContactsSection() {
         ? { ...lc, contacts: lc.contacts.filter((_, i) => i !== idx) }
         : lc
     ));
+  }
+
+  async function saveLevel(level: Level) {
+    const lc = contacts.find(c => c.level === level);
+    if (!lc) return;
+    setSavingLevel(level);
+    try {
+      await saveContactsForLevel(level, lc.contacts.map((c, i) => ({
+        id: "", level, name: c.name, email: c.email, phone: c.phone ?? "", displayOrder: i,
+      })));
+    } finally {
+      setSavingLevel(null);
+    }
   }
 
   return (
@@ -668,7 +737,12 @@ function LevelContactsSection() {
       ))}
 
       <div className="flex justify-end mt-2">
-        <Button size="sm" className="h-8 text-xs px-5">Save Contacts</Button>
+        <Button size="sm" className="h-8 text-xs px-5" disabled={!!savingLevel}
+          onClick={async () => {
+            for (const lc of contacts) await saveLevel(lc.level as Level);
+          }}>
+          {savingLevel ? "Saving…" : "Save Contacts"}
+        </Button>
       </div>
     </div>
   );
@@ -1032,7 +1106,7 @@ export function EscalationSettings() {
   const [section, setSection] = useState("sla");
 
   useEffect(() => {
-    sidebar.setSubPageTitle("Escalation Settings");
+    sidebar.setSubPageTitle("Settings");
     sidebar.setSubPageBack(() => navigate("/mhe/escalation-logs"));
     return () => { sidebar.setSubPageTitle(null); sidebar.setSubPageBack(null); };
   }, []);

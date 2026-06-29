@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useEscalationSettings } from "../../lib/useEscalationSettings";
 import { useNavigate } from "react-router";
 import { useSidebar } from "../../components/layout/SidebarLayout";
 import { Button } from "../../components/ui/button";
@@ -349,11 +350,11 @@ function SLABar({ pct, height = 6 }: { pct: number; height?: number }) {
   );
 }
 
-function Avatar({ initials, size = "sm", color }: { initials: string; size?: "sm" | "md" | "lg"; color?: string }) {
+function Avatar({ initials, size = "sm", color, textColor }: { initials: string; size?: "sm" | "md" | "lg"; color?: string; textColor?: string }) {
   const sz = size === "lg" ? "w-10 h-10 text-sm" : size === "md" ? "w-8 h-8 text-xs" : "w-6 h-6 text-[10px]";
   return (
     <div className={cn("rounded-full flex items-center justify-center font-bold shrink-0 select-none", sz)}
-      style={{ background: color ?? "var(--primary)", color: "#fff" }}>
+      style={{ background: color ?? "var(--primary)", color: textColor ?? "#fff" }}>
       {initials}
     </div>
   );
@@ -462,7 +463,9 @@ function EscalationCard({ item, onClick, mode }: { item: EscalationItem; onClick
         {/* ── Row 3: assignee block ── */}
         <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl"
           style={{ background: "var(--muted)", border: "1px solid var(--border)" }}>
-          <Avatar initials={item.assignedInitials} size="md" color={lvlColor} />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--muted)" }}>
+            <User size={14} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+          </div>
           <div className="flex-1 min-w-0">
             <p className="text-[12px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
               {item.assignedTo}
@@ -545,30 +548,29 @@ function Swimlane({ level, items, onCardClick, mode }: {
 }) {
   const [open, setOpen]   = useState(true);
   const meta              = LEVEL_META[level];
+  const { getSLARule }    = useEscalationSettings();
+  const slaRule           = getSLARule(level);
   const breachedCount     = items.filter(i => i.slaPercent <= 0 || i.status === "critical_breach").length;
 
   return (
     <div className="rounded-xl overflow-hidden"
       style={{
         border: "1px solid var(--border)",
-        background: "var(--card)",
-        boxShadow: breachedCount > 0
-          ? `0 0 0 1px ${meta.color}25, 0 2px 6px rgba(0,0,0,0.07)`
-          : "0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.03)",
+        background: "var(--muted)",
       }}>
 
       {/* Header */}
       <button
         onClick={() => setOpen(p => !p)}
         className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:opacity-90"
-        style={{ background: "var(--muted)" }}
+        style={{ background: "var(--card)", borderBottom: "1px solid var(--border)" }}
       >
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>
             {level} — {meta.label}
           </p>
           <p className="text-[10px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-            Resolve SLA: <strong>{meta.resolve}</strong>
+            Resolve SLA: <strong>{slaRule.slaHours}h</strong>
           </p>
         </div>
 
@@ -594,7 +596,7 @@ function Swimlane({ level, items, onCardClick, mode }: {
       </button>
 
       {open && (
-        <div className="p-4 border-t" style={{ borderColor: `${meta.color}20` }}>
+        <div className="p-4 border-t" style={{ borderColor: "var(--border)" }}>
           {items.length === 0 ? (
             <div className="flex items-center justify-center gap-2 py-5" style={{ color: "var(--muted-foreground)" }}>
               <CheckCircle2 size={15} strokeWidth={1.5} />
@@ -644,15 +646,15 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
       <div
         className={cn("flex-1 min-w-0 rounded-[var(--radius)] border overflow-hidden", isLast ? "mb-0" : "mb-3")}
         style={{
-          borderColor: isActive ? `${meta.color}50` : "var(--border)",
-          borderLeftWidth: isActive ? 3 : 1,
-          borderLeftColor: isActive ? meta.color : "var(--border)",
+          borderColor: "var(--border)",
         }}
       >
         {/* Header — tinted by outcome */}
         <div className="flex items-start gap-2.5 px-3.5 py-2.5 border-b border-[var(--border)]"
-          style={{ background: oc.headerBg }}>
-          <Avatar initials={node.initials} size="sm" color={isActive ? meta.color : "#94a3b8"} />
+          style={{ background: "var(--card)" }}>
+          <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--muted)" }}>
+            <User size={12} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+          </div>
           <div className="flex-1 min-w-0">
             <p className="text-[12px] font-semibold truncate" style={{ color: "var(--foreground)" }}>
               {node.assignee}
@@ -672,7 +674,7 @@ function TimelineNode({ node, isLast }: { node: HistoryNode; isLast: boolean }) 
         </div>
 
         {/* Body */}
-        <div className="px-3.5 py-3 flex flex-col gap-2.5 bg-[var(--background)]">
+        <div className="px-3.5 py-3 flex flex-col gap-2.5 bg-[var(--card)]">
 
           {/* Timestamps */}
           <div className="flex items-center flex-wrap gap-x-5 gap-y-1">
@@ -753,13 +755,16 @@ function DetailDrawer({
 }) {
   const [note, setNote]                 = useState("");
   const [reassignOpen, setReassignOpen] = useState(false);
+  const { getSLARule, getContacts }     = useEscalationSettings();
 
   if (!item) return null;
 
-  const isResolved = item.status === "resolved";
-  const isL4       = item.currentLevel === "L4";
-  const lvlMeta    = LEVEL_META[item.currentLevel];
-  const nextLevel  = item.currentLevel === "L1" ? "L2" : item.currentLevel === "L2" ? "L3" : "L4";
+  const isResolved  = item.status === "resolved";
+  const isL4        = item.currentLevel === "L4";
+  const lvlMeta     = LEVEL_META[item.currentLevel];
+  const nextLevel   = item.currentLevel === "L1" ? "L2" : item.currentLevel === "L2" ? "L3" : "L4";
+  const slaRule     = getSLARule(item.currentLevel);
+  const lvlContacts = getContacts(item.currentLevel);
 
   return (
     <Sheet open={!!item} onOpenChange={v => { if (!v) { onClose(); setNote(""); } }}>
@@ -799,7 +804,7 @@ function DetailDrawer({
         </SheetHeader>
 
         {/* ── Scrollable body ── */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6 bg-[var(--background)]">
+        <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6 bg-[var(--card)]">
 
           {/* Meta grid */}
           <div className="grid grid-cols-4 gap-4">
@@ -824,7 +829,9 @@ function DetailDrawer({
 
           {/* Assignee block */}
           <div className="flex items-center gap-3 px-3.5 py-3 rounded-[var(--radius)] bg-[var(--card)] border border-[var(--border)]">
-            <Avatar initials={item.assignedInitials} size="md" color={lvlMeta.color} />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--muted)" }}>
+            <User size={14} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+          </div>
             <div className="flex-1 min-w-0">
               <p className="text-[length:var(--text-sm)] font-[var(--font-weight-semi-bold)] truncate"
                 style={{ color: "var(--foreground)" }}>
@@ -836,6 +843,54 @@ function DetailDrawer({
             </div>
             <LevelBadge level={item.currentLevel} size="md" />
           </div>
+
+          {/* SLA + On-Breach from Settings */}
+          <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-[var(--radius)] border border-[var(--border)]"
+            style={{ background: "var(--muted)" }}>
+            <Clock size={13} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+            <div className="flex-1 min-w-0 flex items-center gap-4 flex-wrap">
+              <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                SLA window: <strong style={{ color: "var(--foreground)" }}>{slaRule.slaHours}h</strong>
+              </span>
+              <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                On breach: <strong style={{ color: "var(--foreground)" }} className="capitalize">{slaRule.onBreach}</strong>
+              </span>
+              {(slaRule.onBreach === "reassign" || slaRule.onBreach === "both") && (
+                <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+                  Reassign after: <strong style={{ color: "var(--foreground)" }}>
+                    {slaRule.reassignAfterHours >= 24 ? `${slaRule.reassignAfterHours / 24}d` : `${slaRule.reassignAfterHours}h`}
+                  </strong>
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Level Contacts from Settings */}
+          {lvlContacts.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
+                {item.currentLevel} Contacts
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {lvlContacts.map(c => (
+                  <div key={c.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-[var(--border)]"
+                    style={{ background: "var(--card)" }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                      style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
+                      {c.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-semibold truncate" style={{ color: "var(--foreground)" }}>{c.name}</p>
+                      {c.email && <p className="text-[10px] truncate" style={{ color: "var(--muted-foreground)" }}>{c.email}</p>}
+                    </div>
+                    {c.phone && (
+                      <span className="text-[10px] shrink-0" style={{ color: "var(--muted-foreground)" }}>{c.phone}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Escalation Chain */}
           <div className="flex flex-col gap-3">
@@ -1026,6 +1081,8 @@ const AUTO_ROUTING_RULES = [
 
 function AutoRulesPanel() {
   const [expanded, setExpanded] = useState(false);
+  const { settings } = useEscalationSettings();
+  const levels = (["L1", "L2", "L3", "L4"] as const);
 
   return (
     <div className="mx-0 rounded-xl overflow-hidden border"
@@ -1044,7 +1101,7 @@ function AutoRulesPanel() {
             Auto-routing active
           </p>
           <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-            Issues are auto-assigned by source and role. SLA breach triggers automatic escalation — no manager action needed.
+            SLA breach triggers automatic escalation. Contacts and windows are from Settings.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -1058,22 +1115,37 @@ function AutoRulesPanel() {
         </div>
       </button>
 
-      {/* Routing rules */}
+      {/* SLA rules per level */}
       {expanded && (
         <div className="px-4 pb-4 border-t flex flex-col gap-2" style={{ borderColor: "#3b82f620" }}>
           <p className="text-[10px] font-semibold uppercase tracking-wide mt-3 mb-1"
             style={{ color: "var(--muted-foreground)" }}>
-            Routing Rules
+            SLA Windows & Contacts
           </p>
-          {AUTO_ROUTING_RULES.map(r => {
-            const Icon = r.icon;
+          {levels.map(lvl => {
+            const rule     = settings.slaRules.find(r => r.level === lvl);
+            const contacts = settings.contacts.filter(c => c.level === lvl);
+            const meta     = LEVEL_META[lvl];
+            if (!rule) return null;
             return (
-              <div key={r.source} className="flex items-start gap-2.5 px-3 py-2 rounded-lg"
-                style={{ background: `${r.color}08`, border: `1px solid ${r.color}20` }}>
-                <Icon size={12} strokeWidth={1.5} className="shrink-0 mt-0.5" style={{ color: r.color }} />
-                <div className="min-w-0">
-                  <span className="text-[11px] font-bold mr-2" style={{ color: r.color }}>{r.source}</span>
-                  <span className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>{r.chain}</span>
+              <div key={lvl} className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-[var(--border)]"
+                style={{ background: "var(--card)" }}>
+                <LevelBadge level={lvl} size="sm" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span className="text-[11px] font-bold" style={{ color: meta.color }}>{rule.role}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
+                      {rule.slaHours}h SLA
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded capitalize" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
+                      on breach: {rule.onBreach}
+                    </span>
+                  </div>
+                  {contacts.length > 0 && (
+                    <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+                      {contacts.map(c => c.name).join(" · ")}
+                    </p>
+                  )}
                 </div>
               </div>
             );
@@ -1109,12 +1181,12 @@ function KpiCard({ label, value, sub }: { label: string; value: number; sub: str
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-type TabKey = "active" | "pending_ack" | "resolved" | "all";
+type TabKey = "active" | "pending_ack" | "resolved" | "all"; // kept for compat
 
 export function EscalationBoard() {
   const navigate                            = useNavigate();
   const [mode, setMode]                     = useState<EscalationMode>("manual");
-  const [tab, setTab]                       = useState<TabKey>("active");
+  const tab = "active"; // tabs removed — always show active swimlane view
   const [search, setSearch]                 = useState("");
   const [filterSource, setFilterSource]     = useState<string>("all");
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
@@ -1187,85 +1259,32 @@ export function EscalationBoard() {
   const byLevel = (level: EscalationLevel) =>
     filtered.filter(i => i.currentLevel === level && i.status !== "resolved");
 
-  const totalActive   = escalations.filter(i => i.status !== "resolved").length;
-  const totalPending  = escalations.filter(i => i.status === "open").length;
   const totalBreached = escalations.filter(i => i.slaPercent <= 0 && i.status !== "resolved").length;
-  const totalResolved = escalations.filter(i => i.status === "resolved").length;
-
-  const TABS: { key: TabKey; label: string; count: number }[] = [
-    { key: "active",      label: "Active",      count: totalActive   },
-    { key: "pending_ack", label: "Pending Ack", count: totalPending  },
-    { key: "resolved",    label: "Resolved",    count: totalResolved },
-    { key: "all",         label: "All",         count: escalations.length },
-  ];
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--background)" }}>
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: "var(--card)" }}>
 
       {/* Header — sits on card surface so it pops off the slate-100 page bg */}
-      <div className="px-6 pt-5 pb-0 shrink-0"
+      <div className="px-6 pt-4 pb-0 shrink-0 border-b border-border"
         style={{ background: "var(--card)" }}>
-        {/* Title row */}
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div>
-            <h1 className="text-[15px] font-bold leading-tight" style={{ color: "var(--foreground)" }}>
-              Escalation Board
-            </h1>
-            <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-              Auto-escalates from L1 → L2 → L3 → L4 when SLA timers expire
-            </p>
-          </div>
-          <button
-            onClick={() => navigate("/mhe/escalation-settings")}
-            className="w-8 h-8 rounded-lg flex items-center justify-center border border-border hover:bg-muted transition-colors"
-            title="Notification Settings"
-            style={{ background: "var(--card)" }}
-          >
-            <Settings2 size={14} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
-          </button>
-        </div>
-
-        {/* KPI strip */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
-          <KpiCard label="Active"   value={totalActive}   sub={`${totalActive} open escalations`} />
-          <KpiCard label="Breached" value={totalBreached} sub="SLA window exceeded" />
-          <KpiCard label="Pending"  value={totalPending}  sub="Awaiting acknowledgement" />
-          <KpiCard label="Resolved" value={totalResolved} sub="Closed this period" />
-        </div>
-
-        {/* Mode toggle row */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Mode toggle row + settings */}
+        <div className="flex items-center justify-between pb-4">
           <ModeToggle mode={mode} setMode={setMode} />
-          <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-            {mode === "auto"
-              ? "System auto-assigns and auto-escalates. You only need to resolve."
-              : "Manually assign, acknowledge, and escalate each item."}
-          </p>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex items-center border-b border-border">
-          {TABS.map(t => (
+          <div className="flex items-center gap-3">
+            <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+              {mode === "auto"
+                ? "System auto-assigns and auto-escalates. You only need to resolve."
+                : "Manually assign, acknowledge, and escalate each item."}
+            </p>
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "flex items-center gap-2 px-5 py-3 text-[13px] font-semibold border-b-2 transition-all",
-                tab === t.key ? "border-foreground" : "border-transparent"
-              )}
-              style={{ color: tab === t.key ? "var(--foreground)" : "var(--muted-foreground)" }}
+              onClick={() => navigate("/mhe/escalation-settings")}
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-border hover:bg-muted transition-colors shrink-0"
+              title="Settings"
+              style={{ background: "var(--card)" }}
             >
-              {t.label}
-              <span
-                className="min-w-[20px] h-[20px] flex items-center justify-center text-[11px] font-bold rounded-md px-1.5"
-                style={{
-                  background: tab === t.key ? "var(--foreground)" : "var(--muted)",
-                  color: tab === t.key ? "var(--background)" : "var(--muted-foreground)",
-                }}>
-                {t.count}
-              </span>
+              <Settings2 size={14} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
             </button>
-          ))}
+          </div>
         </div>
       </div>
 
@@ -1326,7 +1345,7 @@ export function EscalationBoard() {
       </div>
 
       {/* Board */}
-      <div className="flex-1 overflow-y-auto px-6 py-4" style={{ background: "var(--background)" }}>
+      <div className="flex-1 overflow-y-auto px-6 py-4" style={{ background: "var(--card)" }}>
         {tab === "active" ? (
           <div className="flex flex-col gap-3">
             {mode === "auto" && <AutoRulesPanel />}
