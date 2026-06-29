@@ -30,6 +30,8 @@ import {
   Eye,
   Plus,
   Trash2,
+  Pencil,
+  Check,
   PlugZap,
   Timer,
   RefreshCw,
@@ -54,7 +56,7 @@ interface NotificationRule {
 }
 
 interface LevelContact {
-  level: Level;
+  level: string;  // L1-L4 fixed; L5+ user-created
   role: string;
   color: string;
   contacts: { name: string; email: string; phone?: string }[];
@@ -591,11 +593,13 @@ function NotificationRulesSection() {
 function LevelContactsSection() {
   const { settings } = useEscalationSettings();
   const [contacts, setContacts] = useState<LevelContact[]>(DEFAULT_CONTACTS);
-  const [adding, setAdding] = useState<Level | null>(null);
+  const [adding, setAdding] = useState<string | null>(null);
   const [newName, setNewName]   = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [savingLevel, setSavingLevel] = useState<Level | null>(null);
+  const [savingLevel, setSavingLevel] = useState<string | null>(null);
+  const [renamingLevel, setRenamingLevel] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   // Sync from Supabase
   useEffect(() => {
@@ -617,7 +621,7 @@ function LevelContactsSection() {
     setContacts(grouped);
   }, [settings.contacts]);
 
-  function addContact(level: Level) {
+  function addContact(level: string) {
     if (!newEmail.trim()) return;
     setContacts(prev => prev.map(lc =>
       lc.level === level
@@ -627,7 +631,7 @@ function LevelContactsSection() {
     setAdding(null); setNewName(""); setNewEmail(""); setNewPhone("");
   }
 
-  function removeContact(level: Level, idx: number) {
+  function removeContact(level: string, idx: number) {
     setContacts(prev => prev.map(lc =>
       lc.level === level
         ? { ...lc, contacts: lc.contacts.filter((_, i) => i !== idx) }
@@ -635,13 +639,25 @@ function LevelContactsSection() {
     ));
   }
 
-  async function saveLevel(level: Level) {
+  function addLevel() {
+    const nextNum = contacts.length + 1;
+    const nextLevel = `L${nextNum}`;
+    if (contacts.find(c => c.level === nextLevel)) return;
+    setContacts(prev => [...prev, {
+      level: nextLevel,
+      role: `Custom Level ${nextNum}`,
+      color: "#8b5cf6",
+      contacts: [],
+    }]);
+  }
+
+  async function saveLevel(level: string) {
     const lc = contacts.find(c => c.level === level);
     if (!lc) return;
     setSavingLevel(level);
     try {
-      await saveContactsForLevel(level, lc.contacts.map((c, i) => ({
-        id: "", level, name: c.name, email: c.email, phone: c.phone ?? "", displayOrder: i,
+      await saveContactsForLevel(level as Level, lc.contacts.map((c, i) => ({
+        id: "", level: level as Level, name: c.name, email: c.email, phone: c.phone ?? "", displayOrder: i,
       })));
     } finally {
       setSavingLevel(null);
@@ -650,11 +666,18 @@ function LevelContactsSection() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="mb-1">
-        <h2 className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Level Contacts</h2>
-        <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-          Email addresses and phone numbers for each escalation level. When an issue escalates, the system emails these contacts automatically.
-        </p>
+      <div className="flex items-start justify-between gap-4 mb-1">
+        <div>
+          <h2 className="text-sm font-bold" style={{ color: "var(--foreground)" }}>Level Contacts</h2>
+          <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+            Email addresses and phone numbers for each escalation level. When an issue escalates, the system emails these contacts automatically.
+          </p>
+        </div>
+        <Button size="sm" variant="outline" className="h-7 text-[10px] px-3 gap-1 shrink-0"
+          onClick={addLevel}>
+          <Plus size={11} strokeWidth={1.5} />
+          Add Level
+        </Button>
       </div>
 
       {contacts.map(lc => (
@@ -664,11 +687,44 @@ function LevelContactsSection() {
           {/* Level header */}
           <div className="flex items-center gap-3 px-4 py-3"
             style={{ background: "var(--muted)" }}>
-            <div className="flex-1">
-              <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>
-                {lc.level} — {lc.role}
-              </p>
-              <p className="text-[10px]" style={{ color: "var(--muted-foreground)" }}>
+            <div className="flex-1 min-w-0">
+              {renamingLevel === lc.level ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold shrink-0" style={{ color: "var(--foreground)" }}>{lc.level} —</span>
+                  <input
+                    autoFocus
+                    value={renameValue}
+                    onChange={e => setRenameValue(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        setContacts(prev => prev.map(c => c.level === lc.level ? { ...c, role: renameValue.trim() || c.role } : c));
+                        setRenamingLevel(null);
+                      }
+                      if (e.key === "Escape") setRenamingLevel(null);
+                    }}
+                    className="flex-1 text-xs font-bold bg-transparent border-b outline-none min-w-0"
+                    style={{ color: "var(--foreground)", borderColor: "var(--foreground)" }}
+                  />
+                  <button onClick={() => {
+                    setContacts(prev => prev.map(c => c.level === lc.level ? { ...c, role: renameValue.trim() || c.role } : c));
+                    setRenamingLevel(null);
+                  }} className="shrink-0">
+                    <Check size={13} strokeWidth={1.5} style={{ color: "#22c55e" }} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold" style={{ color: "var(--foreground)" }}>
+                    {lc.level} — {lc.role}
+                  </p>
+                  <button
+                    onClick={() => { setRenamingLevel(lc.level); setRenameValue(lc.role); }}
+                    className="opacity-40 hover:opacity-100 transition-opacity">
+                    <Pencil size={11} strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+                  </button>
+                </div>
+              )}
+              <p className="text-[10px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                 {lc.contacts.length} contact{lc.contacts.length !== 1 ? "s" : ""} configured
               </p>
             </div>
@@ -736,7 +792,7 @@ function LevelContactsSection() {
       <div className="flex justify-end mt-2">
         <Button size="sm" className="h-8 text-xs px-5" disabled={!!savingLevel}
           onClick={async () => {
-            for (const lc of contacts) await saveLevel(lc.level as Level);
+            for (const lc of contacts) await saveLevel(lc.level);
           }}>
           {savingLevel ? "Saving…" : "Save Contacts"}
         </Button>
