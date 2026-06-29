@@ -19,7 +19,6 @@ import {
   Bell,
   Users,
   Settings2,
-  FileCode2,
   CheckCircle2,
   AlertTriangle,
   ArrowUpRight,
@@ -178,11 +177,9 @@ const DEFAULT_CONTACTS: LevelContact[] = [
 // ─── Sidebar Nav ──────────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { id: "sla",       label: "SLA & Routing",        icon: Timer     },
-  { id: "rules",     label: "Notification Rules",   icon: Bell      },
-  { id: "contacts",  label: "Level Contacts",        icon: Users     },
-  { id: "email",     label: "Email Setup",           icon: Mail      },
-  { id: "templates", label: "Email Templates",       icon: FileCode2 },
+  { id: "sla",      label: "SLA & Routing",      icon: Timer },
+  { id: "rules",    label: "Notification Rules", icon: Bell  },
+  { id: "contacts", label: "Level Contacts",     icon: Users },
 ];
 
 // ─── Toggle ───────────────────────────────────────────────────────────────────
@@ -1146,11 +1143,9 @@ export function EscalationSettings() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        {section === "sla"       && <SLARoutingSection />}
-        {section === "rules"     && <NotificationRulesSection />}
-        {section === "contacts"  && <LevelContactsSection />}
-        {section === "email"     && <EmailSetupSection />}
-        {section === "templates" && <TemplatesSection />}
+        {section === "sla"      && <SLARoutingSection />}
+        {section === "rules"    && <NotificationRulesSection />}
+        {section === "contacts" && <LevelContactsSection />}
       </div>
     </div>
   );
