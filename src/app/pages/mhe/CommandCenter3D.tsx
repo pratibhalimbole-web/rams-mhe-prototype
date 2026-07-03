@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "react-router";
 import { Canvas } from "@react-three/fiber";
 import {
   Radio, RotateCcw,
@@ -11,7 +12,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip as RTooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
-import { WarehouseScene, TaskAssignment, TaskStatus, NearMissEvent, ViewMode } from "../digital-twin/WarehouseScene3D";
+import { WarehouseScene, TaskAssignment, TaskStatus, NearMissEvent, ViewMode, EVENT_DATA } from "../digital-twin/WarehouseScene3D";
 import { useTheme } from "../../hooks/useTheme";
 
 // ─── Mock data (from Figma design) ────────────────────────────────────────────
@@ -34,6 +35,7 @@ const BOTTOM_BTNS = [
   { id: "3d",      icon: Globe,           label: "3D View",   defaultActive: true },
   { id: "avatar",  icon: PersonStanding,  label: "Trail View" },
   { id: "focus",   icon: Crosshair,       label: "Focus"      },
+  { id: "heatmap", icon: Flame,           label: "Event Heatmap" },
   { id: "expand",  icon: Maximize2,       label: "Expand"     },
 ] as const;
 
@@ -721,7 +723,7 @@ function TripsPanel() {
 
 const PANEL_IDS = new Set(["schedule", "mhe", "operator", "layers", "overview", "trips", "alerts", "tasks"]);
 
-function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onRemoveTask, onExpand, isExpanded, onViewModeChange, viewMode }: {
+function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onRemoveTask, onExpand, isExpanded, onViewModeChange, viewMode, showHeatmap, onToggleHeatmap }: {
   mode: "live" | "history";
   onViewAnalytics: (mhe: MHEItem) => void;
   taskAssignments: TaskAssignment[];
@@ -731,6 +733,8 @@ function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onR
   isExpanded: boolean;
   onViewModeChange: (mode: ViewMode) => void;
   viewMode: ViewMode;
+  showHeatmap: boolean;
+  onToggleHeatmap: () => void;
 }) {
   const [topActive, setTopActive]   = useState<string>("overview");
   const [openPanel, setOpenPanel]   = useState<string | null>(null);
@@ -767,9 +771,10 @@ function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onR
       <div style={{ position: "absolute", left: 12, bottom: 16, zIndex: 20, display: "flex", flexDirection: "column", gap: 5 }}>
         {BOTTOM_BTNS.map(b => (
           <IconBtn key={b.id} icon={b.icon} label={b.label}
-            active={b.id === "expand" ? isExpanded : viewMode === b.id}
+            active={b.id === "expand" ? isExpanded : b.id === "heatmap" ? showHeatmap : viewMode === b.id}
             onClick={() => {
               if (b.id === "expand") { onExpand(); return; }
+              if (b.id === "heatmap") { onToggleHeatmap(); return; }
               onViewModeChange(b.id as ViewMode);
             }}
           />
@@ -1434,13 +1439,81 @@ const INITIAL_ASSIGNMENTS: TaskAssignment[] = [
   },
 ];
 
+// ─── Heatmap event breakdown — same "act first" pattern as Incident Actions ──
+const HEATMAP_SEV_ORDER: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+const HEATMAP_SEV_COLOR: Record<string, string> = { critical: "#ef4444", warning: "#f59e0b", info: "#3b82f6" };
+const HEATMAP_SEV_LABEL: Record<string, string> = { critical: "Critical", warning: "Warning", info: "Info" };
+
+function HeatmapEventsPanel({ onClose, offsetTop = 60 }: { onClose: () => void; offsetTop?: number }) {
+  const sorted = [...EVENT_DATA].sort((a, b) => HEATMAP_SEV_ORDER[a.severity] - HEATMAP_SEV_ORDER[b.severity]);
+  return (
+    <div style={{
+      position: "absolute", left: 60, top: offsetTop, zIndex: 20,
+      width: 320, maxHeight: `calc(100% - ${offsetTop + 40}px)`, display: "flex", flexDirection: "column",
+      background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12,
+      boxShadow: "0 8px 28px rgba(0,0,0,0.16)", overflow: "hidden", fontFamily: "system-ui,sans-serif",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Flame size={14} strokeWidth={1.8} color="#ef4444" />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)" }}>Event Heatmap</span>
+          <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>({sorted.length})</span>
+        </div>
+        <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted-foreground)", padding: 2 }}>
+          <X size={14} />
+        </button>
+      </div>
+      <div style={{ padding: "6px 14px 4px", fontSize: 10.5, color: "var(--muted-foreground)" }}>Sorted by severity</div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "6px 10px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+        {sorted.map((e, i) => {
+          const color = HEATMAP_SEV_COLOR[e.severity];
+          return (
+            <div key={e.id} style={{
+              position: "relative", paddingLeft: 12, paddingRight: 10, paddingTop: 8, paddingBottom: 8,
+              borderRadius: 8, background: "var(--muted)", overflow: "hidden",
+            }}>
+              <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: color }} />
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--foreground)" }}>{e.label}</span>
+                  {e.count > 1 && (
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 100, background: "var(--card)", color: "var(--muted-foreground)", flexShrink: 0 }}>
+                      ×{e.count}
+                    </span>
+                  )}
+                  {i === 0 && (
+                    <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", padding: "1px 6px", borderRadius: 4, background: color, color: "#fff", flexShrink: 0 }}>
+                      Act First
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color, flexShrink: 0 }}>{HEATMAP_SEV_LABEL[e.severity]}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 11.5, color: "var(--muted-foreground)" }}>
+                <MapPin size={11} strokeWidth={1.5} />
+                <span>{e.zone}</span>
+              </div>
+              {e.note && (
+                <div style={{ fontSize: 11.5, marginTop: 4, fontStyle: "italic", color: "var(--muted-foreground)" }}>{e.note}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function CommandCenter3D() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<"live" | "history">("live");
   const [showEvents, setShowEvents] = useState(false);
   const [analyticsMHE, setAnalyticsMHE] = useState<MHEItem | null>(null);
   const [taskAssignments, setTaskAssignments] = useState<TaskAssignment[]>(INITIAL_ASSIGNMENTS);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("3d");
+  const [viewMode, setViewMode] = useState<ViewMode>(searchParams.get("view") === "2d" ? "2d" : "3d");
+  const [showHeatmap, setShowHeatmap] = useState(searchParams.get("heatmap") === "1");
+  const [focusZone, setFocusZone] = useState<string | null>(searchParams.get("zone"));
 
   // Near-miss alert state
   type NearMissAlert = { id: string; mheId: string; mheLabel: string; rackLabel: string };
@@ -1527,7 +1600,31 @@ export function CommandCenter3D() {
             isExpanded={isExpanded}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
+            showHeatmap={showHeatmap}
+            onToggleHeatmap={() => setShowHeatmap(p => !p)}
           />
+
+          {/* ── Deep-link zone banner (arrived from Incident Actions) ── */}
+          {focusZone && (
+            <div style={{
+              position: "absolute", top: 16, left: 60, zIndex: 20,
+              display: "flex", alignItems: "center", gap: 8,
+              background: "var(--card)", border: "1px solid var(--border)",
+              borderRadius: 8, padding: "6px 10px", boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+              fontFamily: "system-ui,sans-serif", fontSize: 12,
+            }}>
+              <Flame size={13} strokeWidth={1.8} color="#ef4444" />
+              <span style={{ fontWeight: 600 }}>Event heatmap</span>
+              <span style={{ color: "var(--muted-foreground)" }}>— focused on {focusZone}</span>
+              <button
+                onClick={() => { setFocusZone(null); setSearchParams({}); }}
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--muted-foreground)", padding: 0, marginLeft: 2 }}
+              ><X size={13} /></button>
+            </div>
+          )}
+
+          {/* ── Heatmap event breakdown (severity-sorted, mirrors Incident Actions) ── */}
+          {showHeatmap && <HeatmapEventsPanel onClose={() => setShowHeatmap(false)} offsetTop={focusZone ? 66 : 16} />}
 
           {/* ── Events trigger button (top-right) ── */}
           {!showEvents && !analyticsMHE && <EventsTriggerButton onOpen={() => setShowEvents(true)} />}
@@ -1613,7 +1710,7 @@ export function CommandCenter3D() {
               gl={{ antialias: true }}
             >
               <Suspense fallback={null}>
-                <WarehouseScene taskAssignments={taskAssignments} onNearMiss={handleNearMiss} viewMode={viewMode} />
+                <WarehouseScene taskAssignments={taskAssignments} onNearMiss={handleNearMiss} viewMode={viewMode} showHeatmap={showHeatmap} />
               </Suspense>
             </Canvas>
           )}

@@ -1662,12 +1662,62 @@ const OPERATOR_DATA = [
   { id: "OP-05", name: "R. Gomez",  position: [-20, 0,  5]  as [number,number,number], active: true  },
 ];
 
-const EVENT_DATA = [
-  { id: "E1", position: [-16, 0, -2]  as [number,number,number], label: "Impact",    severity: "critical" as EventSeverity, count: 1 },
-  { id: "E2", position: [8,   0, -15] as [number,number,number], label: "Near Miss", severity: "warning"  as EventSeverity, count: 2 },
-  { id: "E3", position: [-6,  0,  5]  as [number,number,number], label: "Slow Zone", severity: "info"     as EventSeverity, count: 1 },
-  { id: "E4", position: [16,  0, -8]  as [number,number,number], label: "Impact",    severity: "critical" as EventSeverity, count: 3 },
+export const EVENT_DATA = [
+  { id: "E1", position: [-16, 0, -2]  as [number,number,number], label: "Impact",               zone: "Main Storage · Rack R5, Bay B12", severity: "critical" as EventSeverity, count: 1, note: "MHE-008 collided with rack upright — rack structurally damaged, isolate bay" },
+  { id: "E2", position: [8,   0, -15] as [number,number,number], label: "Near Miss",            zone: "Aisle D",                          severity: "warning"  as EventSeverity, count: 2, note: "MHE approached pedestrian crossing without slowing" },
+  { id: "E3", position: [-6,  0,  5]  as [number,number,number], label: "Slow Zone",            zone: "Staging Area",                    severity: "info"     as EventSeverity, count: 1, note: "Below target throughput — no safety risk" },
+  { id: "E4", position: [16,  0, -8]  as [number,number,number], label: "Impact",               zone: "Charging Bay",                    severity: "critical" as EventSeverity, count: 3, note: "Repeated low-speed contact with charging dock — check dock alignment" },
+  { id: "E5", position: [4,   0, -4]  as [number,number,number], label: "Restricted Zone",      zone: "Zone B — Restricted perimeter",   severity: "warning"  as EventSeverity, count: 2, note: "Unauthorized entry into restricted perimeter" },
+  { id: "E6", position: [-8,  0, -5]  as [number,number,number], label: "Wet Surface",          zone: "Zone C — Aisle 4",                severity: "warning"  as EventSeverity, count: 3, note: "Blocking travel path near QC Station" },
+  { id: "E7", position: [-1,  0, -13] as [number,number,number], label: "Pedestrian Proximity", zone: "Aisle A",                          severity: "critical" as EventSeverity, count: 1, note: "MHE↔pedestrian clearance below 1m at cross-aisle junction" },
 ];
+
+// ─── Heatmap layer — soft radial-gradient blobs at event locations ───────────
+const HEAT_COLOR: Record<EventSeverity, string> = {
+  critical: "#ef4444",
+  warning:  "#f59e0b",
+  info:     "#3b82f6",
+};
+
+const heatTextureCache = new Map<string, THREE.Texture>();
+function getHeatTexture(color: string): THREE.Texture {
+  const cached = heatTextureCache.get(color);
+  if (cached) return cached;
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0,    `${color}cc`);
+  grad.addColorStop(0.4,  `${color}66`);
+  grad.addColorStop(1,    `${color}00`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(canvas);
+  heatTextureCache.set(color, tex);
+  return tex;
+}
+
+function HeatBlob({ position, severity, count }: { position: [number, number, number]; severity: EventSeverity; count: number }) {
+  const texture = getHeatTexture(HEAT_COLOR[severity]);
+  const radius = 4.5 + count * 1.6;
+  return (
+    <mesh position={[position[0], 0.12, position[2]]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[radius, radius]} />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
+    </mesh>
+  );
+}
+
+export function HeatmapLayer({ events = EVENT_DATA }: { events?: typeof EVENT_DATA }) {
+  return (
+    <group>
+      {events.map(e => (
+        <HeatBlob key={e.id} position={e.position} severity={e.severity} count={e.count} />
+      ))}
+    </group>
+  );
+}
 
 // ─── Live MHE Status Data ────────────────────────────────────────────────────
 type MHEStatus = "active" | "idle" | "loading" | "charging";
@@ -1725,7 +1775,7 @@ function ViewModeController({
 
   useEffect(() => {
     if (mode === "avatar") { animRef.current = null; return; }
-    if (!controls) return;
+    if (!controls) return; // OrbitControls not registered yet — retried below once `controls` becomes truthy
     const ctrl = controls as any;
     const preset = VIEW_PRESETS[mode as Exclude<ViewMode, "avatar">];
     animRef.current = {
@@ -1735,7 +1785,7 @@ function ViewModeController({
       toTarget:   new THREE.Vector3(...preset.tgt),
       t: 0,
     };
-  }, [mode]);
+  }, [mode, controls]);
 
   // Smoothed vectors for avatar follow-cam
   const smoothCam     = useRef(new THREE.Vector3());
@@ -1857,11 +1907,13 @@ export function WarehouseScene({
   taskAssignments = [],
   onNearMiss,
   viewMode = "3d",
+  showHeatmap = false,
 }: {
   onSelectMHE?: (id: string) => void;
   taskAssignments?: TaskAssignment[];
   onNearMiss?: (e: NearMissEvent) => void;
   viewMode?: ViewMode;
+  showHeatmap?: boolean;
 } = {}) {
   const [selectedMHE, setSelectedMHE] = useState<string | null>(null);
   const [hoveredMHE,  setHoveredMHE]  = useState<string | null>(null);
@@ -1927,6 +1979,9 @@ export function WarehouseScene({
       {RACK_BOUNDS.map(r => (
         <RackSafetyZone key={r.id} rack={r} hotRacksRef={hotRacksRef} />
       ))}
+
+      {/* ── Event heatmap overlay ── */}
+      {showHeatmap && <HeatmapLayer />}
 
       {/* ── Animated MHEs ── */}
       {MHE_VEHICLES.map((v, i) => {

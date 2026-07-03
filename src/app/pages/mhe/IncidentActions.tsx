@@ -457,7 +457,7 @@ function DetailDrawer({
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       <span
                         className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
                         style={{ background: `color-mix(in srgb, ${PRIORITY_COLORS[e.severity]} 14%, transparent)`, color: PRIORITY_COLORS[e.severity] }}
