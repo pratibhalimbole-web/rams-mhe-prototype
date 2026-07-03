@@ -131,6 +131,7 @@ export const domains: Domain[] = [
     ],
     sharedFeatures: [
       { id: "action-board", label: "Action Board" },
+      { id: "incident-actions", label: "Incident Actions" },
       { id: "escalation-logs", label: "Escalation Logs" },
       { id: "escalation-settings", label: "Escalation Logs", hidden: true },
       { id: "report", label: "Report" },
