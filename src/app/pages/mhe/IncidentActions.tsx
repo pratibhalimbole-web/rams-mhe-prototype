@@ -19,6 +19,12 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../../components/ui/dropdown-menu";
+import {
   Table,
   TableHeader,
   TableBody,
@@ -33,7 +39,6 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  ExternalLink,
   Repeat,
   ArrowUpRight,
   Users,
@@ -42,6 +47,8 @@ import {
   UsersRound,
   Clock,
 } from "lucide-react";
+import { Card, CardContent } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
 import { cn } from "../../components/ui/utils";
 import {
   Suite,
@@ -156,12 +163,15 @@ interface FilterState {
   suite: Suite[];
   priority: Priority[];
   businessArea: string[];
-  actionTarget: ActionTargetType[];
+  operator: string[];  // concrete operator names, multi-select
+  mhe: string[];        // concrete MHE ids, multi-select
+  warehouse: string;   // concrete zone/warehouse label, "" = no filter
+  eventTypes: string[]; // concrete event labels rolled up under a record, multi-select
   status: IncidentStatus[];
   overdueOnly: boolean;
 }
 
-const EMPTY_FILTERS: FilterState = { suite: [], priority: [], businessArea: [], actionTarget: [], status: [], overdueOnly: false };
+const EMPTY_FILTERS: FilterState = { suite: [], priority: [], businessArea: [], operator: [], mhe: [], warehouse: "", eventTypes: [], status: [], overdueOnly: false };
 
 function toggleInArray<T>(arr: T[], val: T): T[] {
   return arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val];
@@ -171,7 +181,10 @@ function matchesFilters(item: IncidentAction, f: FilterState): boolean {
   if (f.suite.length && !f.suite.includes(item.suite)) return false;
   if (f.priority.length && !f.priority.includes(item.priority)) return false;
   if (f.businessArea.length && !f.businessArea.includes(item.businessArea)) return false;
-  if (f.actionTarget.length && !f.actionTarget.includes(item.actionTargetType)) return false;
+  if (f.operator.length && !(item.actionTargetType === "Operator" && f.operator.includes(item.actionTargetLabel))) return false;
+  if (f.mhe.length && !(item.actionTargetType === "MHE" && f.mhe.includes(item.actionTargetLabel))) return false;
+  if (f.warehouse && !(item.actionTargetType === "Zone" && item.actionTargetLabel === f.warehouse)) return false;
+  if (f.eventTypes.length && !item.events.some(e => f.eventTypes.includes(e.label))) return false;
   if (f.status.length && !f.status.includes(item.status)) return false;
   if (f.overdueOnly && !item.isOverdue) return false;
   return true;
@@ -222,19 +235,63 @@ function FilterPill<T extends string>({ label, active, onClick }: { label: T; ac
   );
 }
 
+// Dropdown with checkboxes — used where multiple concrete values can be selected at once
+function MultiSelectDropdown({ label, options, selected, onChange }: {
+  label: string; options: string[]; selected: string[]; onChange: (next: string[]) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="w-full h-9 flex items-center justify-between px-3 rounded-md border border-border text-[12px] bg-background"
+        >
+          <span style={{ color: selected.length ? "var(--foreground)" : "var(--muted-foreground)" }}>
+            {selected.length ? `${selected.length} selected` : `All ${label}s`}
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="max-h-64 overflow-y-auto p-1"
+        style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
+      >
+        {options.map(o => {
+          const isChecked = selected.includes(o);
+          return (
+            <DropdownMenuItem
+              key={o}
+              onSelect={e => { e.preventDefault(); onChange(toggleInArray(selected, o)); }}
+              className={cn("gap-2.5 py-2", isChecked && "bg-accent")}
+            >
+              <Checkbox checked={isChecked} />
+              <span className="text-[13px]">{o}</span>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function FilterSheet({
-  open, onClose, filters, setFilters, businessAreas, allItems,
+  open, onClose, filters, setFilters, businessAreas, operators, mheIds, warehouses, eventTypes, allItems,
 }: {
   open: boolean; onClose: () => void;
   filters: FilterState; setFilters: (f: FilterState) => void;
   businessAreas: string[];
+  operators: string[];
+  mheIds: string[];
+  warehouses: string[];
+  eventTypes: string[];
   allItems: IncidentAction[];
 }) {
   const [draft, setDraft] = useState<FilterState>(filters);
 
   React.useEffect(() => { if (open) setDraft(filters); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const hasDraftFilters = draft.suite.length + draft.priority.length + draft.businessArea.length + draft.actionTarget.length + draft.status.length > 0 || draft.overdueOnly;
+  const hasDraftFilters = draft.suite.length + draft.priority.length + draft.businessArea.length + draft.status.length
+    + draft.operator.length + draft.mhe.length + draft.eventTypes.length > 0 || !!draft.warehouse || draft.overdueOnly;
   const liveCount = useMemo(() => allItems.filter(i => matchesFilters(i, draft)).length, [allItems, draft]);
 
   return (
@@ -287,13 +344,51 @@ function FilterSheet({
           </div>
 
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Action Target</div>
-            <div className="flex flex-wrap gap-2">
-              {(["Operator", "MHE", "Zone", "Team"] as ActionTargetType[]).map(t => (
-                <FilterPill key={t} label={t} active={draft.actionTarget.includes(t)}
-                  onClick={() => setDraft({ ...draft, actionTarget: toggleInArray(draft.actionTarget, t) })} />
-              ))}
-            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Operator</div>
+            <MultiSelectDropdown
+              label="Operator"
+              options={operators}
+              selected={draft.operator}
+              onChange={v => setDraft({ ...draft, operator: v })}
+            />
+          </div>
+
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>MHE</div>
+            <MultiSelectDropdown
+              label="MHE"
+              options={mheIds}
+              selected={draft.mhe}
+              onChange={v => setDraft({ ...draft, mhe: v })}
+            />
+          </div>
+
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Warehouse</div>
+            <Select
+              value={draft.warehouse || "all"}
+              onValueChange={v => setDraft({ ...draft, warehouse: v === "all" ? "" : v })}
+            >
+              <SelectTrigger className="w-full h-9 text-[12px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Warehouses</SelectItem>
+                {warehouses.map(o => (
+                  <SelectItem key={o} value={o}>{o}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Event Types</div>
+            <MultiSelectDropdown
+              label="Event Type"
+              options={eventTypes}
+              selected={draft.eventTypes}
+              onChange={v => setDraft({ ...draft, eventTypes: v })}
+            />
           </div>
 
           <div>
@@ -441,45 +536,58 @@ function DetailDrawer({
               </p>
               <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>Sorted by severity</span>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               {sortBySeverity(item.events).map((e, i) => (
-                <div
-                  key={`${e.label}-${i}`}
-                  className="px-3 py-2.5 rounded-lg border border-border flex flex-col gap-1.5"
-                  style={{ background: "var(--card)" }}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[12.5px] font-medium">{e.label}</span>
-                      {e.count > 1 && (
-                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0" style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}>
-                          ×{e.count}
-                        </span>
-                      )}
+                <Card key={`${e.label}-${i}`} className="border-border shadow-none gap-0 py-0">
+                  <CardContent className="p-3.5 flex flex-col gap-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[12.5px] font-medium">{e.label}</span>
+                        {e.count > 1 && (
+                          <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 h-[18px] rounded-full">
+                            ×{e.count}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Badge
+                          className="text-[10.5px] font-semibold px-2 h-[19px] rounded-full border-transparent"
+                          style={{ background: `color-mix(in srgb, ${PRIORITY_COLORS[e.severity]} 14%, transparent)`, color: PRIORITY_COLORS[e.severity] }}
+                        >
+                          {e.severity}
+                        </Badge>
+                        {i === 0 && (
+                          <Badge
+                            className="text-[9.5px] font-bold uppercase tracking-wide px-1.5 h-[19px] rounded border-transparent"
+                            style={{ background: PRIORITY_COLORS[e.severity], color: "var(--background)" }}
+                          >
+                            Act first
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span
-                        className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full"
-                        style={{ background: `color-mix(in srgb, ${PRIORITY_COLORS[e.severity]} 14%, transparent)`, color: PRIORITY_COLORS[e.severity] }}
+
+                    <div className="flex items-center gap-1.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                      <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+                      <span>{e.location}</span>
+                    </div>
+
+                    {e.note && (
+                      <p className="text-[11.5px] leading-relaxed italic" style={{ color: "var(--muted-foreground)" }}>{e.note}</p>
+                    )}
+
+                    {item.sourceDashboard === "Command Center" && (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 text-[11px] self-end"
+                        onClick={() => navigate(`/mhe/command-center?view=2d&heatmap=1&zone=${encodeURIComponent(e.location)}`)}
                       >
-                        {e.severity}
-                      </span>
-                      {i === 0 && (
-                        <span className="text-[9.5px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
-                          style={{ background: PRIORITY_COLORS[e.severity], color: "var(--background)" }}>
-                          Act first
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
-                    <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.5} />
-                    <span>{e.location}</span>
-                  </div>
-                  {e.note && (
-                    <div className="text-[11.5px] leading-relaxed italic" style={{ color: "var(--muted-foreground)" }}>{e.note}</div>
-                  )}
-                </div>
+                        View on map
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
@@ -512,27 +620,6 @@ function DetailDrawer({
                 </React.Fragment>
               ))}
             </div>
-          </div>
-
-          {/* Source */}
-          <div className="px-5 py-5 flex flex-col gap-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Generated From</p>
-            <button
-              onClick={() => {
-                if (item.sourceDashboard === "Command Center") {
-                  navigate(`/mhe/command-center?view=2d&heatmap=1&zone=${encodeURIComponent(item.actionTargetLabel)}`);
-                } else {
-                  toast.info(`Opening ${item.sourceDashboard}`);
-                }
-              }}
-              className="w-full flex items-center justify-between px-3.5 py-3 rounded-lg border border-border hover:bg-muted transition-colors text-left"
-            >
-              <div>
-                <div className="text-[13px] font-medium">{item.sourceDashboard}</div>
-                <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{item.sourceWidget}</div>
-              </div>
-              <ExternalLink className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
-            </button>
           </div>
         </div>
 
@@ -588,8 +675,13 @@ export function IncidentActions() {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const businessAreas = useMemo(() => Array.from(new Set(items.map(i => i.businessArea))), [items]);
+  const operators = useMemo(() => Array.from(new Set(items.filter(i => i.actionTargetType === "Operator").map(i => i.actionTargetLabel))), [items]);
+  const mheIds = useMemo(() => Array.from(new Set(items.filter(i => i.actionTargetType === "MHE").map(i => i.actionTargetLabel))), [items]);
+  const warehouses = useMemo(() => Array.from(new Set(items.filter(i => i.actionTargetType === "Zone").map(i => i.actionTargetLabel))), [items]);
+  const eventTypeOptions = useMemo(() => Array.from(new Set(items.flatMap(i => i.events.map(e => e.label)))).sort(), [items]);
 
-  const activeFilterCount = filters.suite.length + filters.priority.length + filters.businessArea.length + filters.actionTarget.length + filters.status.length + (filters.overdueOnly ? 1 : 0);
+  const activeFilterCount = filters.suite.length + filters.priority.length + filters.businessArea.length + filters.status.length
+    + filters.operator.length + filters.mhe.length + filters.eventTypes.length + (filters.warehouse ? 1 : 0) + (filters.overdueOnly ? 1 : 0);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -610,7 +702,10 @@ export function IncidentActions() {
     filters.suite.forEach(v => chips.push({ key: `suite-${v}`, label: `Suite: ${v}`, onRemove: () => setFilters({ ...filters, suite: filters.suite.filter(x => x !== v) }) }));
     filters.priority.forEach(v => chips.push({ key: `priority-${v}`, label: `Priority: ${v}`, onRemove: () => setFilters({ ...filters, priority: filters.priority.filter(x => x !== v) }) }));
     filters.businessArea.forEach(v => chips.push({ key: `area-${v}`, label: `Area: ${v}`, onRemove: () => setFilters({ ...filters, businessArea: filters.businessArea.filter(x => x !== v) }) }));
-    filters.actionTarget.forEach(v => chips.push({ key: `target-${v}`, label: `Target: ${v}`, onRemove: () => setFilters({ ...filters, actionTarget: filters.actionTarget.filter(x => x !== v) }) }));
+    filters.operator.forEach(v => chips.push({ key: `operator-${v}`, label: `Operator: ${v}`, onRemove: () => setFilters({ ...filters, operator: filters.operator.filter(x => x !== v) }) }));
+    filters.mhe.forEach(v => chips.push({ key: `mhe-${v}`, label: `MHE: ${v}`, onRemove: () => setFilters({ ...filters, mhe: filters.mhe.filter(x => x !== v) }) }));
+    if (filters.warehouse) chips.push({ key: "warehouse", label: `Warehouse: ${filters.warehouse}`, onRemove: () => setFilters({ ...filters, warehouse: "" }) });
+    filters.eventTypes.forEach(v => chips.push({ key: `event-${v}`, label: `Event: ${v}`, onRemove: () => setFilters({ ...filters, eventTypes: filters.eventTypes.filter(x => x !== v) }) }));
     filters.status.forEach(v => chips.push({ key: `status-${v}`, label: `Status: ${v}`, onRemove: () => setFilters({ ...filters, status: filters.status.filter(x => x !== v) }) }));
     if (filters.overdueOnly) chips.push({ key: "overdue", label: "Overdue only", onRemove: () => setFilters({ ...filters, overdueOnly: false }) });
     return chips;
@@ -868,7 +963,18 @@ export function IncidentActions() {
         )}
       </div>
 
-      <FilterSheet open={filterOpen} onClose={() => setFilterOpen(false)} filters={filters} setFilters={setFilters} businessAreas={businessAreas} allItems={items} />
+      <FilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        filters={filters}
+        setFilters={setFilters}
+        businessAreas={businessAreas}
+        operators={operators}
+        mheIds={mheIds}
+        warehouses={warehouses}
+        eventTypes={eventTypeOptions}
+        allItems={items}
+      />
       <DetailDrawer item={detailItem} open={!!detailItem} onClose={() => setDetailItem(null)} onStatusChange={handleStatusChange} />
     </div>
   );

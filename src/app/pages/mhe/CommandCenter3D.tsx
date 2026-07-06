@@ -6,14 +6,17 @@ import {
   CalendarDays, Truck, User, Layers, LayoutDashboard, Network, Flame,
   Square, Globe, PersonStanding, Crosshair, Maximize2, BarChart2,
   ChevronLeft, ChevronRight, X, Zap, Activity, MapPin, ShieldAlert,
-  TrendingUp, Navigation, CheckCircle2, AlertTriangle, Clock3,
+  TrendingUp,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip as RTooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
-import { WarehouseScene, TaskAssignment, TaskStatus, NearMissEvent, ViewMode, EVENT_DATA } from "../digital-twin/WarehouseScene3D";
+import { WarehouseScene, TaskAssignment, NearMissEvent, ViewMode, EVENT_DATA } from "../digital-twin/WarehouseScene3D";
 import { useTheme } from "../../hooks/useTheme";
+import { Card, CardContent } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
 
 // ─── Mock data (from Figma design) ────────────────────────────────────────────
 
@@ -27,7 +30,6 @@ const TOP_BTNS = [
   { id: "overview", icon: LayoutDashboard,  label: "Overview",     defaultActive: true },
   { id: "trips",    icon: Network,          label: "Trips"         },
   { id: "alerts",   icon: Flame,            label: "Alerts"        },
-  { id: "tasks",    icon: Navigation,       label: "Task Manager"  },
 ] as const;
 
 const BOTTOM_BTNS = [
@@ -721,14 +723,11 @@ function TripsPanel() {
   );
 }
 
-const PANEL_IDS = new Set(["schedule", "mhe", "operator", "layers", "overview", "trips", "alerts", "tasks"]);
+const PANEL_IDS = new Set(["schedule", "mhe", "operator", "layers", "overview", "trips", "alerts"]);
 
-function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onRemoveTask, onExpand, isExpanded, onViewModeChange, viewMode, showHeatmap, onToggleHeatmap }: {
+function LeftToolbar({ mode, onViewAnalytics, onExpand, isExpanded, onViewModeChange, viewMode, showHeatmap, onToggleHeatmap }: {
   mode: "live" | "history";
   onViewAnalytics: (mhe: MHEItem) => void;
-  taskAssignments: TaskAssignment[];
-  onAssignTask: (taskId: string, mheId: string, status: TaskStatus) => void;
-  onRemoveTask: (id: string) => void;
   onExpand: () => void;
   isExpanded: boolean;
   onViewModeChange: (mode: ViewMode) => void;
@@ -739,11 +738,11 @@ function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onR
   const [topActive, setTopActive]   = useState<string>("overview");
   const [openPanel, setOpenPanel]   = useState<string | null>(null);
 
+  // Leaving history mode closes the schedule panel if it was open — but entering
+  // history mode no longer force-opens the calendar (e.g. a deep-linked event
+  // should just show its detail + highlighted position, not the schedule panel).
   useEffect(() => {
-    if (mode === "history") {
-      setTopActive("schedule");
-      setOpenPanel("schedule");
-    } else {
+    if (mode === "live") {
       setOpenPanel(prev => prev === "schedule" ? null : prev);
     }
   }, [mode]);
@@ -789,286 +788,7 @@ function LeftToolbar({ mode, onViewAnalytics, taskAssignments, onAssignTask, onR
       {openPanel === "layers"   && <LayerPanel title="Zone Layer"     subtitle="Zone visibility control"     badge="Total Zone = 06"  items={ZONE_ITEMS}    />}
       {openPanel === "overview" && <EventsPanel />}
       {openPanel === "alerts"   && <LayerPanel title="Trip Layer"     subtitle="Trip visibility control"     badge="Total Event = 06" items={TRIP_ITEMS}    />}
-      {openPanel === "tasks"    && (
-        <TasksPanel
-          assignments={taskAssignments}
-          onAssign={onAssignTask}
-          onRemove={onRemoveTask}
-        />
-      )}
     </>
-  );
-}
-
-// ─── Task Manager ─────────────────────────────────────────────────────────────
-const TASK_TEMPLATES = [
-  { id: "pick-deliver",    name: "Pick & Deliver",    fromLabel: "Side Storage",  toLabel: "Shipping Station" },
-  { id: "replenishment",   name: "Replenishment Run",  fromLabel: "Receiving",     toLabel: "Bulk Storage"     },
-  { id: "cross-dock",      name: "Cross-Dock",         fromLabel: "Receiving",     toLabel: "QC → Shipping"    },
-  { id: "charging-run",    name: "Charging Run",        fromLabel: "Any Location",  toLabel: "Charging Bay"     },
-];
-
-// Pre-baked paths + metrics for each template
-const TASK_PATH_DATA: Record<string, {
-  plannedPath: [number,number,number][];
-  actualPath: [number,number,number][];
-  deviationZone: { cx: number; cz: number; w: number; d: number };
-  metrics: { plannedDist: number; actualDist: number; plannedTime: number; actualTime: number;
-    batteryPlanned: number; batteryActual: number; efficiencyScore: number;
-    operatorScore: { before: number; after: number }; issues: string[]; };
-}> = {
-  "pick-deliver": {
-    plannedPath:   [[-24,0,-11],[-24,0,-1],[-8,0,-1],[-8,0,10]],
-    actualPath:    [[-24,0,-11],[-24,0,-5],[-15,0,-5],[-15,0,4],[-8,0,4],[-8,0,10]],
-    deviationZone: { cx: -19, cz: -0.5, w: 11, d: 10 },
-    metrics: { plannedDist: 24, actualDist: 37, plannedTime: 3.8, actualTime: 6.4,
-      batteryPlanned: 2.8, batteryActual: 4.9, efficiencyScore: 65,
-      operatorScore: { before: 88, after: 72 }, issues: ["Entered restricted zone", "Wrong aisle (C vs A)", "+2.6 min delay"] },
-  },
-  "replenishment": {
-    plannedPath:   [[-26,0,2],[-10,0,2],[6,0,3]],
-    actualPath:    [[-26,0,2],[-10,0,2],[6,0,3]],
-    deviationZone: { cx: -10, cz: 2, w: 4, d: 4 },
-    metrics: { plannedDist: 32, actualDist: 32, plannedTime: 4.5, actualTime: 4.5,
-      batteryPlanned: 3.0, batteryActual: 3.0, efficiencyScore: 100,
-      operatorScore: { before: 82, after: 85 }, issues: [] },
-  },
-  "cross-dock": {
-    plannedPath:   [[-27,0,0],[-10,0,0],[5,0,9],[-8,0,12]],
-    actualPath:    [[-27,0,0],[-10,0,0],[5,0,9],[-8,0,12]],
-    deviationZone: { cx: 0, cz: 4, w: 4, d: 4 },
-    metrics: { plannedDist: 28, actualDist: 28, plannedTime: 4.0, actualTime: 3.8,
-      batteryPlanned: 2.5, batteryActual: 2.4, efficiencyScore: 100,
-      operatorScore: { before: 80, after: 83 }, issues: [] },
-  },
-  "charging-run": {
-    plannedPath:   [[0,0,0],[10,0,-2],[22,0,-4]],
-    actualPath:    [[0,0,0],[6,0,4],[14,0,2],[22,0,-4]],
-    deviationZone: { cx: 10, cz: 1, w: 10, d: 8 },
-    metrics: { plannedDist: 22, actualDist: 31, plannedTime: 3.2, actualTime: 5.0,
-      batteryPlanned: 2.0, batteryActual: 3.2, efficiencyScore: 71,
-      operatorScore: { before: 85, after: 76 }, issues: ["Longer route taken", "+1.8 min delay"] },
-  },
-};
-
-const MHE_IDS = ["MHE-01","MHE-02","MHE-03","MHE-04","MHE-05","MHE-06"];
-
-const STATUS_CFG: Record<TaskStatus, { color: string; icon: React.ReactNode; label: string }> = {
-  "assigned":    { color: "#f59e0b", icon: <Clock3 size={10} strokeWidth={1.5} />,       label: "Assigned"    },
-  "in-progress": { color: "#1b59f8", icon: <Navigation size={10} strokeWidth={1.5} />,   label: "In Progress" },
-  "deviated":    { color: "#ef4444", icon: <AlertTriangle size={10} strokeWidth={1.5} />, label: "Deviated"    },
-  "completed":   { color: "#22c55e", icon: <CheckCircle2 size={10} strokeWidth={1.5} />, label: "Completed"   },
-};
-
-function TasksPanel({
-  assignments,
-  onAssign,
-  onRemove,
-}: {
-  assignments: TaskAssignment[];
-  onAssign: (taskId: string, mheId: string, status: TaskStatus) => void;
-  onRemove: (id: string) => void;
-}) {
-  const { isDark } = useTheme();
-  const [taskSel, setTaskSel] = useState(TASK_TEMPLATES[0].id);
-  const [mheSel, setMheSel]   = useState("MHE-03");
-  const [simMode, setSimMode] = useState<"in-progress" | "deviated" | "completed">("in-progress");
-
-  const card = isDark ? "rgba(255,255,255,0.04)" : "var(--background)";
-  const selectStyle: React.CSSProperties = {
-    width: "100%", padding: "5px 8px", fontSize: 11, borderRadius: 5,
-    border: "1px solid var(--border)", background: "var(--card)",
-    color: "var(--foreground)", cursor: "pointer", outline: "none",
-  };
-
-  return (
-    <div style={{
-      position: "absolute", left: 56, top: 12, zIndex: 30,
-      width: 300, background: "var(--card)", border: "1px solid var(--border)",
-      borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.13)",
-      fontFamily: "system-ui,sans-serif", overflow: "hidden",
-      maxHeight: "calc(100vh - 100px)", display: "flex", flexDirection: "column",
-    }}>
-      {/* Header */}
-      <div style={{ padding: "12px 14px 10px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Navigation size={14} strokeWidth={1.5} style={{ color: "#1b59f8" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)" }}>Task Manager</span>
-          {assignments.length > 0 && (
-            <span style={{
-              background: "#1b59f8", color: "#fff", borderRadius: 20,
-              fontSize: 9, fontWeight: 700, padding: "1px 6px", marginLeft: "auto",
-            }}>{assignments.length}</span>
-          )}
-        </div>
-        <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>
-          Assign routes · track compliance · view impact
-        </div>
-      </div>
-
-      <div style={{ overflowY: "auto", flex: 1, padding: "10px 10px 0" }}>
-
-        {/* Active assignments */}
-        {assignments.length === 0 && (
-          <div style={{ textAlign: "center", color: "var(--muted-foreground)", fontSize: 11, padding: "20px 0" }}>
-            No active tasks. Assign one below.
-          </div>
-        )}
-
-        {assignments.map(a => {
-          const cfg = STATUS_CFG[a.status];
-          const tpl = TASK_TEMPLATES.find(t => t.id === a.taskId);
-          const m = a.metrics;
-          return (
-            <div key={a.id} style={{
-              marginBottom: 8, padding: "10px 10px",
-              background: `${cfg.color}10`,
-              border: `1px solid ${cfg.color}30`,
-              borderRadius: 8,
-            }}>
-              {/* Row 1: title + badge + remove */}
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 5 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)" }}>{tpl?.name}</div>
-                  <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginTop: 1 }}>
-                    {a.mheId} · {tpl?.fromLabel} → {tpl?.toLabel}
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0, marginLeft: 6 }}>
-                  <span style={{
-                    display: "flex", alignItems: "center", gap: 3,
-                    fontSize: 9, fontWeight: 700, color: cfg.color,
-                    background: `${cfg.color}18`, borderRadius: 4, padding: "2px 6px",
-                  }}>
-                    {cfg.icon} {cfg.label}
-                  </span>
-                  <button onClick={() => onRemove(a.id)} style={{
-                    background: "none", border: "none", cursor: "pointer", padding: "2px 4px",
-                    color: "var(--muted-foreground)", fontSize: 13, lineHeight: 1,
-                    borderRadius: 3,
-                  }}>✕</button>
-                </div>
-              </div>
-
-              {/* Metrics strip */}
-              {m && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
-                  {[
-                    { lbl: "Distance", v: `${m.actualDist}m`,       d: m.actualDist - m.plannedDist,       suffix: "m",  neg: m.actualDist > m.plannedDist },
-                    { lbl: "Time",     v: `${m.actualTime}m`,        d: +(m.actualTime - m.plannedTime).toFixed(1), suffix: "m", neg: m.actualTime > m.plannedTime },
-                    { lbl: "Eff.",     v: `${m.efficiencyScore}%`,   d: null, neg: m.efficiencyScore < 90 },
-                  ].map((row, i) => (
-                    <div key={i} style={{
-                      background: card, border: "1px solid var(--border)",
-                      borderRadius: 5, padding: "4px 6px",
-                    }}>
-                      <div style={{ fontSize: 8, color: "var(--muted-foreground)", marginBottom: 1 }}>{row.lbl}</div>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: row.neg ? "#ef4444" : "#22c55e" }}>{row.v}</div>
-                      {row.d !== null && (
-                        <div style={{ fontSize: 8, color: (row.d as number) > 0 ? "#ef4444" : "#22c55e" }}>
-                          {(row.d as number) > 0 ? `+${row.d}` : row.d}{row.suffix}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Operator score delta */}
-              {m && (
-                <div style={{
-                  marginTop: 5, fontSize: 10,
-                  color: (m.operatorScore.after - m.operatorScore.before) < 0 ? "#ef4444" : "#22c55e",
-                }}>
-                  Operator score: {m.operatorScore.before} → {m.operatorScore.after}{" "}
-                  ({m.operatorScore.after - m.operatorScore.before >= 0 ? "+" : ""}{m.operatorScore.after - m.operatorScore.before} pts)
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Assign new task form */}
-        <div style={{
-          marginBottom: 10, padding: "10px 10px",
-          background: card, border: "1px solid var(--border)", borderRadius: 8,
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--foreground)", marginBottom: 8 }}>
-            Assign New Task
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <div>
-              <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginBottom: 3 }}>Task Type</div>
-              <select value={taskSel} onChange={e => setTaskSel(e.target.value)} style={selectStyle}>
-                {TASK_TEMPLATES.map(t => (
-                  <option key={t.id} value={t.id}>{t.name} — {t.fromLabel} → {t.toLabel}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginBottom: 3 }}>Assign to MHE</div>
-              <select value={mheSel} onChange={e => setMheSel(e.target.value)} style={selectStyle}>
-                {MHE_IDS.map(id => <option key={id} value={id}>{id}</option>)}
-              </select>
-            </div>
-            <div>
-              <div style={{ fontSize: 10, color: "var(--muted-foreground)", marginBottom: 3 }}>Simulate As</div>
-              <div style={{ display: "flex", gap: 4 }}>
-                {(["in-progress","deviated","completed"] as const).map(s => (
-                  <button key={s} onClick={() => setSimMode(s)} style={{
-                    flex: 1, padding: "4px 4px", fontSize: 9, fontWeight: 600,
-                    borderRadius: 5, border: `1px solid ${simMode === s ? STATUS_CFG[s].color : "var(--border)"}`,
-                    background: simMode === s ? `${STATUS_CFG[s].color}15` : "transparent",
-                    color: simMode === s ? STATUS_CFG[s].color : "var(--muted-foreground)",
-                    cursor: "pointer",
-                  }}>
-                    {STATUS_CFG[s].label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button
-              onClick={() => onAssign(taskSel, mheSel, simMode)}
-              style={{
-                marginTop: 2, padding: "8px", background: "#1b59f8", color: "#fff",
-                border: "none", borderRadius: 6, cursor: "pointer",
-                fontSize: 12, fontWeight: 600,
-                boxShadow: "0 2px 8px rgba(27,89,248,0.3)",
-              }}
-            >
-              Assign Task to {mheSel}
-            </button>
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div style={{
-          marginBottom: 10, padding: "8px 10px",
-          background: card, border: "1px solid var(--border)", borderRadius: 8,
-        }}>
-          <div style={{ fontSize: 9, color: "var(--muted-foreground)", marginBottom: 5, fontWeight: 600 }}>
-            3D MAP LEGEND
-          </div>
-          {[
-            { color: "#1b59f8", dash: true,  label: "Planned Route (blue dashed)" },
-            { color: "#ef4444", dash: false, label: "Actual Deviated Route (red)" },
-            { color: "#22c55e", dash: false, label: "Completed On-Route (green)"  },
-            { color: "#ef4444", dash: false, label: "Deviation Zone (red area)",   area: true },
-          ].map((l, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
-              <div style={{
-                width: 24, height: l.area ? 10 : 3, flexShrink: 0, borderRadius: 2,
-                background: l.area ? `${l.color}25` : l.color,
-                border: l.area ? `1px solid ${l.color}60` : "none",
-                backgroundImage: l.dash ? `repeating-linear-gradient(90deg,${l.color} 0,${l.color} 4px,transparent 4px,transparent 7px)` : "none",
-              }} />
-              <span style={{ fontSize: 9, color: "var(--muted-foreground)" }}>{l.label}</span>
-            </div>
-          ))}
-        </div>
-
-      </div>
-    </div>
   );
 }
 
@@ -1444,8 +1164,16 @@ const HEATMAP_SEV_ORDER: Record<string, number> = { critical: 0, warning: 1, inf
 const HEATMAP_SEV_COLOR: Record<string, string> = { critical: "#ef4444", warning: "#f59e0b", info: "#3b82f6" };
 const HEATMAP_SEV_LABEL: Record<string, string> = { critical: "Critical", warning: "Warning", info: "Info" };
 
-function HeatmapEventsPanel({ onClose, offsetTop = 60 }: { onClose: () => void; offsetTop?: number }) {
-  const sorted = [...EVENT_DATA].sort((a, b) => HEATMAP_SEV_ORDER[a.severity] - HEATMAP_SEV_ORDER[b.severity]);
+// Loosely match a deep-linked zone/location string against an event's zone —
+// compares the leading segment before a separator so "Aisle D" matches "Aisle D · Cross-aisle junction".
+function zoneMatches(eventZone: string, focusZone: string): boolean {
+  const norm = (s: string) => s.split(/[·—,]/)[0].trim().toLowerCase();
+  const a = norm(eventZone), b = norm(focusZone);
+  return a === b || eventZone.toLowerCase().includes(b) || focusZone.toLowerCase().includes(a);
+}
+
+function HeatmapEventsPanel({ onClose, onFocusZone, offsetTop = 60, events }: { onClose: () => void; onFocusZone: (zone: string) => void; offsetTop?: number; events: typeof EVENT_DATA }) {
+  const sorted = [...events].sort((a, b) => HEATMAP_SEV_ORDER[a.severity] - HEATMAP_SEV_ORDER[b.severity]);
   return (
     <div style={{
       position: "absolute", left: 60, top: offsetTop, zIndex: 20,
@@ -1468,35 +1196,52 @@ function HeatmapEventsPanel({ onClose, offsetTop = 60 }: { onClose: () => void; 
         {sorted.map((e, i) => {
           const color = HEATMAP_SEV_COLOR[e.severity];
           return (
-            <div key={e.id} style={{
-              position: "relative", paddingLeft: 12, paddingRight: 10, paddingTop: 8, paddingBottom: 8,
-              borderRadius: 8, background: "var(--muted)", overflow: "hidden",
-            }}>
-              <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: color }} />
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--foreground)" }}>{e.label}</span>
-                  {e.count > 1 && (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 100, background: "var(--card)", color: "var(--muted-foreground)", flexShrink: 0 }}>
-                      ×{e.count}
-                    </span>
-                  )}
-                  {i === 0 && (
-                    <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", padding: "1px 6px", borderRadius: 4, background: color, color: "#fff", flexShrink: 0 }}>
-                      Act First
-                    </span>
-                  )}
+            <Card key={e.id} className="border-border shadow-none gap-0 py-0">
+              <CardContent className="p-3 flex flex-col gap-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                    <span className="text-[12.5px] font-semibold">{e.label}</span>
+                    {e.count > 1 && (
+                      <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 h-[18px] rounded-full">
+                        ×{e.count}
+                      </Badge>
+                    )}
+                    {i === 0 && (
+                      <Badge
+                        className="text-[9.5px] font-bold uppercase tracking-wide px-1.5 h-[19px] rounded border-transparent"
+                        style={{ background: color, color: "#fff" }}
+                      >
+                        Act First
+                      </Badge>
+                    )}
+                  </div>
+                  <Badge
+                    className="text-[10.5px] font-semibold px-2 h-[19px] rounded-full border-transparent shrink-0"
+                    style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
+                  >
+                    {HEATMAP_SEV_LABEL[e.severity]}
+                  </Badge>
                 </div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color, flexShrink: 0 }}>{HEATMAP_SEV_LABEL[e.severity]}</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 4, fontSize: 11.5, color: "var(--muted-foreground)" }}>
-                <MapPin size={11} strokeWidth={1.5} />
-                <span>{e.zone}</span>
-              </div>
-              {e.note && (
-                <div style={{ fontSize: 11.5, marginTop: 4, fontStyle: "italic", color: "var(--muted-foreground)" }}>{e.note}</div>
-              )}
-            </div>
+
+                <div className="flex items-center gap-1.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
+                  <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+                  <span>{e.zone}</span>
+                </div>
+
+                {e.note && (
+                  <p className="text-[11.5px] leading-relaxed italic" style={{ color: "var(--muted-foreground)" }}>{e.note}</p>
+                )}
+
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-[11px] self-end"
+                  onClick={() => onFocusZone(e.zone)}
+                >
+                  View on map
+                </Button>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
@@ -1506,7 +1251,7 @@ function HeatmapEventsPanel({ onClose, offsetTop = 60 }: { onClose: () => void; 
 
 export function CommandCenter3D() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [mode, setMode] = useState<"live" | "history">("live");
+  const [mode, setMode] = useState<"live" | "history">("history");
   const [showEvents, setShowEvents] = useState(false);
   const [analyticsMHE, setAnalyticsMHE] = useState<MHEItem | null>(null);
   const [taskAssignments, setTaskAssignments] = useState<TaskAssignment[]>(INITIAL_ASSIGNMENTS);
@@ -1514,6 +1259,10 @@ export function CommandCenter3D() {
   const [viewMode, setViewMode] = useState<ViewMode>(searchParams.get("view") === "2d" ? "2d" : "3d");
   const [showHeatmap, setShowHeatmap] = useState(searchParams.get("heatmap") === "1");
   const [focusZone, setFocusZone] = useState<string | null>(searchParams.get("zone"));
+
+  // When arriving deep-linked to a zone, show only the event(s) that happened there
+  const heatmapEvents = focusZone ? EVENT_DATA.filter(e => zoneMatches(e.zone, focusZone)) : EVENT_DATA;
+  const visibleHeatmapEvents = heatmapEvents.length ? heatmapEvents : EVENT_DATA;
 
   // Near-miss alert state
   type NearMissAlert = { id: string; mheId: string; mheLabel: string; rackLabel: string };
@@ -1532,27 +1281,6 @@ export function CommandCenter3D() {
   const openAnalytics = (mhe: MHEItem) => {
     setShowEvents(false);
     setAnalyticsMHE(mhe);
-  };
-
-  const handleAssignTask = (taskId: string, mheId: string, status: TaskStatus) => {
-    const data = TASK_PATH_DATA[taskId];
-    const tpl  = TASK_TEMPLATES.find(t => t.id === taskId)!;
-    const isDeviated  = status === "deviated";
-    const isCompleted = status === "completed";
-    const newAssignment: TaskAssignment = {
-      id: `ta-${Date.now()}`,
-      taskId, mheId, status,
-      taskName: tpl.name,
-      plannedPath: data.plannedPath,
-      actualPath:  (isDeviated || isCompleted) ? data.actualPath : undefined,
-      deviationZone: isDeviated ? data.deviationZone : undefined,
-      metrics: (isDeviated || isCompleted) ? data.metrics : undefined,
-    };
-    setTaskAssignments(prev => [...prev, newAssignment]);
-  };
-
-  const handleRemoveTask = (id: string) => {
-    setTaskAssignments(prev => prev.filter(a => a.id !== id));
   };
 
   const canvasWrapRef = useRef<HTMLDivElement>(null);
@@ -1593,9 +1321,6 @@ export function CommandCenter3D() {
           <LeftToolbar
             mode={mode}
             onViewAnalytics={openAnalytics}
-            taskAssignments={taskAssignments}
-            onAssignTask={handleAssignTask}
-            onRemoveTask={handleRemoveTask}
             onExpand={() => setIsExpanded(p => !p)}
             isExpanded={isExpanded}
             viewMode={viewMode}
@@ -1604,27 +1329,15 @@ export function CommandCenter3D() {
             onToggleHeatmap={() => setShowHeatmap(p => !p)}
           />
 
-          {/* ── Deep-link zone banner (arrived from Incident Actions) ── */}
-          {focusZone && (
-            <div style={{
-              position: "absolute", top: 16, left: 60, zIndex: 20,
-              display: "flex", alignItems: "center", gap: 8,
-              background: "var(--card)", border: "1px solid var(--border)",
-              borderRadius: 8, padding: "6px 10px", boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-              fontFamily: "system-ui,sans-serif", fontSize: 12,
-            }}>
-              <Flame size={13} strokeWidth={1.8} color="#ef4444" />
-              <span style={{ fontWeight: 600 }}>Event heatmap</span>
-              <span style={{ color: "var(--muted-foreground)" }}>— focused on {focusZone}</span>
-              <button
-                onClick={() => { setFocusZone(null); setSearchParams({}); }}
-                style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--muted-foreground)", padding: 0, marginLeft: 2 }}
-              ><X size={13} /></button>
-            </div>
-          )}
-
           {/* ── Heatmap event breakdown (severity-sorted, mirrors Incident Actions) ── */}
-          {showHeatmap && <HeatmapEventsPanel onClose={() => setShowHeatmap(false)} offsetTop={focusZone ? 66 : 16} />}
+          {showHeatmap && (
+            <HeatmapEventsPanel
+              onClose={() => setShowHeatmap(false)}
+              onFocusZone={(zone) => { setFocusZone(zone); setSearchParams({ view: viewMode, heatmap: "1", zone }); }}
+              offsetTop={16}
+              events={visibleHeatmapEvents}
+            />
+          )}
 
           {/* ── Events trigger button (top-right) ── */}
           {!showEvents && !analyticsMHE && <EventsTriggerButton onOpen={() => setShowEvents(true)} />}
@@ -1710,7 +1423,14 @@ export function CommandCenter3D() {
               gl={{ antialias: true }}
             >
               <Suspense fallback={null}>
-                <WarehouseScene taskAssignments={taskAssignments} onNearMiss={handleNearMiss} viewMode={viewMode} showHeatmap={showHeatmap} />
+                <WarehouseScene
+                  taskAssignments={taskAssignments}
+                  onNearMiss={handleNearMiss}
+                  viewMode={viewMode}
+                  showHeatmap={showHeatmap}
+                  heatmapEvents={visibleHeatmapEvents}
+                  paused={mode === "history"}
+                />
               </Suspense>
             </Canvas>
           )}

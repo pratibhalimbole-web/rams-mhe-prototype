@@ -754,8 +754,9 @@ function AnimatedMHE(props: MHEVehicleProps & {
   infoCardNode?: React.ReactNode;
   mheStateRef?: React.MutableRefObject<Map<string, MHELiveState>>;
   humanPositions?: [number,number,number][];
+  paused?: boolean;
 }) {
-  const { path, speed = 1.2, onNearMiss, hotRacksRef, infoCardNode, mheStateRef, humanPositions, ...vehicleProps } = props;
+  const { path, speed = 1.2, onNearMiss, hotRacksRef, infoCardNode, mheStateRef, humanPositions, paused = false, ...vehicleProps } = props;
   const groupRef = useRef<THREE.Group>(null);
   const tRef = useRef(Math.random()); // stagger start
   const trailRef = useRef<THREE.Points>(null);
@@ -803,7 +804,7 @@ function AnimatedMHE(props: MHEVehicleProps & {
   };
 
   useFrame((_, delta) => {
-    tRef.current += (delta * speed) / totalLen;
+    if (!paused) tRef.current += (delta * speed) / totalLen;
     const [pos, angle] = getPositionOnPath(tRef.current);
     if (groupRef.current) {
       groupRef.current.position.set(pos.x, 0, pos.z);
@@ -821,26 +822,29 @@ function AnimatedMHE(props: MHEVehicleProps & {
       (trailRef.current.geometry as THREE.BufferGeometry).attributes.position.needsUpdate = true;
     }
 
-    // ── Near-miss collision detection ──────────────────────────────────────
-    const rack = isInSafetyZone(pos.x, pos.z);
-    if (rack) {
-      const now = performance.now();
-      if (!lastAlertAt.current[rack.id] || now - lastAlertAt.current[rack.id] > ALERT_COOLDOWN) {
-        lastAlertAt.current[rack.id] = now;
-        // Mark rack as hot (drives visual in RackSafetyZone via useFrame)
-        if (hotRacksRef) {
-          hotRacksRef.current.add(rack.id);
-          clearTimeout(clearTimers.current[rack.id]);
-          clearTimers.current[rack.id] = setTimeout(() => {
-            hotRacksRef.current.delete(rack.id);
-          }, 2500);
+    // ── Near-miss collision detection — skipped while paused (history mode), a
+    // frozen MHE parked inside a safety zone shouldn't keep re-triggering alerts ──
+    if (!paused) {
+      const rack = isInSafetyZone(pos.x, pos.z);
+      if (rack) {
+        const now = performance.now();
+        if (!lastAlertAt.current[rack.id] || now - lastAlertAt.current[rack.id] > ALERT_COOLDOWN) {
+          lastAlertAt.current[rack.id] = now;
+          // Mark rack as hot (drives visual in RackSafetyZone via useFrame)
+          if (hotRacksRef) {
+            hotRacksRef.current.add(rack.id);
+            clearTimeout(clearTimers.current[rack.id]);
+            clearTimers.current[rack.id] = setTimeout(() => {
+              hotRacksRef.current.delete(rack.id);
+            }, 2500);
+          }
+          // Fire event to React UI
+          onNearMiss?.({
+            mheId: props.id, mheLabel: props.label,
+            rackId: rack.id, rackLabel: rack.label,
+            timestamp: now,
+          });
         }
-        // Fire event to React UI
-        onNearMiss?.({
-          mheId: props.id, mheLabel: props.label,
-          rackId: rack.id, rackLabel: rack.label,
-          timestamp: now,
-        });
       }
     }
 
@@ -1169,11 +1173,12 @@ const WALK_RADIUS = 3.5; // units from base before turning back
 const WALK_SPEED  = 0.45; // units/second
 
 function HumanFigure({
-  pos, name, mheStateRef,
+  pos, name, mheStateRef, paused = false,
 }: {
   pos: [number,number,number];
   name: string;
   mheStateRef: React.MutableRefObject<Map<string, MHELiveState>>;
+  paused?: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
 
@@ -1200,19 +1205,21 @@ function HumanFigure({
 
   useFrame((_, delta) => {
     // ── Walk ───────────────────────────────────────────────────────────────
-    turnTimer.current -= delta;
-    const dx   = targetX.current - walkX.current;
-    const dz   = targetZ.current - walkZ.current;
-    const dist = Math.sqrt(dx * dx + dz * dz);
+    if (!paused) {
+      turnTimer.current -= delta;
+      const dx   = targetX.current - walkX.current;
+      const dz   = targetZ.current - walkZ.current;
+      const dist = Math.sqrt(dx * dx + dz * dz);
 
-    if (dist < 0.12 || turnTimer.current <= 0) pickNewTarget();
+      if (dist < 0.12 || turnTimer.current <= 0) pickNewTarget();
 
-    if (dist > 0.01) {
-      const step = Math.min(WALK_SPEED * delta, dist);
-      walkX.current    += (dx / dist) * step;
-      walkZ.current    += (dz / dist) * step;
-      walkFacing.current = Math.atan2(dx, dz);
-      stepDist.current  += step;
+      if (dist > 0.01) {
+        const step = Math.min(WALK_SPEED * delta, dist);
+        walkX.current    += (dx / dist) * step;
+        walkZ.current    += (dz / dist) * step;
+        walkFacing.current = Math.atan2(dx, dz);
+        stepDist.current  += step;
+      }
     }
 
     const bobY = Math.abs(Math.sin(stepDist.current * 5)) * 0.06;
@@ -1662,11 +1669,14 @@ const OPERATOR_DATA = [
   { id: "OP-05", name: "R. Gomez",  position: [-20, 0,  5]  as [number,number,number], active: true  },
 ];
 
+// Positions are anchored to the same coordinates as the matching RackSection /
+// AisleMarker / FloorZone / AreaLabel below, so the heatmap blob for an event
+// actually renders where its `zone` text says it happened.
 export const EVENT_DATA = [
-  { id: "E1", position: [-16, 0, -2]  as [number,number,number], label: "Impact",               zone: "Main Storage · Rack R5, Bay B12", severity: "critical" as EventSeverity, count: 1, note: "MHE-008 collided with rack upright — rack structurally damaged, isolate bay" },
-  { id: "E2", position: [8,   0, -15] as [number,number,number], label: "Near Miss",            zone: "Aisle D",                          severity: "warning"  as EventSeverity, count: 2, note: "MHE approached pedestrian crossing without slowing" },
-  { id: "E3", position: [-6,  0,  5]  as [number,number,number], label: "Slow Zone",            zone: "Staging Area",                    severity: "info"     as EventSeverity, count: 1, note: "Below target throughput — no safety risk" },
-  { id: "E4", position: [16,  0, -8]  as [number,number,number], label: "Impact",               zone: "Charging Bay",                    severity: "critical" as EventSeverity, count: 3, note: "Repeated low-speed contact with charging dock — check dock alignment" },
+  { id: "E1", position: [-4,  0, -19] as [number,number,number], label: "Impact",               zone: "Main Storage · Rack R5, Bay B12", severity: "critical" as EventSeverity, count: 1, note: "MHE-008 collided with rack upright — rack structurally damaged, isolate bay" },
+  { id: "E2", position: [20,  0, -12] as [number,number,number], label: "Near Miss",            zone: "Aisle D",                          severity: "warning"  as EventSeverity, count: 2, note: "MHE approached pedestrian crossing without slowing" },
+  { id: "E3", position: [-14, 0,  3]  as [number,number,number], label: "Slow Zone",            zone: "Staging Area",                    severity: "info"     as EventSeverity, count: 1, note: "Below target throughput — no safety risk" },
+  { id: "E4", position: [22,  0, -4]  as [number,number,number], label: "Impact",               zone: "Charging Bay",                    severity: "critical" as EventSeverity, count: 3, note: "Repeated low-speed contact with charging dock — check dock alignment" },
   { id: "E5", position: [4,   0, -4]  as [number,number,number], label: "Restricted Zone",      zone: "Zone B — Restricted perimeter",   severity: "warning"  as EventSeverity, count: 2, note: "Unauthorized entry into restricted perimeter" },
   { id: "E6", position: [-8,  0, -5]  as [number,number,number], label: "Wet Surface",          zone: "Zone C — Aisle 4",                severity: "warning"  as EventSeverity, count: 3, note: "Blocking travel path near QC Station" },
   { id: "E7", position: [-1,  0, -13] as [number,number,number], label: "Pedestrian Proximity", zone: "Aisle A",                          severity: "critical" as EventSeverity, count: 1, note: "MHE↔pedestrian clearance below 1m at cross-aisle junction" },
@@ -1908,12 +1918,16 @@ export function WarehouseScene({
   onNearMiss,
   viewMode = "3d",
   showHeatmap = false,
+  paused = false,
+  heatmapEvents,
 }: {
   onSelectMHE?: (id: string) => void;
   taskAssignments?: TaskAssignment[];
   onNearMiss?: (e: NearMissEvent) => void;
   viewMode?: ViewMode;
   showHeatmap?: boolean;
+  paused?: boolean;
+  heatmapEvents?: typeof EVENT_DATA;
 } = {}) {
   const [selectedMHE, setSelectedMHE] = useState<string | null>(null);
   const [hoveredMHE,  setHoveredMHE]  = useState<string | null>(null);
@@ -1981,7 +1995,7 @@ export function WarehouseScene({
       ))}
 
       {/* ── Event heatmap overlay ── */}
-      {showHeatmap && <HeatmapLayer />}
+      {showHeatmap && <HeatmapLayer events={heatmapEvents} />}
 
       {/* ── Animated MHEs ── */}
       {MHE_VEHICLES.map((v, i) => {
@@ -2005,6 +2019,7 @@ export function WarehouseScene({
             mheStateRef={mheStateRef}
             humanPositions={HUMAN_SPOTS.map(h => h.pos)}
             onNearMiss={onNearMiss}
+            paused={paused}
             dimmed={
               selectedMHE !== null
                 ? !isSelected
@@ -2046,7 +2061,7 @@ export function WarehouseScene({
 
       {/* ── Warehouse workers (proximity-detection-aware) ── */}
       {HUMAN_SPOTS.map(h => (
-        <HumanFigure key={h.id} pos={h.pos} name={h.name} mheStateRef={mheStateRef} />
+        <HumanFigure key={h.id} pos={h.pos} name={h.name} mheStateRef={mheStateRef} paused={paused} />
       ))}
 
       <OrbitControls
