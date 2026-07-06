@@ -134,7 +134,9 @@ function ActionTargetCell({ item }: { item: IncidentAction }) {
   const Icon = TARGET_ICON[item.actionTargetType];
   return (
     <div className="flex items-center gap-1.5">
-      <Icon className="w-3.5 h-3.5" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+      <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--muted)" }}>
+        <Icon className="w-3 h-3" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+      </div>
       <span className="text-[12px]">{item.actionTargetLabel}</span>
     </div>
   );
@@ -607,7 +609,7 @@ function DetailDrawer({
                       <p className="text-[11.5px] leading-relaxed italic" style={{ color: "var(--muted-foreground)" }}>{e.note}</p>
                     )}
 
-                    {item.sourceDashboard === "Command Center" && (
+                    {item.sourceDashboard === "Command Center" && item.actionTargetType !== "MHE" && (
                       <Button
                         variant="link"
                         size="sm"
