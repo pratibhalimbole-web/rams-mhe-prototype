@@ -6,6 +6,12 @@ import { Input } from "../../components/ui/input";
 import { Checkbox } from "../../components/ui/checkbox";
 import { ReassignModal } from "./ReassignModal";
 import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "../../components/ui/accordion";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -23,6 +29,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "../../components/ui/dropdown-menu";
 import {
   Table,
@@ -51,19 +59,17 @@ import { Card, CardContent } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { cn } from "../../components/ui/utils";
 import {
-  Suite,
   Priority,
   IncidentStatus,
   ActionTargetType,
   IncidentAction,
   IncidentEvent,
-  SUITES,
   PRIORITY_COLORS,
   PRIORITY_ORDER,
-  SUITE_COLORS,
   STATUS_COLORS,
   OVERDUE_COLOR,
   MOCK_INCIDENT_ACTIONS,
+  EVENT_TYPES_BY_SUBJECT,
   sortBySeverity,
 } from "./types/incident-actions";
 
@@ -89,17 +95,6 @@ function PriorityDot({ priority }: { priority: Priority }) {
       style={{ background: PRIORITY_COLORS[priority] }}
       title={priority}
     />
-  );
-}
-
-function SuiteBadge({ suite }: { suite: Suite }) {
-  return (
-    <span
-      className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-      style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
-    >
-      {suite}
-    </span>
   );
 }
 
@@ -160,9 +155,8 @@ function OwnerAvatar({ initials, size = "sm" }: { initials: string; size?: "sm" 
 // ─── Filter Slide-Over ─────────────────────────────────────────────────────────
 
 interface FilterState {
-  suite: Suite[];
   priority: Priority[];
-  businessArea: string[];
+  businessArea: string;  // single business area, "" = no filter
   operator: string[];  // concrete operator names, multi-select
   mhe: string[];        // concrete MHE ids, multi-select
   warehouse: string;   // concrete zone/warehouse label, "" = no filter
@@ -171,16 +165,15 @@ interface FilterState {
   overdueOnly: boolean;
 }
 
-const EMPTY_FILTERS: FilterState = { suite: [], priority: [], businessArea: [], operator: [], mhe: [], warehouse: "", eventTypes: [], status: [], overdueOnly: false };
+const EMPTY_FILTERS: FilterState = { priority: [], businessArea: "", operator: [], mhe: [], warehouse: "", eventTypes: [], status: [], overdueOnly: false };
 
 function toggleInArray<T>(arr: T[], val: T): T[] {
   return arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val];
 }
 
 function matchesFilters(item: IncidentAction, f: FilterState): boolean {
-  if (f.suite.length && !f.suite.includes(item.suite)) return false;
   if (f.priority.length && !f.priority.includes(item.priority)) return false;
-  if (f.businessArea.length && !f.businessArea.includes(item.businessArea)) return false;
+  if (f.businessArea && item.businessArea !== f.businessArea) return false;
   if (f.operator.length && !(item.actionTargetType === "Operator" && f.operator.includes(item.actionTargetLabel))) return false;
   if (f.mhe.length && !(item.actionTargetType === "MHE" && f.mhe.includes(item.actionTargetLabel))) return false;
   if (f.warehouse && !(item.actionTargetType === "Zone" && item.actionTargetLabel === f.warehouse)) return false;
@@ -190,7 +183,7 @@ function matchesFilters(item: IncidentAction, f: FilterState): boolean {
   return true;
 }
 
-// Segmented, equal-width toggle row — used for Suite / Priority (primary filters)
+// Segmented, equal-width toggle row — used for Priority (primary filter)
 function SegmentedFilterRow<T extends string>({ options, active, onToggle, activeColor }: {
   options: T[]; active: T[]; onToggle: (v: T) => void; activeColor?: (v: T) => string;
 }) {
@@ -256,26 +249,67 @@ function MultiSelectDropdown({ label, options, selected, onChange }: {
         className="max-h-64 overflow-y-auto p-1"
         style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
       >
-        {options.map(o => {
-          const isChecked = selected.includes(o);
-          return (
-            <DropdownMenuItem
-              key={o}
-              onSelect={e => { e.preventDefault(); onChange(toggleInArray(selected, o)); }}
-              className={cn("gap-2.5 py-2", isChecked && "bg-accent")}
-            >
-              <Checkbox checked={isChecked} />
-              <span className="text-[13px]">{o}</span>
-            </DropdownMenuItem>
-          );
-        })}
+        {options.map(o => (
+          <CheckboxRow key={o} value={o} checked={selected.includes(o)} onToggle={() => onChange(toggleInArray(selected, o))} />
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function CheckboxRow({ value, checked, onToggle }: { value: string; checked: boolean; onToggle: () => void }) {
+  return (
+    <DropdownMenuItem
+      onSelect={e => { e.preventDefault(); onToggle(); }}
+      className={cn("gap-2.5 py-2", checked && "bg-accent")}
+    >
+      <Checkbox checked={checked} />
+      <span className="text-[13px]">{value}</span>
+    </DropdownMenuItem>
+  );
+}
+
+// Dropdown with checkboxes grouped under non-interactive section headers —
+// used for Event Types, whose taxonomy is organized by Business Area.
+function GroupedMultiSelectDropdown({ label, groups, selected, onChange }: {
+  label: string; groups: Record<string, string[]>; selected: string[]; onChange: (next: string[]) => void;
+}) {
+  const groupEntries = Object.entries(groups);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="w-full h-9 flex items-center justify-between px-3 rounded-md border border-border text-[12px] bg-background"
+        >
+          <span style={{ color: selected.length ? "var(--foreground)" : "var(--muted-foreground)" }}>
+            {selected.length ? `${selected.length} selected` : `All ${label}s`}
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--muted-foreground)" }} />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="max-h-72 overflow-y-auto p-1"
+        style={{ width: "var(--radix-dropdown-menu-trigger-width)" }}
+      >
+        {groupEntries.map(([area, events], i) => (
+          <React.Fragment key={area}>
+            {i > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
+              {area}
+            </DropdownMenuLabel>
+            {events.map(e => (
+              <CheckboxRow key={e} value={e} checked={selected.includes(e)} onToggle={() => onChange(toggleInArray(selected, e))} />
+            ))}
+          </React.Fragment>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
 function FilterSheet({
-  open, onClose, filters, setFilters, businessAreas, operators, mheIds, warehouses, eventTypes, allItems,
+  open, onClose, filters, setFilters, businessAreas, operators, mheIds, warehouses, allItems,
 }: {
   open: boolean; onClose: () => void;
   filters: FilterState; setFilters: (f: FilterState) => void;
@@ -283,15 +317,14 @@ function FilterSheet({
   operators: string[];
   mheIds: string[];
   warehouses: string[];
-  eventTypes: string[];
   allItems: IncidentAction[];
 }) {
   const [draft, setDraft] = useState<FilterState>(filters);
 
   React.useEffect(() => { if (open) setDraft(filters); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const hasDraftFilters = draft.suite.length + draft.priority.length + draft.businessArea.length + draft.status.length
-    + draft.operator.length + draft.mhe.length + draft.eventTypes.length > 0 || !!draft.warehouse || draft.overdueOnly;
+  const hasDraftFilters = draft.priority.length + draft.status.length
+    + draft.operator.length + draft.mhe.length + draft.eventTypes.length > 0 || !!draft.businessArea || !!draft.warehouse || draft.overdueOnly;
   const liveCount = useMemo(() => allItems.filter(i => matchesFilters(i, draft)).length, [allItems, draft]);
 
   return (
@@ -314,16 +347,6 @@ function FilterSheet({
 
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Suite</div>
-            <SegmentedFilterRow
-              options={SUITES}
-              active={draft.suite}
-              onToggle={s => setDraft({ ...draft, suite: toggleInArray(draft.suite, s) })}
-              activeColor={s => SUITE_COLORS[s]}
-            />
-          </div>
-
-          <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Priority</div>
             <SegmentedFilterRow
               options={["Critical", "High", "Medium", "Low"] as Priority[]}
@@ -335,22 +358,20 @@ function FilterSheet({
 
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Business Area</div>
-            <div className="flex flex-wrap gap-2">
-              {businessAreas.map(a => (
-                <FilterPill key={a} label={a} active={draft.businessArea.includes(a)}
-                  onClick={() => setDraft({ ...draft, businessArea: toggleInArray(draft.businessArea, a) })} />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Operator</div>
-            <MultiSelectDropdown
-              label="Operator"
-              options={operators}
-              selected={draft.operator}
-              onChange={v => setDraft({ ...draft, operator: v })}
-            />
+            <Select
+              value={draft.businessArea || "all"}
+              onValueChange={v => setDraft({ ...draft, businessArea: v === "all" ? "" : v })}
+            >
+              <SelectTrigger className="w-full h-9 text-[12px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Business Areas</SelectItem>
+                {businessAreas.map(a => (
+                  <SelectItem key={a} value={a}>{a}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -360,6 +381,16 @@ function FilterSheet({
               options={mheIds}
               selected={draft.mhe}
               onChange={v => setDraft({ ...draft, mhe: v })}
+            />
+          </div>
+
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Operator</div>
+            <MultiSelectDropdown
+              label="Operator"
+              options={operators}
+              selected={draft.operator}
+              onChange={v => setDraft({ ...draft, operator: v })}
             />
           </div>
 
@@ -383,9 +414,9 @@ function FilterSheet({
 
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Event Types</div>
-            <MultiSelectDropdown
+            <GroupedMultiSelectDropdown
               label="Event Type"
-              options={eventTypes}
+              groups={EVENT_TYPES_BY_SUBJECT}
               selected={draft.eventTypes}
               onChange={v => setDraft({ ...draft, eventTypes: v })}
             />
@@ -658,9 +689,70 @@ function DetailDrawer({
   );
 }
 
+function IncidentTableHeader({ checked, onToggleAll }: { checked: boolean; onToggleAll: () => void }) {
+  return (
+    <TableHeader>
+      <TableRow className="hover:bg-transparent">
+        <TableHead className="w-10">
+          <Checkbox checked={checked} onCheckedChange={onToggleAll} />
+        </TableHead>
+        <TableHead className="text-[11px]">Action ID</TableHead>
+        <TableHead className="text-[11px]">Business Group</TableHead>
+        <TableHead className="text-[11px]">Action Target</TableHead>
+        <TableHead className="text-[11px]">Events</TableHead>
+        <TableHead className="text-[11px]">Assigned To</TableHead>
+        <TableHead className="text-[11px]">Status</TableHead>
+        <TableHead className="text-[11px]">SLA</TableHead>
+        <TableHead className="text-[11px]">Created</TableHead>
+      </TableRow>
+    </TableHeader>
+  );
+}
+
+function IncidentRow({ item, checked, onToggleSelect, onOpen }: {
+  item: IncidentAction; checked: boolean; onToggleSelect: () => void; onOpen: () => void;
+}) {
+  return (
+    <TableRow className="cursor-pointer" onClick={onOpen}>
+      <TableCell onClick={e => e.stopPropagation()}>
+        <Checkbox checked={checked} onCheckedChange={onToggleSelect} />
+      </TableCell>
+      <TableCell>
+        <span className="text-[12px] font-medium" style={{ color: "var(--chart-1)" }}>{item.id}</span>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[12.5px] font-medium">{item.businessArea}</span>
+          {item.isRepeated && <Repeat className="w-3 h-3 shrink-0" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />}
+        </div>
+      </TableCell>
+      <TableCell><ActionTargetCell item={item} /></TableCell>
+      <TableCell>
+        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--muted)" }}>
+          {item.eventCount} events
+        </span>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          <OwnerAvatar initials={item.ownerAvatar} />
+          <span className="text-[12px]">{item.owner}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <StatusBadge status={item.status} />
+          {item.isOverdue && item.status !== "Resolved" && <OverdueBadge />}
+        </div>
+      </TableCell>
+      <TableCell><span className="text-[12px]">{item.sla}</span></TableCell>
+      <TableCell><span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>{item.createdDisplay}</span></TableCell>
+    </TableRow>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
-type GroupBy = "none" | "suite" | "businessArea" | "priority" | "owner" | "status";
+type GroupBy = "none" | "businessArea" | "priority" | "owner" | "status";
 type SortBy = "priority" | "newest" | "oldest" | "sla" | "mostRepeated";
 
 export function IncidentActions() {
@@ -672,16 +764,15 @@ export function IncidentActions() {
   const [sortBy, setSortBy] = useState<SortBy>("priority");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detailItem, setDetailItem] = useState<IncidentAction | null>(null);
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const businessAreas = useMemo(() => Array.from(new Set(items.map(i => i.businessArea))), [items]);
   const operators = useMemo(() => Array.from(new Set(items.filter(i => i.actionTargetType === "Operator").map(i => i.actionTargetLabel))), [items]);
   const mheIds = useMemo(() => Array.from(new Set(items.filter(i => i.actionTargetType === "MHE").map(i => i.actionTargetLabel))), [items]);
   const warehouses = useMemo(() => Array.from(new Set(items.filter(i => i.actionTargetType === "Zone").map(i => i.actionTargetLabel))), [items]);
-  const eventTypeOptions = useMemo(() => Array.from(new Set(items.flatMap(i => i.events.map(e => e.label)))).sort(), [items]);
 
-  const activeFilterCount = filters.suite.length + filters.priority.length + filters.businessArea.length + filters.status.length
-    + filters.operator.length + filters.mhe.length + filters.eventTypes.length + (filters.warehouse ? 1 : 0) + (filters.overdueOnly ? 1 : 0);
+  const activeFilterCount = filters.priority.length + filters.status.length
+    + filters.operator.length + filters.mhe.length + filters.eventTypes.length
+    + (filters.businessArea ? 1 : 0) + (filters.warehouse ? 1 : 0) + (filters.overdueOnly ? 1 : 0);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -699,9 +790,8 @@ export function IncidentActions() {
   type FilterChip = { key: string; label: string; onRemove: () => void };
   const filterChips: FilterChip[] = useMemo(() => {
     const chips: FilterChip[] = [];
-    filters.suite.forEach(v => chips.push({ key: `suite-${v}`, label: `Suite: ${v}`, onRemove: () => setFilters({ ...filters, suite: filters.suite.filter(x => x !== v) }) }));
     filters.priority.forEach(v => chips.push({ key: `priority-${v}`, label: `Priority: ${v}`, onRemove: () => setFilters({ ...filters, priority: filters.priority.filter(x => x !== v) }) }));
-    filters.businessArea.forEach(v => chips.push({ key: `area-${v}`, label: `Area: ${v}`, onRemove: () => setFilters({ ...filters, businessArea: filters.businessArea.filter(x => x !== v) }) }));
+    if (filters.businessArea) chips.push({ key: "area", label: `Area: ${filters.businessArea}`, onRemove: () => setFilters({ ...filters, businessArea: "" }) });
     filters.operator.forEach(v => chips.push({ key: `operator-${v}`, label: `Operator: ${v}`, onRemove: () => setFilters({ ...filters, operator: filters.operator.filter(x => x !== v) }) }));
     filters.mhe.forEach(v => chips.push({ key: `mhe-${v}`, label: `MHE: ${v}`, onRemove: () => setFilters({ ...filters, mhe: filters.mhe.filter(x => x !== v) }) }));
     if (filters.warehouse) chips.push({ key: "warehouse", label: `Warehouse: ${filters.warehouse}`, onRemove: () => setFilters({ ...filters, warehouse: "" }) });
@@ -726,7 +816,6 @@ export function IncidentActions() {
   const groups = useMemo(() => {
     if (groupBy === "none") return [{ key: "all", label: "", rows: sorted }];
     const keyFn: Record<Exclude<GroupBy, "none">, (i: IncidentAction) => string> = {
-      suite: i => i.suite,
       businessArea: i => i.businessArea,
       priority: i => i.priority,
       owner: i => i.owner,
@@ -752,6 +841,15 @@ export function IncidentActions() {
 
   const toggleSelectAll = () => {
     setSelected(prev => prev.size === sorted.length ? new Set() : new Set(sorted.map(i => i.id)));
+  };
+
+  const toggleSelectGroup = (ids: string[]) => {
+    setSelected(prev => {
+      const allSelected = ids.every(id => prev.has(id));
+      const next = new Set(prev);
+      ids.forEach(id => allSelected ? next.delete(id) : next.add(id));
+      return next;
+    });
   };
 
   const handleStatusChange = (id: string, status: IncidentStatus) => {
@@ -803,7 +901,6 @@ export function IncidentActions() {
               <SelectTrigger className="h-9 text-[12px] w-36"><SelectValue placeholder="Group By" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No Grouping</SelectItem>
-                <SelectItem value="suite">Suite</SelectItem>
                 <SelectItem value="businessArea">Business Area</SelectItem>
                 <SelectItem value="priority">Priority</SelectItem>
                 <SelectItem value="owner">Assigned To</SelectItem>
@@ -873,93 +970,59 @@ export function IncidentActions() {
             <div className="text-[13px] font-medium">No actions match your filters</div>
             <button onClick={clearAll} className="text-[12px] underline">Clear filters</button>
           </div>
-        ) : (
+        ) : groupBy === "none" ? (
           <div className="rounded-xl border border-border overflow-hidden">
             <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-10">
-                    <Checkbox checked={selected.size > 0 && selected.size === sorted.length} onCheckedChange={toggleSelectAll} />
-                  </TableHead>
-                  <TableHead className="text-[11px]">Action ID</TableHead>
-                  <TableHead className="text-[11px]">Business Group</TableHead>
-                  <TableHead className="text-[11px]">Suite</TableHead>
-                  <TableHead className="text-[11px]">Action Target</TableHead>
-                  <TableHead className="text-[11px]">Events</TableHead>
-                  <TableHead className="text-[11px]">Assigned To</TableHead>
-                  <TableHead className="text-[11px]">Status</TableHead>
-                  <TableHead className="text-[11px]">SLA</TableHead>
-                  <TableHead className="text-[11px]">Created</TableHead>
-                </TableRow>
-              </TableHeader>
+              <IncidentTableHeader
+                checked={selected.size > 0 && selected.size === sorted.length}
+                onToggleAll={toggleSelectAll}
+              />
               <TableBody>
-                {groups.map(group => (
-                  <React.Fragment key={group.key}>
-                    {groupBy !== "none" && (
-                      <TableRow className="hover:bg-transparent" style={{ background: "var(--muted)" }}>
-                        <TableCell colSpan={12} className="py-2">
-                          <button
-                            className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide"
-                            style={{ color: "var(--muted-foreground)" }}
-                            onClick={() => setCollapsedGroups(prev => {
-                              const next = new Set(prev);
-                              next.has(group.key) ? next.delete(group.key) : next.add(group.key);
-                              return next;
-                            })}
-                          >
-                            {collapsedGroups.has(group.key) ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                            {group.label} <span className="font-normal normal-case">({group.rows.length})</span>
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    {!collapsedGroups.has(group.key) && group.rows.map(item => (
-                      <TableRow
-                        key={item.id}
-                        className="cursor-pointer"
-                        onClick={() => setDetailItem(item)}
-                      >
-                        <TableCell onClick={e => e.stopPropagation()}>
-                          <Checkbox checked={selected.has(item.id)} onCheckedChange={() => toggleSelect(item.id)} />
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-[12px] font-medium" style={{ color: "var(--chart-1)" }}>{item.id}</span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[12.5px] font-medium">{item.businessGroup}</span>
-                            {item.isRepeated && <Repeat className="w-3 h-3 shrink-0" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />}
-                          </div>
-                          <div className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>{item.businessArea}</div>
-                        </TableCell>
-                        <TableCell><SuiteBadge suite={item.suite} /></TableCell>
-                        <TableCell><ActionTargetCell item={item} /></TableCell>
-                        <TableCell>
-                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--muted)" }}>
-                            {item.eventCount} events
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5">
-                            <OwnerAvatar initials={item.ownerAvatar} />
-                            <span className="text-[12px]">{item.owner}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <StatusBadge status={item.status} />
-                            {item.isOverdue && item.status !== "Resolved" && <OverdueBadge />}
-                          </div>
-                        </TableCell>
-                        <TableCell><span className="text-[12px]">{item.sla}</span></TableCell>
-                        <TableCell><span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>{item.createdDisplay}</span></TableCell>
-                      </TableRow>
-                    ))}
-                  </React.Fragment>
+                {sorted.map(item => (
+                  <IncidentRow
+                    key={item.id}
+                    item={item}
+                    checked={selected.has(item.id)}
+                    onToggleSelect={() => toggleSelect(item.id)}
+                    onOpen={() => setDetailItem(item)}
+                  />
                 ))}
               </TableBody>
             </Table>
           </div>
+        ) : (
+          <Accordion type="multiple" defaultValue={groups.map(g => g.key)} className="flex flex-col gap-3">
+            {groups.map(group => {
+              const groupIds = group.rows.map(r => r.id);
+              const groupChecked = groupIds.length > 0 && groupIds.every(id => selected.has(id));
+              return (
+                <AccordionItem key={group.key} value={group.key} className="rounded-xl border border-border overflow-hidden">
+                  <AccordionTrigger
+                    className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide hover:no-underline"
+                    style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}
+                  >
+                    {group.label} <span className="font-normal normal-case">({group.rows.length})</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="p-0">
+                    <Table>
+                      <IncidentTableHeader checked={groupChecked} onToggleAll={() => toggleSelectGroup(groupIds)} />
+                      <TableBody>
+                        {group.rows.map(item => (
+                          <IncidentRow
+                            key={item.id}
+                            item={item}
+                            checked={selected.has(item.id)}
+                            onToggleSelect={() => toggleSelect(item.id)}
+                            onOpen={() => setDetailItem(item)}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
         )}
       </div>
 
@@ -972,7 +1035,6 @@ export function IncidentActions() {
         operators={operators}
         mheIds={mheIds}
         warehouses={warehouses}
-        eventTypes={eventTypeOptions}
         allItems={items}
       />
       <DetailDrawer item={detailItem} open={!!detailItem} onClose={() => setDetailItem(null)} onStatusChange={handleStatusChange} />

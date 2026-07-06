@@ -52,6 +52,30 @@ export interface IncidentAction {
 
 export const SUITES: Suite[] = ["RTSS", "MEPS", "FMS", "IMDS"];
 
+// Canonical event taxonomy, grouped by Subject — who the event's action gets
+// assigned to. Operator + Warehouse events are sourced from the Action Board's
+// event_types taxonomy (action-board-event-categories.txt, 26 actionable events
+// keyed by theme: Safety/Compliance/Fatigue/Handling/Productivity/Environment).
+// MHE events are sourced from the IMDS checklist part list (IMDSManageChecklists.tsx)
+// instead, since asset-condition checks are a different domain than sensor/behavior events.
+export const EVENT_TYPES_BY_SUBJECT: Record<string, string[]> = {
+  "Operator": [
+    // Safety
+    "Pedestrian MHE Proximity", "MHE MHE Proximity", "MHE RACK Proximity",
+    "Raised Fork Movement", "Speeding Restricted Zone", "Major Speeding",
+    // Compliance
+    "No Vest Detected", "No Helmet Detected", "Restricted Zone Entry", "Minor Speeding", "Overspeed",
+    // Fatigue
+    "Continuous Driving", "Insufficient Breaks", "RT Ratio Exceeded",
+    // Handling
+    "Harsh Acceleration", "Harsh Braking", "Jerk", "Erratic Speed",
+    // Productivity
+    "Excessive Idle", "Too Slow", "Excessive Breaks", "Idle With Load",
+  ],
+  "MHE": ["Lights", "Battery", "Forks", "Mast", "Tires", "Horn", "Overhead Guard", "Hydraulics", "Seatbelt", "Camera", "Brakes", "Engine"],
+  "Warehouse": ["Wet Surface", "Object in Aisle", "Aisle Congestion"],
+};
+
 export const PRIORITY_ORDER: Record<Priority, number> = { Critical: 0, High: 1, Medium: 2, Low: 3 };
 
 export function sortBySeverity(events: IncidentEvent[]): IncidentEvent[] {
@@ -103,9 +127,9 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Collision & Near Miss", actionTargetType: "MHE", actionTargetLabel: "MHE-008",
     eventCount: 4,
     events: [
-      { label: "Impact Event",              severity: "Critical", location: "Main Storage · Rack R5, Bay B12", count: 1, note: "MHE-008 collided with rack upright — rack structurally damaged, isolate bay" },
-      { label: "MHE↔Rack Proximity",        severity: "High",     location: "Main Storage · Rack R4, Bay A08", count: 2 },
-      { label: "Pedestrian↔MHE Proximity",  severity: "High",     location: "Aisle D · Cross-aisle junction",  count: 1 },
+      { label: "Mast",   severity: "Critical", location: "Main Storage · Rack R5, Bay B12", count: 1, note: "collided with rack upright — mast structurally damaged, isolate bay" },
+      { label: "Forks",  severity: "High",     location: "Main Storage · Rack R4, Bay A08", count: 2 },
+      { label: "Camera", severity: "High",     location: "Aisle D · Cross-aisle junction",  count: 1, note: "proximity camera knocked out of alignment during impact" },
     ],
     recommendedAction: "Safety Investigation", responsibleRole: "Safety Officer + Maintenance",
     owner: "A. Desai", ownerAvatar: "AD", priority: "Critical", sla: "Immediate (0–2 hrs)",
@@ -118,8 +142,8 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "PPE Compliance", actionTargetType: "Operator", actionTargetLabel: "Deepak Singh",
     eventCount: 2,
     events: [
-      { label: "No Helmet", severity: "High",   location: "Zone C · Entrance",  count: 1 },
-      { label: "No Vest",   severity: "Medium", location: "Bulk Storage",       count: 1 },
+      { label: "No Helmet Detected", severity: "High",   location: "Zone C · Entrance",  count: 1 },
+      { label: "No Vest Detected", severity: "Medium", location: "Bulk Storage",       count: 1 },
     ],
     recommendedAction: "Compliance Enforcement", responsibleRole: "Safety Officer",
     owner: "S. Iyer", ownerAvatar: "SI", priority: "Medium", sla: "8 Hours",
@@ -132,8 +156,8 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Zone Safety", actionTargetType: "Zone", actionTargetLabel: "Zone B",
     eventCount: 2,
     events: [
-      { label: "Speeding in Restricted Zone", severity: "Critical", location: "Zone B · Restricted perimeter", count: 1 },
-      { label: "Restricted Zone Entry",       severity: "High",     location: "Zone B · Gate 2",               count: 1 },
+      { label: "Object in Aisle",  severity: "Critical", location: "Zone B · Restricted perimeter", count: 1 },
+      { label: "Aisle Congestion", severity: "High",     location: "Zone B · Gate 2",               count: 1 },
     ],
     recommendedAction: "Investigate Access Violation", responsibleRole: "Supervisor",
     owner: "N. Kapoor", ownerAvatar: "NK", priority: "High", sla: "4 Hours",
@@ -177,9 +201,9 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Idle Optimization", actionTargetType: "MHE", actionTargetLabel: "MHE-021",
     eventCount: 3,
     events: [
-      { label: "Idle With Load",  severity: "High",   location: "Aisle A",       count: 1, note: "blocking aisle with load raised" },
-      { label: "Excessive Idle",  severity: "Medium", location: "Charging Bay",  count: 1 },
-      { label: "Low Idle",        severity: "Low",    location: "Bulk Storage",  count: 1 },
+      { label: "Battery", severity: "High",   location: "Aisle A",       count: 1, note: "extended idle draining charge faster than expected" },
+      { label: "Lights",  severity: "Medium", location: "Charging Bay",  count: 1 },
+      { label: "Horn",    severity: "Low",    location: "Bulk Storage",  count: 1 },
     ],
     recommendedAction: "Optimize Routes & Task Allocation", responsibleRole: "Warehouse Supervisor",
     owner: "T. Menon", ownerAvatar: "TM", priority: "Medium", sla: "24 Hours",
@@ -192,10 +216,10 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Operator Compliance", actionTargetType: "Operator", actionTargetLabel: "Suresh Kumar",
     eventCount: 4,
     events: [
-      { label: "Authorized Only",         severity: "Critical", location: "Bay D-08",  count: 1, note: "operated MHE without valid authorization" },
-      { label: "Speed Adherence",         severity: "High",     location: "Aisle C",   count: 1 },
-      { label: "Loaded Zone Compliance",  severity: "Medium",   location: "Zone B",    count: 1 },
-      { label: "Break Compliance",        severity: "Low",      location: "Staging Area", count: 1 },
+      { label: "Restricted Zone Entry", severity: "Critical", location: "Bay D-08",  count: 1, note: "operated MHE without valid authorization" },
+      { label: "Overspeed",             severity: "High",     location: "Aisle C",   count: 1 },
+      { label: "Minor Speeding",        severity: "Medium",   location: "Zone B",    count: 1 },
+      { label: "No Vest Detected",      severity: "Low",      location: "Staging Area", count: 1 },
     ],
     recommendedAction: "Review Compliance & Retrain", responsibleRole: "Supervisor / HR",
     owner: "HR Team", ownerAvatar: "HR", priority: "High", sla: "24 Hours",
@@ -208,12 +232,12 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Maintenance Actions", actionTargetType: "MHE", actionTargetLabel: "MHE-011",
     eventCount: 6,
     events: [
-      { label: "Hydraulic Issue",  severity: "Critical", location: "MHE-011 · Bay D-08",     count: 1, note: "lift function degraded — risk of load drop" },
-      { label: "Sensor Offline",   severity: "High",     location: "MHE-011",                count: 1 },
-      { label: "Battery Alert",    severity: "Medium",   location: "MHE-011 · Charging Bay", count: 1 },
-      { label: "Fork Wear",        severity: "Medium",   location: "MHE-011",                count: 1 },
-      { label: "Service Due",      severity: "Low",      location: "MHE-011",                count: 1 },
-      { label: "Tyre Wear",        severity: "Low",      location: "MHE-011",                count: 1 },
+      { label: "Hydraulics", severity: "Critical", location: "MHE-011 · Bay D-08",     count: 1, note: "lift function degraded — risk of load drop" },
+      { label: "Camera",     severity: "High",     location: "MHE-011",                count: 1 },
+      { label: "Battery",    severity: "Medium",   location: "MHE-011 · Charging Bay", count: 1 },
+      { label: "Forks",      severity: "Medium",   location: "MHE-011",                count: 1 },
+      { label: "Brakes",     severity: "Low",      location: "MHE-011",                count: 1 },
+      { label: "Tires",      severity: "Low",      location: "MHE-011",                count: 1 },
     ],
     recommendedAction: "Generate Maintenance Work Order", responsibleRole: "Maintenance Manager",
     owner: "IoT Team", ownerAvatar: "IT", priority: "High", sla: "24 Hours",
@@ -226,9 +250,9 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Fleet Compliance", actionTargetType: "MHE", actionTargetLabel: "MHE-006",
     eventCount: 3,
     events: [
-      { label: "Insurance Expiry", severity: "Critical", location: "MHE-006", count: 1, note: "cover lapsed — MHE must not be operated" },
-      { label: "License Expiry",   severity: "High",     location: "MHE-006", count: 1 },
-      { label: "Warranty Expiry",  severity: "Medium",   location: "MHE-006", count: 1 },
+      { label: "Battery", severity: "Critical", location: "MHE-006", count: 1, note: "aging battery — cell degradation risk" },
+      { label: "Engine",  severity: "High",     location: "MHE-006", count: 1 },
+      { label: "Tires",   severity: "Medium",   location: "MHE-006", count: 1 },
     ],
     recommendedAction: "Renew Compliance Documents", responsibleRole: "Fleet Admin",
     owner: "N. Kapoor", ownerAvatar: "NK", priority: "High", sla: "Before Expiry",
@@ -241,9 +265,9 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Critical Inspection Findings", actionTargetType: "MHE", actionTargetLabel: "MHE-014",
     eventCount: 3,
     events: [
-      { label: "Structural Failure", severity: "Critical", location: "MHE-014 · Mast assembly",   count: 1, note: "isolate asset — do not operate" },
-      { label: "Critical Defect",    severity: "Critical", location: "MHE-014 · Fork carriage",   count: 1 },
-      { label: "RED Finding",        severity: "High",     location: "MHE-014",                    count: 1 },
+      { label: "Mast",           severity: "Critical", location: "MHE-014 · Mast assembly", count: 1, note: "isolate asset — do not operate" },
+      { label: "Forks",          severity: "Critical", location: "MHE-014 · Fork carriage", count: 1 },
+      { label: "Overhead Guard", severity: "High",     location: "MHE-014",                count: 1 },
     ],
     recommendedAction: "Immediate Inspection & Isolate Asset", responsibleRole: "Inspection Manager",
     owner: "A. Desai", ownerAvatar: "AD", priority: "Critical", sla: "Immediate",
@@ -256,7 +280,7 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     businessGroup: "Planned Inspection", actionTargetType: "Team", actionTargetLabel: "Inspection Team B",
     eventCount: 5,
     events: [
-      { label: "Repeat Finding",       severity: "High",   location: "Main Storage · Rack R5, Bay B12", count: 1 },
+      { label: "Repeat Findings",       severity: "High",   location: "Main Storage · Rack R5, Bay B12", count: 1 },
       { label: "Repair Pending",       severity: "Medium", location: "Main Storage · Rack R4",          count: 1 },
       { label: "Inspection Overdue",   severity: "Medium", location: "Bulk Storage",                    count: 1 },
       { label: "Amber Findings",       severity: "Low",    location: "Main Storage",                    count: 2 },
@@ -266,6 +290,20 @@ export const MOCK_INCIDENT_ACTIONS: IncidentAction[] = [
     status: "New", isOverdue: false, sourceDashboard: "IMDS Dashboard", sourceWidget: "Inspection Planner",
     kpiImpact: "Inspection Health", createdAt: "2026-07-02T13:30", createdDisplay: "Yesterday, 1:30 PM",
     escalationChain: ["Inspection Lead", "Inspection Manager", "Warehouse Manager"], escalationLevel: 0, isRepeated: true,
+  },
+  {
+    id: "AC-IMDS-0066", suite: "IMDS", businessArea: "Inspection",
+    businessGroup: "Planned Inspection", actionTargetType: "Zone", actionTargetLabel: "Zone D",
+    eventCount: 2,
+    events: [
+      { label: "Wet Surface",      severity: "High", location: "Zone D · Rack R2", count: 1 },
+      { label: "Aisle Congestion", severity: "Low",  location: "Zone D",           count: 1 },
+    ],
+    recommendedAction: "Assign Inspection & Track Closure", responsibleRole: "Inspection Manager",
+    owner: "N. Kapoor", ownerAvatar: "NK", priority: "Medium", sla: "24–72 Hours",
+    status: "New", isOverdue: false, sourceDashboard: "IMDS Dashboard", sourceWidget: "Inspection Planner",
+    kpiImpact: "Inspection Health", createdAt: "2026-07-04T10:15", createdDisplay: "Yesterday, 10:15 AM",
+    escalationChain: ["Inspection Lead", "Inspection Manager", "Warehouse Manager"], escalationLevel: 0, isRepeated: false,
   },
   {
     id: "AC-MEPS-0090", suite: "MEPS", businessArea: "Efficiency",
