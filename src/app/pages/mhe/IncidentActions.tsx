@@ -17,6 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "../../components/ui/sheet";
+import { Badge } from "../../components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -47,35 +48,32 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  Repeat,
   ArrowUpRight,
+  Repeat,
   Users,
   Truck,
   MapPin,
   UsersRound,
   Clock,
 } from "lucide-react";
-import { Card, CardContent } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
 import { cn } from "../../components/ui/utils";
 import {
   Priority,
   IncidentStatus,
   ActionTargetType,
   IncidentAction,
-  IncidentEvent,
   PRIORITY_COLORS,
   PRIORITY_ORDER,
   STATUS_COLORS,
   OVERDUE_COLOR,
   MOCK_INCIDENT_ACTIONS,
-  EVENT_TYPES_BY_SUBJECT,
   sortBySeverity,
+  EVENT_TYPES_BY_SUBJECT,
 } from "./types/incident-actions";
 
 // ─── Small building blocks ────────────────────────────────────────────────────
 
-function formatDateShort(iso: string) {
+export function formatDateShort(iso: string) {
   const d = new Date(iso);
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -83,12 +81,7 @@ function formatDateShort(iso: string) {
   return `${dd}/${mm}/${yy}`;
 }
 
-function daysOverdue(iso: string) {
-  const days = Math.round((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
-  return Math.max(1, days);
-}
-
-function PriorityDot({ priority }: { priority: Priority }) {
+export function PriorityDot({ priority }: { priority: Priority }) {
   return (
     <span
       className="inline-block w-2 h-2 rounded-full shrink-0"
@@ -98,7 +91,7 @@ function PriorityDot({ priority }: { priority: Priority }) {
   );
 }
 
-function StatusBadge({ status }: { status: IncidentStatus }) {
+export function StatusBadge({ status }: { status: IncidentStatus }) {
   return (
     <span
       className="text-[11px] font-medium px-2 py-0.5 rounded-full border"
@@ -123,14 +116,14 @@ function OverdueBadge() {
   );
 }
 
-const TARGET_ICON: Record<ActionTargetType, React.ElementType> = {
+export const TARGET_ICON: Record<ActionTargetType, React.ElementType> = {
   Operator: Users,
   MHE: Truck,
   Zone: MapPin,
   Team: UsersRound,
 };
 
-function ActionTargetCell({ item }: { item: IncidentAction }) {
+export function ActionTargetCell({ item }: { item: IncidentAction }) {
   const Icon = TARGET_ICON[item.actionTargetType];
   return (
     <div className="flex items-center gap-1.5">
@@ -142,7 +135,7 @@ function ActionTargetCell({ item }: { item: IncidentAction }) {
   );
 }
 
-function OwnerAvatar({ initials, size = "sm" }: { initials: string; size?: "sm" | "md" }) {
+export function OwnerAvatar({ initials, size = "sm" }: { initials: string; size?: "sm" | "md" }) {
   const dim = size === "sm" ? "w-6 h-6 text-[10px]" : "w-8 h-8 text-[11px]";
   return (
     <div
@@ -468,6 +461,13 @@ function FilterSheet({
 }
 
 // ─── Detail Drawer ─────────────────────────────────────────────────────────────
+// Quick-look summary opened from a table row. Deeper event-by-event review and
+// per-event action assignment happens on its own page (see IncidentActionEvents).
+
+function daysOverdue(iso: string) {
+  const days = Math.round((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
+  return Math.max(1, days);
+}
 
 function DetailDrawer({
   item, open, onClose, onStatusChange,
@@ -491,13 +491,12 @@ function DetailDrawer({
       <SheetContent side="right" className="w-[480px] flex flex-col p-0" style={{ background: "var(--card)" }}>
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
           <SheetTitle className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
-            {item.businessGroup}
+            {item.id}
           </SheetTitle>
-          <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{item.id} · {item.actionTargetLabel}</div>
+          <div className="text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>{item.businessGroup} · {item.actionTargetLabel}</div>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto flex flex-col divide-y divide-border">
-          {/* Assignee / dates / Business area / Priority / Status / SLA / repeated rows */}
           <div className="px-5 py-5 flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Assigned To</p>
@@ -522,11 +521,6 @@ function DetailDrawer({
             )}
 
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Business Area</p>
-              <span className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>{item.businessArea}</span>
-            </div>
-
-            <div className="flex items-center justify-between gap-3">
               <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Priority</p>
               <div className="flex items-center gap-1.5 text-[13px] font-medium" style={{ color: "var(--foreground)" }}><PriorityDot priority={item.priority} />{item.priority}</div>
             </div>
@@ -539,8 +533,16 @@ function DetailDrawer({
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>SLA</p>
-              <span className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>{item.sla}</span>
+              <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Tag</p>
+              <span
+                className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                style={{
+                  background: "color-mix(in srgb, var(--foreground) 20%, transparent)",
+                  color: "color-mix(in srgb, var(--foreground) 80%, black)",
+                }}
+              >
+                {item.actionTargetType === "MHE" ? "Inspection" : item.businessArea}
+              </span>
             </div>
 
             {item.isRepeated && (
@@ -553,15 +555,7 @@ function DetailDrawer({
             )}
           </div>
 
-          {/* Business impact */}
-          <div className="px-5 py-5 flex flex-col gap-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Business Impact</p>
-            <p className="text-[12px] leading-relaxed" style={{ color: "var(--foreground)" }}>
-              Affects <strong>{item.kpiImpact}</strong>. {item.eventCount} contributing events rolled up from {item.actionTargetLabel}.
-            </p>
-          </div>
-
-          {/* Events breakdown — sorted highest severity first so the most actionable event surfaces immediately */}
+          {/* Events summary — read-only here; open the events page to inspect and assign per-event */}
           <div className="px-5 py-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
@@ -569,60 +563,36 @@ function DetailDrawer({
               </p>
               <span className="text-[10.5px]" style={{ color: "var(--muted-foreground)" }}>Sorted by severity</span>
             </div>
-            <div className="flex flex-col gap-2.5">
-              {sortBySeverity(item.events).map((e, i) => (
-                <Card key={`${e.label}-${i}`} className="border-border shadow-none gap-0 py-0">
-                  <CardContent className="p-3.5 flex flex-col gap-2.5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[12.5px] font-medium">{e.label}</span>
-                        {e.count > 1 && (
-                          <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 h-[18px] rounded-full">
-                            ×{e.count}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <Badge
-                          className="text-[10.5px] font-semibold px-2 h-[19px] rounded-full border-transparent"
-                          style={{ background: `color-mix(in srgb, ${PRIORITY_COLORS[e.severity]} 14%, transparent)`, color: PRIORITY_COLORS[e.severity] }}
-                        >
-                          {e.severity}
-                        </Badge>
-                        {i === 0 && (
-                          <Badge
-                            className="text-[9.5px] font-bold uppercase tracking-wide px-1.5 h-[19px] rounded border-transparent"
-                            style={{ background: PRIORITY_COLORS[e.severity], color: "var(--background)" }}
-                          >
-                            Act first
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-[11.5px]" style={{ color: "var(--muted-foreground)" }}>
-                      <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.5} />
-                      <span>{e.location}</span>
-                    </div>
-
-                    {e.note && (
-                      <p className="text-[11.5px] leading-relaxed italic" style={{ color: "var(--muted-foreground)" }}>{e.note}</p>
+            <div className="flex flex-col gap-2">
+              {sortBySeverity(item.events).slice(0, 3).map((e, i) => (
+                <div key={`${e.label}-${i}`} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-border">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[12px] font-medium truncate">{e.label}</span>
+                    {e.count > 1 && (
+                      <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 h-[18px] rounded-full shrink-0">
+                        ×{e.count}
+                      </Badge>
                     )}
-
-                    {(item.actionTargetType === "Operator" || item.actionTargetType === "Zone") && (
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="h-auto p-0 text-[11px] self-end"
-                        onClick={() => navigate(`/mhe/command-center?view=2d&heatmap=1&zone=${encodeURIComponent(e.location)}`)}
-                      >
-                        View on map
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
+                  </div>
+                  <Badge
+                    className="text-[10.5px] font-semibold px-2 h-[19px] rounded-full border-transparent shrink-0"
+                    style={{ background: `color-mix(in srgb, ${PRIORITY_COLORS[e.severity]} 14%, transparent)`, color: PRIORITY_COLORS[e.severity] }}
+                  >
+                    {e.severity}
+                  </Badge>
+                </div>
               ))}
+              {item.events.length > 3 && (
+                <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>+{item.events.length - 3} more</p>
+              )}
             </div>
+            <Button
+              variant="outline"
+              className="h-9 text-[12px] font-semibold"
+              onClick={() => navigate(`/mhe/incident-actions/${item.id}/events`)}
+            >
+              View All Events & Assign Action
+            </Button>
           </div>
 
           {/* Recommended action */}
@@ -691,21 +661,34 @@ function DetailDrawer({
   );
 }
 
+// Fixed column widths, shared by every group's table (and the ungrouped table) so
+// columns line up vertically across the whole page instead of each table auto-sizing
+// to its own rows' content.
+const COLUMN_WIDTHS = {
+  checkbox: "w-10",
+  actionId: "w-[13%]",
+  businessGroup: "w-[16%]",
+  actionTarget: "w-[16%]",
+  events: "w-[10%]",
+  assignedTo: "w-[15%]",
+  status: "w-[17%]",
+  created: "w-[13%]",
+};
+
 function IncidentTableHeader({ checked, onToggleAll }: { checked: boolean; onToggleAll: () => void }) {
   return (
     <TableHeader>
       <TableRow className="hover:bg-transparent">
-        <TableHead className="w-10">
+        <TableHead className={COLUMN_WIDTHS.checkbox}>
           <Checkbox checked={checked} onCheckedChange={onToggleAll} />
         </TableHead>
-        <TableHead className="text-[11px]">Action ID</TableHead>
-        <TableHead className="text-[11px]">Business Group</TableHead>
-        <TableHead className="text-[11px]">Action Target</TableHead>
-        <TableHead className="text-[11px]">Events</TableHead>
-        <TableHead className="text-[11px]">Assigned To</TableHead>
-        <TableHead className="text-[11px]">Status</TableHead>
-        <TableHead className="text-[11px]">SLA</TableHead>
-        <TableHead className="text-[11px]">Created</TableHead>
+        <TableHead className={cn("text-[11px]", COLUMN_WIDTHS.actionId)}>Action ID</TableHead>
+        <TableHead className={cn("text-[11px]", COLUMN_WIDTHS.actionTarget)}>Action Target</TableHead>
+        <TableHead className={cn("text-[11px]", COLUMN_WIDTHS.events)}>Events</TableHead>
+        <TableHead className={cn("text-[11px]", COLUMN_WIDTHS.assignedTo)}>Assigned To</TableHead>
+        <TableHead className={cn("text-[11px]", COLUMN_WIDTHS.status)}>Status</TableHead>
+        <TableHead className={cn("text-[11px]", COLUMN_WIDTHS.businessGroup)}>Tag</TableHead>
+        <TableHead className={cn("text-[11px]", COLUMN_WIDTHS.created)}>Created</TableHead>
       </TableRow>
     </TableHeader>
   );
@@ -721,12 +704,6 @@ function IncidentRow({ item, checked, onToggleSelect, onOpen }: {
       </TableCell>
       <TableCell>
         <span className="text-[12px] font-medium" style={{ color: "var(--chart-1)" }}>{item.id}</span>
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[12.5px] font-medium">{item.businessArea}</span>
-          {item.isRepeated && <Repeat className="w-3 h-3 shrink-0" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />}
-        </div>
       </TableCell>
       <TableCell><ActionTargetCell item={item} /></TableCell>
       <TableCell>
@@ -746,8 +723,21 @@ function IncidentRow({ item, checked, onToggleSelect, onOpen }: {
           {item.isOverdue && item.status !== "Resolved" && <OverdueBadge />}
         </div>
       </TableCell>
-      <TableCell><span className="text-[12px]">{item.sla}</span></TableCell>
-      <TableCell><span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>{item.createdDisplay}</span></TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+            style={{
+              background: "color-mix(in srgb, var(--foreground) 20%, transparent)",
+              color: "color-mix(in srgb, var(--foreground) 80%, black)",
+            }}
+          >
+            {item.actionTargetType === "MHE" ? "Inspection" : item.businessArea}
+          </span>
+          {item.isRepeated && <Repeat className="w-3 h-3 shrink-0" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />}
+        </div>
+      </TableCell>
+      <TableCell><span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>{formatDateShort(item.createdAt)}</span></TableCell>
     </TableRow>
   );
 }
@@ -758,6 +748,7 @@ type GroupBy = "none" | "businessArea" | "priority" | "owner" | "status";
 type SortBy = "priority" | "newest" | "oldest" | "sla" | "mostRepeated";
 
 export function IncidentActions() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<IncidentAction[]>(MOCK_INCIDENT_ACTIONS);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
@@ -854,12 +845,12 @@ export function IncidentActions() {
     });
   };
 
+  const clearAll = () => { setFilters(EMPTY_FILTERS); setSearch(""); };
+
   const handleStatusChange = (id: string, status: IncidentStatus) => {
     setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i));
     setDetailItem(prev => prev && prev.id === id ? { ...prev, status } : prev);
   };
-
-  const clearAll = () => { setFilters(EMPTY_FILTERS); setSearch(""); };
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: "var(--card)" }}>
@@ -974,7 +965,7 @@ export function IncidentActions() {
           </div>
         ) : groupBy === "none" ? (
           <div className="rounded-xl border border-border overflow-hidden">
-            <Table>
+            <Table className="table-fixed">
               <IncidentTableHeader
                 checked={selected.size > 0 && selected.size === sorted.length}
                 onToggleAll={toggleSelectAll}
@@ -1006,7 +997,7 @@ export function IncidentActions() {
                     {group.label} <span className="font-normal normal-case">({group.rows.length})</span>
                   </AccordionTrigger>
                   <AccordionContent className="p-0">
-                    <Table>
+                    <Table className="table-fixed">
                       <IncidentTableHeader checked={groupChecked} onToggleAll={() => toggleSelectGroup(groupIds)} />
                       <TableBody>
                         {group.rows.map(item => (

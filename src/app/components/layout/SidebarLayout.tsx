@@ -67,8 +67,10 @@ function parsePathToSelection(pathname: string): SidebarSelection {
     const suiteId = parts[1] || null;
     const featureId = parts[2] || null;
 
-    // For mixed domains, check if this is a top or bottom shared feature (no suite segment)
-    if (domain.type === "mixed" && suiteId && !featureId) {
+    // For mixed domains, check if this is a top or bottom shared feature (no suite
+    // segment) — matched on the second path segment alone so deeper nested routes
+    // under a shared feature (e.g. a record's own sub-page) still resolve correctly.
+    if (domain.type === "mixed" && suiteId) {
       const isSharedFeature =
         domain.topSharedFeatures?.some(f => f.id === suiteId) ||
         domain.sharedFeatures?.some(f => f.id === suiteId);

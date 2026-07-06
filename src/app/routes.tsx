@@ -17,6 +17,7 @@ import { MheAnalytics } from "./pages/mhe/MheAnalytics";
 import { OperatorMheDashboard } from "./pages/mhe/OperatorMheDashboard";
 import { ActionBoard } from "./pages/mhe/ActionBoard";
 import { IncidentActions } from "./pages/mhe/IncidentActions";
+import { IncidentActionEvents } from "./pages/mhe/IncidentActionEvents";
 import { FMS } from "./pages/mhe/FMS";
 import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
@@ -290,6 +291,10 @@ export const router = createBrowserRouter([
       {
         path: "mhe/incident-actions",
         element: <IncidentActions />,
+      },
+      {
+        path: "mhe/incident-actions/:actionId/events",
+        element: <IncidentActionEvents />,
       },
       {
         path: "mhe/escalation-logs",
