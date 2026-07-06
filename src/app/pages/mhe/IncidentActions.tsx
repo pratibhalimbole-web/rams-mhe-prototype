@@ -609,7 +609,7 @@ function DetailDrawer({
                       <p className="text-[11.5px] leading-relaxed italic" style={{ color: "var(--muted-foreground)" }}>{e.note}</p>
                     )}
 
-                    {item.sourceDashboard === "Command Center" && item.actionTargetType !== "MHE" && (
+                    {(item.actionTargetType === "Operator" || item.actionTargetType === "Zone") && (
                       <Button
                         variant="link"
                         size="sm"
