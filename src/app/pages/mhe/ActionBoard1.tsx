@@ -51,7 +51,6 @@ import {
   Filter,
   ArrowUpRight,
   ChevronDown,
-  Clock,
   Truck,
   User,
   Repeat,
@@ -329,6 +328,12 @@ function formatShortDate(iso: string): string {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
 function resolvePick<T>(options: T[], seedKey: string): T {
   return options[hashSeed(seedKey) % options.length];
 }
@@ -339,11 +344,7 @@ function buildCombos(filters: ABFilters): ComboData[] {
   // Default view (no filters picked yet) shows every event type. Picking
   // specific Event Types / MHEs / Operators narrows the combination set;
   // any dimension left unpicked is resolved to a deterministic, specific
-  // value rather than left blank. These are pre-assignment issues with no
-  // due date yet, so they can never be "overdue" — Overdue-only empties this
-  // list entirely rather than faking a status that can't apply here.
-  if (filters.overdueOnly) return [];
-
+  // value rather than left blank.
   const eventList = filters.eventTypes.length ? filters.eventTypes : EVENT_TYPE_OPTIONS;
 
   const combos: ComboData[] = [];
@@ -427,12 +428,14 @@ function GeneratedActionCard({ card, showAssign, onAssign }: { card: GeneratedCa
 // remark and due date instead of mock data. In Progress additionally surfaces
 // how many days overdue it is.
 
-function AssignedActionCard({ action, showOverdueDays }: { action: Action; showOverdueDays: boolean }) {
+function AssignedActionCard({ action, showOverdueDays, onClick }: { action: Action; showOverdueDays: boolean; onClick: (action: Action) => void }) {
   const { mhe, count } = parseComboDetail(action);
   const overdueDays = showOverdueDays ? daysOverdueFor(action) : null;
 
   return (
-    <div className="group bg-card border border-border rounded-lg transition-all duration-150 ease-out hover:shadow-lg hover:shadow-black/30 dark:hover:shadow-black/60 hover:-translate-y-0.5 hover:border-foreground/30 overflow-hidden shrink-0">
+    <div
+      onClick={() => onClick(action)}
+      className="group bg-card border border-border rounded-lg cursor-pointer transition-all duration-150 ease-out hover:shadow-lg hover:shadow-black/30 dark:hover:shadow-black/60 hover:-translate-y-0.5 hover:border-foreground/30 overflow-hidden shrink-0">
       <div className="p-4 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
           <p className="text-[13px] font-semibold leading-snug line-clamp-2 min-w-0" style={{ color: "var(--foreground)" }}>
@@ -552,6 +555,7 @@ function KanbanColumnComponent({
                 key={action.id}
                 action={action}
                 showOverdueDays={column.id === "in-progress"}
+                onClick={onActionClick}
               />
             ))
           )
@@ -1187,11 +1191,10 @@ interface ABFilters {
   mhe: string[];
   eventTypes: string[];
   status: KanbanStatus[];
-  overdueOnly: boolean;
 }
 
 const EMPTY_AB_FILTERS: ABFilters = {
-  operator: [], mhe: [], eventTypes: [], status: [], overdueOnly: false,
+  operator: [], mhe: [], eventTypes: [], status: [],
 };
 
 function toggleInArray<T>(arr: T[], val: T): T[] {
@@ -1205,7 +1208,6 @@ function issueMatchesFilters(issue: Issue, f: ABFilters): boolean {
   if (f.operator.length) return false; // issues aren't assigned yet
   if (f.eventTypes.length && !f.eventTypes.some(e => title.includes(e) || detail.includes(e))) return false;
   if (f.status.length) return false; // issues have no kanban status yet
-  if (f.overdueOnly) return false; // issues can't be overdue
   return true;
 }
 
@@ -1217,7 +1219,6 @@ function actionMatchesFilters(action: Action, f: ABFilters): boolean {
   if (f.operator.length && !f.operator.includes(action.assignedTo)) return false;
   if (f.eventTypes.length && !f.eventTypes.some(e => issueTitle.includes(e) || issueDetail.includes(e) || title.includes(e))) return false;
   if (f.status.length && !f.status.includes(action.status)) return false;
-  if (f.overdueOnly && !action.isOverdue) return false;
   return true;
 }
 
@@ -1290,9 +1291,7 @@ function FilterSheet({ open, onClose, filters, setFilters, issues, actions }: Fi
   const [draft, setDraft] = useState<ABFilters>(filters);
   useEffect(() => { if (open) setDraft(filters); }, [open, filters]);
 
-  const hasDraftFilters = draft.operator.length + draft.mhe.length + draft.eventTypes.length + draft.status.length > 0
-    || draft.overdueOnly;
-
+  const hasDraftFilters = draft.operator.length + draft.mhe.length + draft.eventTypes.length + draft.status.length > 0;
   const totalCount = issues.length + actions.length;
   const liveCount = issues.filter(i => issueMatchesFilters(i, draft)).length
     + actions.filter(a => actionMatchesFilters(a, draft)).length;
@@ -1301,18 +1300,7 @@ function FilterSheet({ open, onClose, filters, setFilters, issues, actions }: Fi
     <Sheet open={open} onOpenChange={o => !o && onClose()}>
       <SheetContent side="right" className="w-[380px] flex flex-col p-0">
         <SheetHeader className="px-5 py-4 border-b border-border">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="text-[15px]">Filters</SheetTitle>
-            {hasDraftFilters && (
-              <button
-                onClick={() => setDraft(EMPTY_AB_FILTERS)}
-                className="text-[12px] font-medium hover:underline"
-                style={{ color: "var(--chart-1)" }}
-              >
-                Clear all
-              </button>
-            )}
-          </div>
+          <SheetTitle className="text-[15px]">Filters</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
@@ -1356,21 +1344,6 @@ function FilterSheet({ open, onClose, filters, setFilters, issues, actions }: Fi
             </div>
           </div>
 
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Urgency</div>
-            <button
-              onClick={() => setDraft({ ...draft, overdueOnly: !draft.overdueOnly })}
-              className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-lg border transition-colors"
-              style={{
-                borderColor: draft.overdueOnly ? "var(--destructive)" : "var(--border)",
-                background: draft.overdueOnly ? "var(--destructive)" : "transparent",
-                color: draft.overdueOnly ? "var(--background)" : "var(--foreground)",
-              }}
-            >
-              <Clock className="w-3.5 h-3.5" strokeWidth={2} />
-              Overdue only
-            </button>
-          </div>
         </div>
 
         <div className="shrink-0 border-t border-border px-5 py-3 flex items-center justify-between">
@@ -1403,40 +1376,45 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
   const issue = isIssue ? (item as Issue) : null;
   const action = !isIssue ? (item as Action) : null;
 
+  // Built from the item's real fields — no fabricated escalation copy.
+  const activityEntries: { time: string; text: string }[] = isIssue
+    ? [{ time: issue!.raisedAt, text: "Issue raised" }]
+    : [
+        { time: formatDateTime(action!.createdAt), text: "Action created" },
+        { time: formatDateTime(action!.createdAt), text: `Assigned to ${action!.assignedTo}` },
+        ...(action!.notes ? [{ time: formatDateTime(action!.createdAt), text: `Note added: "${action!.notes}"` }] : []),
+      ];
+
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="right" className="w-[420px] p-0 flex flex-col">
-        <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
-          <SheetTitle className="text-[13px] font-semibold mb-3" style={{ color: "var(--foreground)" }}>
+        <SheetHeader className="px-5 py-4 border-b border-border shrink-0">
+          <SheetTitle className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
             {isIssue ? "Issue Details" : "Action Details"}
           </SheetTitle>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {isIssue && issue && (
-              <>
-                <SuitePill suite={issue.suite} />
-                <SeverityBadge severity={issue.severity} />
-              </>
-            )}
-            {!isIssue && action && (
-              <>
-                <SuitePill suite={action.suite} />
-                <SeverityBadge severity={action.priority} />
-                {action.isOverdue && (
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded"
-                    style={{ color: "var(--destructive)", background: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
-                    Overdue
-                  </span>
-                )}
-              </>
-            )}
-          </div>
+          {((isIssue && issue) || (!isIssue && action?.isOverdue)) && (
+            <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+              {isIssue && issue && (
+                <>
+                  <SuitePill suite={issue.suite} />
+                  <SeverityBadge severity={issue.severity} />
+                </>
+              )}
+              {!isIssue && action?.isOverdue && (
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded"
+                  style={{ color: "var(--destructive)", background: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
+                  Overdue
+                </span>
+              )}
+            </div>
+          )}
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto flex flex-col divide-y divide-border">
 
           {/* Title + context */}
-          <div className="px-5 py-5 flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
+          <div className="px-5 py-4 flex flex-col gap-3.5">
+            <div className="flex flex-col gap-1">
               <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
                 {isIssue ? "Issue" : "Action"}
               </p>
@@ -1445,69 +1423,75 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
               </p>
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
-                {isIssue ? "Details" : "Linked Issue"}
+                {isIssue ? "Details" : "Issue Type"}
               </p>
               <p className="text-[12px] leading-relaxed" style={{ color: "var(--foreground)" }}>
-                {isIssue ? issue!.detail : action!.linkedIssue}
+                {isIssue
+                  ? issue!.detail
+                  : action!.issueId?.startsWith("combo-")
+                    ? action!.issueTitle?.split(" · ")[0]
+                    : action!.issueTitle}
               </p>
             </div>
           </div>
 
           {/* Action-specific fields */}
           {!isIssue && action && (
-            <>
-              <div className="px-5 py-5 grid grid-cols-2 gap-x-6 gap-y-5">
-                {/* Assigned to */}
-                <div className="col-span-2 flex flex-col gap-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
-                    Assigned To
-                  </p>
-                  <div className="flex items-center gap-2.5">
-                    <Avatar initials={action.assignedAvatar} size="md" />
-                    <span className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>{action.assignedTo}</span>
-                  </div>
+            <div className="px-5 py-4 grid grid-cols-3 gap-x-5 gap-y-4">
+              {/* Assigned to */}
+              <div className="col-span-3 flex flex-col gap-1.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
+                  Assigned To
+                </p>
+                <div className="flex items-center gap-2.5">
+                  <Avatar initials={action.assignedAvatar} size="md" />
+                  <span className="text-[13px] font-medium" style={{ color: "var(--foreground)" }}>{action.assignedTo}</span>
                 </div>
+              </div>
 
-                {/* Due date */}
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Due Date</p>
-                  <div className="flex items-center gap-1.5">
-                    <CalendarIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5}
-                      style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }} />
-                    <span className="text-[12px]" style={{ color: action.isOverdue ? "var(--destructive)" : "var(--foreground)" }}>
-                      {action.dueDateDisplay || action.dueDate}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Status</p>
-                  <span className="text-[12px] font-medium capitalize" style={{ color: "var(--foreground)" }}>
-                    {action.status.replace("-", " ")}
+              {/* Due date */}
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Due Date</p>
+                <div className="flex items-center gap-1.5">
+                  <CalendarIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5}
+                    style={{ color: action.isOverdue ? "var(--destructive)" : "var(--muted-foreground)" }} />
+                  <span className="text-[12px]" style={{ color: action.isOverdue ? "var(--destructive)" : "var(--foreground)" }}>
+                    {action.dueDateDisplay || action.dueDate}
                   </span>
                 </div>
               </div>
-            </>
+
+              {/* Status */}
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Status</p>
+                <span className="text-[12px] font-medium capitalize" style={{ color: "var(--foreground)" }}>
+                  {action.status.replace("-", " ")}
+                </span>
+              </div>
+
+              {/* Priority */}
+              <div className="flex flex-col gap-1">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Priority</p>
+                <span className="text-[12px] font-medium" style={{ color: SEVERITY_COLORS[action.priority] }}>
+                  {action.priority}
+                </span>
+              </div>
+            </div>
           )}
 
           {/* Activity */}
-          <div className="px-5 py-5 flex flex-col gap-3">
+          <div className="px-5 py-4 flex flex-col gap-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Activity</p>
             <div className="flex flex-col gap-0">
-              {[
-                { time: "Just now", text: "Issue detected by system" },
-                { time: "5m ago",   text: "Notification sent to supervisors" },
-                { time: "10m ago",  text: "Issue escalated — severity: Critical" },
-              ].map((entry, i, arr) => (
+              {activityEntries.map((entry, i, arr) => (
                 <div key={i} className="flex gap-3">
                   <div className="flex flex-col items-center">
                     <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ background: "var(--border)", border: "1.5px solid var(--muted-foreground)" }} />
                     {i < arr.length - 1 && <div className="w-px flex-1 my-1" style={{ background: "var(--border)" }} />}
                   </div>
-                  <div className="pb-4">
+                  <div className={i < arr.length - 1 ? "pb-3.5" : ""}>
                     <p className="text-[12px] font-medium" style={{ color: "var(--foreground)" }}>{entry.text}</p>
                     <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>{entry.time}</p>
                   </div>
@@ -1655,7 +1639,7 @@ export function ActionBoard1() {
   };
 
   const activeFilterCount = filters.operator.length + filters.mhe.length + filters.eventTypes.length
-    + filters.status.length + (filters.overdueOnly ? 1 : 0);
+    + filters.status.length;
 
   type FilterChip = { key: string; label: string; onRemove: () => void };
   const filterChips: FilterChip[] = [];
@@ -1663,7 +1647,6 @@ export function ActionBoard1() {
   filters.operator.forEach(v => filterChips.push({ key: `operator-${v}`, label: `Operator: ${v}`, onRemove: () => setFilters({ ...filters, operator: filters.operator.filter(x => x !== v) }) }));
   filters.eventTypes.forEach(v => filterChips.push({ key: `event-${v}`, label: `Issue: ${v}`, onRemove: () => setFilters({ ...filters, eventTypes: filters.eventTypes.filter(x => x !== v) }) }));
   filters.status.forEach(v => filterChips.push({ key: `status-${v}`, label: `Status: ${v}`, onRemove: () => setFilters({ ...filters, status: filters.status.filter(x => x !== v) }) }));
-  if (filters.overdueOnly) filterChips.push({ key: "overdue", label: "Overdue only", onRemove: () => setFilters({ ...filters, overdueOnly: false }) });
 
   const clearAll = () => setFilters(EMPTY_AB_FILTERS);
 
