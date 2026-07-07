@@ -41,7 +41,6 @@ import {
   DropdownMenuSeparator,
 } from "../../components/ui/dropdown-menu";
 import {
-  Search,
   Plus,
   CheckCircle2,
   Inbox,
@@ -55,7 +54,9 @@ import {
   Clock,
   Truck,
   User,
-  MapPin,
+  Repeat,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import { cn } from "../../components/ui/utils";
 import {
@@ -90,7 +91,7 @@ const MOCK_ISSUES: Issue[] = [
 ];
 
 const MOCK_ACTIONS: Action[] = [
-  { id: "a1", source: "system", issueId: "ix1", suite: "MEPS", issueSource: "Safety",     issueTitle: "Unauthorized / invalid operation",  issueDescription: "MHE-003 · Bay 4 · Auth failure + wrong MHE type",       issueLocation: "Bay 4",       title: "Investigate unauthorized MHE start",      priority: "Critical", assignedTo: "Rahul Sharma",   assignedAvatar: "RS", dueDate: "2026-04-02T15:00", dueDateDisplay: "Today, 3:00 PM",  status: "assigned",    isOverdue: false, notes: "", createdAt: "2026-04-02T08:00", updatedAt: "2026-04-02T08:00" },
+  { id: "a1", source: "system", issueId: "ix1", suite: "MEPS", issueSource: "Safety",     issueTitle: "Unauthorized / invalid operation",  issueDescription: "MHE-003 · Bay 4 · Auth failure + wrong MHE type",       issueLocation: "Bay 4",       title: "Investigate unauthorized MHE start",      priority: "Critical", assignedTo: "Rahul Sharma",   assignedAvatar: "RS", dueDate: "2026-04-02T15:00", dueDateDisplay: "Today, 3:00 PM",  status: "assigned",    isOverdue: false, notes: "Please pull the badge-swipe log for Bay 4 before speaking to the operator — this is his second flag this month.", createdAt: "2026-04-02T08:00", updatedAt: "2026-04-02T08:00" },
   { id: "a2", source: "system", issueId: "ix2", suite: "MMS",  issueSource: "Compliance", issueTitle: "MHE compliance issue",               issueDescription: "MHE-011 · Fitness cert expired · MHE-006 · Insurance",    issueLocation: "Fleet",       title: "Ground MHE-011 and renew certifications", priority: "Critical", assignedTo: "Neha Kapoor",    assignedAvatar: "NK", dueDate: "2026-04-02T17:00", dueDateDisplay: "Today, 5:00 PM",  status: "assigned",    isOverdue: false, notes: "", createdAt: "2026-04-02T07:00", updatedAt: "2026-04-02T07:00" },
   { id: "a3", source: "system", issueId: "ix3", suite: "RTSS", issueSource: "Impact",     issueTitle: "Collision risk event",               issueDescription: "MHE-008 · Impact: 12G · Zone D · 09:47 AM",               issueLocation: "Zone D",      title: "Review collision footage Zone D",          priority: "Critical", assignedTo: "Amit Desai",     assignedAvatar: "AD", dueDate: "2026-04-02T14:00", dueDateDisplay: "Today, 2:00 PM",  status: "in-progress", isOverdue: true,  notes: "", createdAt: "2026-04-02T06:00", updatedAt: "2026-04-02T10:00" },
   { id: "a4", source: "system", issueId: "ix4", suite: "RTSS", issueSource: "Safety",     issueTitle: "High-risk driver score",             issueDescription: "Operator: Mohan Verma · Safety score: 19% · Bottom 5%",   issueLocation: "Fleet",       title: "Suspend operator — safety score 19%",     priority: "Critical", assignedTo: "HR Team",        assignedAvatar: "HR", dueDate: "2026-04-01T17:00", dueDateDisplay: "Yesterday",        status: "in-progress", isOverdue: true,  notes: "", createdAt: "2026-04-01T09:00", updatedAt: "2026-04-02T09:00" },
@@ -283,6 +284,7 @@ function ActionCard({ action, onClick, onDragStart }: ActionCardProps) {
 
 interface GeneratedCardData {
   key: string;
+  comboId: string;
   event: string;
   mhe: string;
   operator: string;
@@ -297,31 +299,64 @@ function hashSeed(str: string): number {
   return Math.abs(h);
 }
 
+// Reverses the "DD Mon YYYY, HH:mm" format AssignModal produces, so real
+// overdue status/day-count can be computed from it later.
+const DUE_DATE_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function parseAppDueDate(dueDateStr: string): Date | null {
+  const m = /^(\d{2}) (\w{3}) (\d{4}), (\d{2}):(\d{2})$/.exec((dueDateStr ?? "").trim());
+  if (!m) return null;
+  const monthIdx = DUE_DATE_MONTHS.indexOf(m[2]);
+  if (monthIdx === -1) return null;
+  return new Date(Number(m[3]), monthIdx, Number(m[1]), Number(m[4]), Number(m[5]));
+}
+
+function daysOverdueFor(action: Action): number | null {
+  if (!action.isOverdue) return null;
+  const due = parseAppDueDate(action.dueDate);
+  if (due) return Math.max(1, Math.ceil((Date.now() - due.getTime()) / (1000 * 60 * 60 * 24)));
+  return (hashSeed(action.id) % 5) + 1; // legacy/mock actions with no parseable due date
+}
+
+function parseComboDetail(action: Action): { mhe?: string; count?: number } {
+  if (!action.issueId?.startsWith("combo-")) return {};
+  const detail = action.issueDetail ?? "";
+  const mhe = detail.split(" · ")[0] || undefined;
+  const countMatch = /(\d+) occurrence/.exec(detail);
+  return { mhe, count: countMatch ? Number(countMatch[1]) : undefined };
+}
+
+function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 function resolvePick<T>(options: T[], seedKey: string): T {
   return options[hashSeed(seedKey) % options.length];
 }
 
-function buildCombos(filters: ABFilters): Array<{ event: string; mhe: string; operator: string; warehouse: string; isOverdue: boolean }> {
+interface ComboData { event: string; mhe: string; operator: string; warehouse: string; isOverdue: boolean; comboId: string }
+
+function buildCombos(filters: ABFilters): ComboData[] {
   // Default view (no filters picked yet) shows every event type. Picking
   // specific Event Types / MHEs / Operators narrows the combination set;
   // any dimension left unpicked is resolved to a deterministic, specific
-  // value rather than left blank. Priority / Warehouse / Overdue-only narrow
-  // the resulting set further instead of fanning out into more cards.
-  const eventList = (filters.eventTypes.length ? filters.eventTypes : EVENT_TYPE_OPTIONS)
-    .filter(event => !filters.priority.length || filters.priority.includes(eventPriority(event)));
+  // value rather than left blank. Overdue-only narrows the resulting set
+  // further instead of fanning out into more cards.
+  const eventList = filters.eventTypes.length ? filters.eventTypes : EVENT_TYPE_OPTIONS;
 
-  const combos: Array<{ event: string; mhe: string; operator: string; warehouse: string; isOverdue: boolean }> = [];
+  const combos: ComboData[] = [];
   eventList.forEach(event => {
     const mheOptions = filters.mhe.length ? filters.mhe : [resolvePick(MHE_UNIT_OPTIONS, `mhe::${event}`)];
     mheOptions.forEach(mhe => {
       const opOptions = filters.operator.length ? filters.operator : [resolvePick(OPERATOR_OPTIONS, `operator::${event}::${mhe}`)];
       opOptions.forEach(operator => {
-        const comboKey = `${event}|${mhe}|${operator}`;
-        const warehouse = resolvePick(WAREHOUSE_OPTIONS, `warehouse::${comboKey}`);
-        if (filters.warehouse && warehouse !== filters.warehouse) return;
-        const isOverdue = hashSeed(`${comboKey}::overdue`) % 3 === 0;
+        const comboId = `${event}|${mhe}|${operator}`;
+        const warehouse = resolvePick(WAREHOUSE_OPTIONS, `warehouse::${comboId}`);
+        const isOverdue = hashSeed(`${comboId}::overdue`) % 3 === 0;
         if (filters.overdueOnly && !isOverdue) return;
-        combos.push({ event, mhe, operator, warehouse, isOverdue });
+        combos.push({ event, mhe, operator, warehouse, isOverdue, comboId });
       });
     });
   });
@@ -329,52 +364,34 @@ function buildCombos(filters: ABFilters): Array<{ event: string; mhe: string; op
 }
 
 function comboTitle(c: { event: string; mhe: string; operator: string }): string {
-  return c.event;
+  return `${c.event} · ${c.mhe} · ${c.operator}`;
 }
 
-function generatedCardFor(combo: { event: string; mhe: string; operator: string; warehouse: string; isOverdue: boolean }, columnId: KanbanStatus): GeneratedCardData {
-  const key = `${combo.event}|${combo.mhe}|${combo.operator}`;
-  const count = (hashSeed(`${key}::${columnId}`) % 12) + 1;
-  return { key: `${key}::${columnId}`, event: combo.event, mhe: combo.mhe, operator: combo.operator, warehouse: combo.warehouse, count, isOverdue: combo.isOverdue };
+function generatedCardFor(combo: ComboData, columnId: KanbanStatus): GeneratedCardData {
+  const count = (hashSeed(`${combo.comboId}::${columnId}`) % 12) + 1;
+  return { key: `${combo.comboId}::${columnId}`, comboId: combo.comboId, event: combo.event, mhe: combo.mhe, operator: combo.operator, warehouse: combo.warehouse, count, isOverdue: combo.isOverdue };
 }
 
 function GeneratedActionCard({ card, showAssign, onAssign }: { card: GeneratedCardData; showAssign: boolean; onAssign: () => void }) {
-  const category = EVENT_TYPE_CATEGORY[card.event];
-  const accent = EVENT_CATEGORY_COLOR[category] ?? "var(--muted-foreground)";
-
   return (
-    <div
-      className="group bg-card border border-border rounded-lg transition-all duration-150 hover:shadow-sm overflow-hidden shrink-0"
-      style={{ borderLeft: `3px solid ${accent}` }}
-    >
+    <div className="group bg-card border border-border rounded-lg transition-all duration-150 ease-out hover:shadow-lg hover:shadow-black/30 dark:hover:shadow-black/60 hover:-translate-y-0.5 hover:border-foreground/30 overflow-hidden shrink-0">
       <div className="p-4 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: accent }} />
-            <p className="text-[13px] font-semibold leading-snug truncate" style={{ color: "var(--foreground)" }}>
-              {comboTitle(card)}
-            </p>
-          </div>
-          <span
-            className="text-[11px] font-semibold min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded shrink-0"
-            style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
-          >
-            {card.count}
-          </span>
-        </div>
+        <p className="text-[13px] font-semibold leading-snug line-clamp-2" style={{ color: "var(--foreground)" }}>
+          {comboTitle(card)}
+        </p>
 
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--chart-2)", background: "color-mix(in srgb, var(--chart-2) 10%, transparent)" }}>
+          <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
             <Truck className="w-3 h-3 shrink-0" strokeWidth={1.5} />
             {card.mhe}
           </span>
-          <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--chart-1)", background: "color-mix(in srgb, var(--chart-1) 10%, transparent)" }}>
+          <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
             <User className="w-3 h-3 shrink-0" strokeWidth={1.5} />
             {card.operator}
           </span>
           <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
-            <MapPin className="w-3 h-3 shrink-0" strokeWidth={1.5} />
-            {card.warehouse}
+            <Repeat className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+            {card.count}
           </span>
           {card.isOverdue && (
             <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded" style={{ color: "var(--destructive)", background: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
@@ -402,6 +419,81 @@ function GeneratedActionCard({ card, showAssign, onAssign }: { card: GeneratedCa
   );
 }
 
+// ─── Assigned Action Card ─────────────────────────────────────────────────────
+// Once a manager assigns a generated card, it becomes a real Action and flows
+// through Assigned → In Progress → Review → Done showing the manager's actual
+// remark and due date instead of mock data. In Progress additionally surfaces
+// how many days overdue it is.
+
+function AssignedActionCard({ action, showOverdueDays }: { action: Action; showOverdueDays: boolean }) {
+  const { mhe, count } = parseComboDetail(action);
+  const event = action.issueId?.startsWith("combo-") ? action.issueTitle?.split(" · ")[0] : undefined;
+  const category = event ? EVENT_TYPE_CATEGORY[event] : undefined;
+  const accent = (category && EVENT_CATEGORY_COLOR[category]) ?? SEVERITY_COLORS[action.priority];
+  const overdueDays = showOverdueDays ? daysOverdueFor(action) : null;
+
+  return (
+    <div className="group bg-card border border-border rounded-lg transition-all duration-150 ease-out hover:shadow-lg hover:shadow-black/30 dark:hover:shadow-black/60 hover:-translate-y-0.5 hover:border-foreground/30 overflow-hidden shrink-0">
+      <div className="p-4 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-[13px] font-semibold leading-snug line-clamp-2 min-w-0" style={{ color: "var(--foreground)" }}>
+            {action.issueTitle || action.title}
+          </p>
+          {count !== undefined && (
+            <span
+              className="text-[11px] font-semibold min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded shrink-0"
+              style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
+            >
+              {count}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {mhe && (
+            <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
+              <Truck className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+              {mhe}
+            </span>
+          )}
+          <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
+            <User className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+            {action.assignedTo}
+          </span>
+        </div>
+
+        {action.notes && (
+          <div
+            className="flex items-start gap-1.5 px-2.5 py-2 rounded text-[11px] leading-relaxed"
+            style={{ background: "var(--muted)", color: "var(--foreground)", borderLeft: `2px solid ${accent}` }}
+          >
+            <MessageSquare className="w-3 h-3 shrink-0 mt-0.5" strokeWidth={1.5} style={{ color: "var(--muted-foreground)" }} />
+            <span>{action.notes}</span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-border">
+          <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
+            <Send className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+            Assigned {formatShortDate(action.createdAt)}
+          </span>
+          {showOverdueDays && overdueDays !== null ? (
+            <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded" style={{ color: "var(--destructive)", background: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
+              <CalendarIcon className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+              Due {(action as Action & { dueDateDisplay?: string }).dueDateDisplay || action.dueDate} · {overdueDays}d overdue
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded" style={{ color: "var(--muted-foreground)", background: "var(--muted)" }}>
+              <CalendarIcon className="w-3 h-3 shrink-0" strokeWidth={1.5} />
+              Due {(action as Action & { dueDateDisplay?: string }).dueDateDisplay || action.dueDate}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Kanban Column ───────────────────────────────────────────────────────────
 
 interface KanbanColumnProps {
@@ -417,6 +509,7 @@ interface KanbanColumnProps {
   isDragOver: boolean;
   generatedCards?: GeneratedCardData[];
   onAssignCombo?: (card: GeneratedCardData) => void;
+  assignedCards?: Action[];
 }
 
 function KanbanColumnComponent({
@@ -432,8 +525,9 @@ function KanbanColumnComponent({
   isDragOver,
   generatedCards,
   onAssignCombo,
+  assignedCards,
 }: KanbanColumnProps) {
-  const count = generatedCards ? generatedCards.length : column.id === "incoming" ? issues.length : actions.length;
+  const count = assignedCards ? assignedCards.length : generatedCards ? generatedCards.length : column.id === "incoming" ? issues.length : actions.length;
 
   return (
     <div
@@ -466,7 +560,19 @@ function KanbanColumnComponent({
 
       {/* Column Body */}
       <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5">
-        {generatedCards ? (
+        {assignedCards ? (
+          assignedCards.length === 0 ? (
+            <EmptyState message="No actions in this stage" icon="check" />
+          ) : (
+            assignedCards.map((action) => (
+              <AssignedActionCard
+                key={action.id}
+                action={action}
+                showOverdueDays={column.id === "in-progress"}
+              />
+            ))
+          )
+        ) : generatedCards ? (
           generatedCards.length === 0 ? (
             <EmptyState message="No events for this combination" icon="inbox" />
           ) : (
@@ -1099,17 +1205,15 @@ function AssignModal({ issue, open, onClose, onConfirm, presetAssignee }: Assign
 // Warehouse → location mentioned in the issue detail text.
 
 interface ABFilters {
-  priority: Severity[];
   operator: string[];
   mhe: string[];
-  warehouse: string;
   eventTypes: string[];
   status: KanbanStatus[];
   overdueOnly: boolean;
 }
 
 const EMPTY_AB_FILTERS: ABFilters = {
-  priority: [], operator: [], mhe: [], warehouse: "", eventTypes: [], status: [], overdueOnly: false,
+  operator: [], mhe: [], eventTypes: [], status: [], overdueOnly: false,
 };
 
 function toggleInArray<T>(arr: T[], val: T): T[] {
@@ -1119,10 +1223,8 @@ function toggleInArray<T>(arr: T[], val: T): T[] {
 function issueMatchesFilters(issue: Issue, f: ABFilters): boolean {
   const title = issue.title ?? "";
   const detail = issue.detail ?? "";
-  if (f.priority.length && !f.priority.includes(issue.severity)) return false;
   if (f.mhe.length && !f.mhe.some(u => detail.includes(u))) return false;
   if (f.operator.length) return false; // issues aren't assigned yet
-  if (f.warehouse && !detail.includes(f.warehouse)) return false;
   if (f.eventTypes.length && !f.eventTypes.some(e => title.includes(e) || detail.includes(e))) return false;
   if (f.status.length) return false; // issues have no kanban status yet
   if (f.overdueOnly) return false; // issues can't be overdue
@@ -1133,42 +1235,12 @@ function actionMatchesFilters(action: Action, f: ABFilters): boolean {
   const issueTitle = action.issueTitle ?? "";
   const issueDetail = action.issueDetail ?? "";
   const title = action.title ?? "";
-  if (f.priority.length && !f.priority.includes(action.priority)) return false;
   if (f.mhe.length && !f.mhe.some(u => issueDetail.includes(u))) return false;
   if (f.operator.length && !f.operator.includes(action.assignedTo)) return false;
-  if (f.warehouse && !issueDetail.includes(f.warehouse)) return false;
   if (f.eventTypes.length && !f.eventTypes.some(e => issueTitle.includes(e) || issueDetail.includes(e) || title.includes(e))) return false;
   if (f.status.length && !f.status.includes(action.status)) return false;
   if (f.overdueOnly && !action.isOverdue) return false;
   return true;
-}
-
-// Segmented, equal-width toggle row — used for Priority (primary filter)
-function SegmentedFilterRow<T extends string>({ options, active, onToggle, activeColor }: {
-  options: T[]; active: T[]; onToggle: (v: T) => void; activeColor?: (v: T) => string;
-}) {
-  return (
-    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
-      {options.map(o => {
-        const isActive = active.includes(o);
-        const color = activeColor?.(o) ?? "var(--foreground)";
-        return (
-          <button
-            key={o}
-            onClick={() => onToggle(o)}
-            className="text-[12px] font-semibold px-2 py-2 rounded-lg border transition-colors"
-            style={{
-              borderColor: isActive ? color : "var(--border)",
-              background: isActive ? color : "transparent",
-              color: isActive ? "var(--background)" : "var(--foreground)",
-            }}
-          >
-            {o}
-          </button>
-        );
-      })}
-    </div>
-  );
 }
 
 // Wrapping pill row — used for secondary, longer-list filters
@@ -1240,8 +1312,8 @@ function FilterSheet({ open, onClose, filters, setFilters, issues, actions }: Fi
   const [draft, setDraft] = useState<ABFilters>(filters);
   useEffect(() => { if (open) setDraft(filters); }, [open, filters]);
 
-  const hasDraftFilters = draft.priority.length + draft.operator.length + draft.mhe.length + draft.eventTypes.length + draft.status.length > 0
-    || !!draft.warehouse || draft.overdueOnly;
+  const hasDraftFilters = draft.operator.length + draft.mhe.length + draft.eventTypes.length + draft.status.length > 0
+    || draft.overdueOnly;
 
   const totalCount = issues.length + actions.length;
   const liveCount = issues.filter(i => issueMatchesFilters(i, draft)).length
@@ -1267,16 +1339,6 @@ function FilterSheet({ open, onClose, filters, setFilters, issues, actions }: Fi
 
         <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-5">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Priority</div>
-            <SegmentedFilterRow
-              options={["Critical", "High", "Medium", "Low"] as Severity[]}
-              active={draft.priority}
-              onToggle={p => setDraft({ ...draft, priority: toggleInArray(draft.priority, p) })}
-              activeColor={p => SEVERITY_COLORS[p]}
-            />
-          </div>
-
-          <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>MHE</div>
             <MultiSelectDropdown
               label="MHE"
@@ -1294,22 +1356,6 @@ function FilterSheet({ open, onClose, filters, setFilters, issues, actions }: Fi
               selected={draft.operator}
               onChange={v => setDraft({ ...draft, operator: v })}
             />
-          </div>
-
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--muted-foreground)" }}>Warehouse</div>
-            <Select
-              value={draft.warehouse || "all"}
-              onValueChange={v => setDraft({ ...draft, warehouse: v === "all" ? "" : v })}
-            >
-              <SelectTrigger className="w-full h-9 text-[12px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Warehouses</SelectItem>
-                {WAREHOUSE_OPTIONS.map(o => (
-                  <SelectItem key={o} value={o}>{o}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div>
@@ -1519,7 +1565,6 @@ export function ActionBoard1() {
   const [issues, setIssues] = useState<Issue[]>(MOCK_ISSUES);
   const [actions, setActions] = useState<Action[]>(MOCK_ACTIONS);
   const [dbLoaded, setDbLoaded] = useState(false);
-  const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<ABFilters>(EMPTY_AB_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -1554,23 +1599,16 @@ export function ActionBoard1() {
 
 
   // ── Filtered data ─────────────────────────────────────────────────────────
-  const filteredIssues = issues.filter(i => {
-    if (!issueMatchesFilters(i, filters)) return false;
-    if (search && !(i.title ?? "").toLowerCase().includes(search.toLowerCase()) && !(i.detail ?? "").toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const filteredIssues = issues.filter(i => issueMatchesFilters(i, filters));
 
   const filteredActions = (status: KanbanStatus) =>
-    actions.filter(a => {
-      if (a.status !== status) return false;
-      if (!actionMatchesFilters(a, filters)) return false;
-      if (search && !(a.title ?? "").toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    });
+    actions.filter(a => a.status === status && actionMatchesFilters(a, filters));
 
   // ── Unified action handler ───────────────────────────────────────────────
   const handleActionConfirm = async (payload: ActionFormPayload) => {
     const initials = payload.assignedTo.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
+    const dueDate = payload.dueDate || "TBD";
+    const parsedDue = parseAppDueDate(dueDate);
     const newAction: Action = {
       id: `a${Date.now()}`,
       source: payload.source,
@@ -1585,10 +1623,10 @@ export function ActionBoard1() {
       priority: payload.priority,
       assignedTo: payload.assignedTo,
       assignedAvatar: initials,
-      dueDate: payload.dueDate || "TBD",
+      dueDate,
       notes: payload.notes ?? "",
       status: "assigned",
-      isOverdue: false,
+      isOverdue: parsedDue ? parsedDue.getTime() < Date.now() : false,
       createdAt: new Date().toISOString(),
       createdBy: "user",
     };
@@ -1638,29 +1676,31 @@ export function ActionBoard1() {
     }
   };
 
-  const activeFilterCount = filters.priority.length + filters.operator.length + filters.mhe.length + filters.eventTypes.length
-    + filters.status.length + (filters.warehouse ? 1 : 0) + (filters.overdueOnly ? 1 : 0);
+  const activeFilterCount = filters.operator.length + filters.mhe.length + filters.eventTypes.length
+    + filters.status.length + (filters.overdueOnly ? 1 : 0);
 
   type FilterChip = { key: string; label: string; onRemove: () => void };
   const filterChips: FilterChip[] = [];
-  filters.priority.forEach(v => filterChips.push({ key: `priority-${v}`, label: `Priority: ${v}`, onRemove: () => setFilters({ ...filters, priority: filters.priority.filter(x => x !== v) }) }));
   filters.mhe.forEach(v => filterChips.push({ key: `mhe-${v}`, label: `MHE: ${v}`, onRemove: () => setFilters({ ...filters, mhe: filters.mhe.filter(x => x !== v) }) }));
   filters.operator.forEach(v => filterChips.push({ key: `operator-${v}`, label: `Operator: ${v}`, onRemove: () => setFilters({ ...filters, operator: filters.operator.filter(x => x !== v) }) }));
-  if (filters.warehouse) filterChips.push({ key: "warehouse", label: `Warehouse: ${filters.warehouse}`, onRemove: () => setFilters({ ...filters, warehouse: "" }) });
   filters.eventTypes.forEach(v => filterChips.push({ key: `event-${v}`, label: `Event: ${v}`, onRemove: () => setFilters({ ...filters, eventTypes: filters.eventTypes.filter(x => x !== v) }) }));
   filters.status.forEach(v => filterChips.push({ key: `status-${v}`, label: `Status: ${v}`, onRemove: () => setFilters({ ...filters, status: filters.status.filter(x => x !== v) }) }));
   if (filters.overdueOnly) filterChips.push({ key: "overdue", label: "Overdue only", onRemove: () => setFilters({ ...filters, overdueOnly: false }) });
 
-  const clearAll = () => { setFilters(EMPTY_AB_FILTERS); setSearch(""); };
+  const clearAll = () => setFilters(EMPTY_AB_FILTERS);
 
   // ── Generated combination cards (active whenever Event Types are selected) ─
   const combos = buildCombos(filters);
+  const assignedComboIds = new Set(
+    actions.filter(a => a.issueId?.startsWith("combo-")).map(a => a.issueId.slice(6))
+  );
+  const unassignedCombos = combos.filter(c => !assignedComboIds.has(c.comboId));
 
   const handleAssignCombo = (card: GeneratedCardData) => {
     const category = EVENT_TYPE_CATEGORY[card.event] ?? "Safety";
     const isCritical = category === "NearMiss" || category === "Impact";
     const syntheticIssue: Issue = {
-      id: `combo-${card.key}`,
+      id: `combo-${card.comboId}`,
       suite: isCritical ? "RTSS" : "MEPS",
       severity: eventPriority(card.event),
       issueSource: category === "Impact" ? "Impact" : "Safety",
@@ -1680,26 +1720,8 @@ export function ActionBoard1() {
 
       {/* ── Header ── */}
       <div className="shrink-0 border-b border-border" style={{ background: "var(--card)" }}>
-        {/* Search + filters + create */}
+        {/* Filters + create */}
         <div className="flex items-center gap-2 px-6 py-3">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" strokeWidth={1.5}
-              style={{ color: "var(--muted-foreground)" }} />
-            <Input
-              placeholder="Search issues or actions..."
-              className="h-9 pl-9 text-[12px] w-64"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            {search && (
-              <button onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 opacity-50 hover:opacity-100">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
           <div className="ml-auto flex items-center gap-2">
             {/* Filters button */}
             <button
@@ -1723,7 +1745,7 @@ export function ActionBoard1() {
         </div>
 
         {/* Active filter chips */}
-        {(filterChips.length > 0 || search) && (
+        {filterChips.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap px-6 pb-3">
             {filterChips.map(chip => (
               <span key={chip.key} className="flex items-center gap-1.5 text-[11.5px] font-medium pl-2.5 pr-1.5 py-1 rounded-full" style={{ background: "var(--muted)" }}>
@@ -1766,13 +1788,8 @@ export function ActionBoard1() {
               onDragOver={(e) => { handleDragOver(e); setDragOverCol(column.id); }}
               onDrop={handleDrop}
               isDragOver={dragOverCol === column.id}
-              generatedCards={
-                combos.length > 0
-                  ? (filters.status.length === 0 || column.id === "incoming" || filters.status.includes(column.id))
-                    ? combos.map(c => generatedCardFor(c, column.id))
-                    : []
-                  : undefined
-              }
+              generatedCards={column.id === "incoming" ? unassignedCombos.map(c => generatedCardFor(c, column.id)) : undefined}
+              assignedCards={column.id !== "incoming" ? filteredActions(column.id) : undefined}
               onAssignCombo={handleAssignCombo}
             />
           ))}
