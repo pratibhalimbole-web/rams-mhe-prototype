@@ -392,7 +392,7 @@ function DetailField({ icon: Icon, tone = "default", children }: { icon: React.E
 
 function GeneratedActionCard({ card, showAssign, onAssign }: { card: GeneratedCardData; showAssign: boolean; onAssign: () => void }) {
   return (
-    <div className="group bg-card border border-border rounded-lg transition-all duration-150 ease-out hover:shadow-lg hover:shadow-black/30 dark:hover:shadow-black/60 hover:-translate-y-0.5 hover:border-foreground/30 overflow-hidden shrink-0">
+    <div className="group bg-card border border-border rounded-lg transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--primary)_45%,transparent)] hover:shadow-[0_10px_28px_-10px_color-mix(in_srgb,var(--primary)_35%,transparent)] active:border-[var(--primary)] active:shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--primary)_50%,transparent)] overflow-hidden shrink-0">
       <div className="p-4 flex flex-col gap-3">
         <p className="text-[13px] font-semibold leading-snug line-clamp-2" style={{ color: "var(--foreground)" }}>
           {comboTitle(card)}
@@ -435,7 +435,7 @@ function AssignedActionCard({ action, showOverdueDays, onClick }: { action: Acti
   return (
     <div
       onClick={() => onClick(action)}
-      className="group bg-card border border-border rounded-lg cursor-pointer transition-all duration-150 ease-out hover:shadow-lg hover:shadow-black/30 dark:hover:shadow-black/60 hover:-translate-y-0.5 hover:border-foreground/30 overflow-hidden shrink-0">
+      className="group bg-card border border-border rounded-lg cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--primary)_45%,transparent)] hover:shadow-[0_10px_28px_-10px_color-mix(in_srgb,var(--primary)_35%,transparent)] active:border-[var(--primary)] active:shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--primary)_50%,transparent)] overflow-hidden shrink-0">
       <div className="p-4 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
           <p className="text-[13px] font-semibold leading-snug line-clamp-2 min-w-0" style={{ color: "var(--foreground)" }}>
@@ -1392,20 +1392,10 @@ function DetailSheet({ item, type, open, onClose, onAssign }: DetailSheetProps) 
           <SheetTitle className="text-[13px] font-semibold" style={{ color: "var(--foreground)" }}>
             {isIssue ? "Issue Details" : "Action Details"}
           </SheetTitle>
-          {((isIssue && issue) || (!isIssue && action?.isOverdue)) && (
+          {isIssue && issue && (
             <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
-              {isIssue && issue && (
-                <>
-                  <SuitePill suite={issue.suite} />
-                  <SeverityBadge severity={issue.severity} />
-                </>
-              )}
-              {!isIssue && action?.isOverdue && (
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded"
-                  style={{ color: "var(--destructive)", background: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}>
-                  Overdue
-                </span>
-              )}
+              <SuitePill suite={issue.suite} />
+              <SeverityBadge severity={issue.severity} />
             </div>
           )}
         </SheetHeader>
