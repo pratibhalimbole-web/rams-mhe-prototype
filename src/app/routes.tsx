@@ -16,6 +16,7 @@ import { ReportBuilderTest } from "./pages/report/ReportBuilderTest";
 import { MheAnalytics } from "./pages/mhe/MheAnalytics";
 import { OperatorMheDashboard } from "./pages/mhe/OperatorMheDashboard";
 import { ActionBoard } from "./pages/mhe/ActionBoard";
+import { ActionBoard1 } from "./pages/mhe/ActionBoard1";
 import { IncidentActions } from "./pages/mhe/IncidentActions";
 import { IncidentActionEvents } from "./pages/mhe/IncidentActionEvents";
 import { FMS } from "./pages/mhe/FMS";
@@ -287,6 +288,10 @@ export const router = createBrowserRouter([
       {
         path: "mhe/action-board",
         element: <ActionBoard />,
+      },
+      {
+        path: "mhe/action-board-1",
+        element: <ActionBoard1 />,
       },
       {
         path: "mhe/incident-actions",
