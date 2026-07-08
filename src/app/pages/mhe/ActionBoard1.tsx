@@ -73,6 +73,25 @@ import {
   SEVERITY_COLORS,
 } from "./types/action-board";
 
+// ─── Shared card hover/active treatment ───────────────────────────────────────
+// Light theme: subtle primary-tinted border + soft ambient shadow.
+// Dark theme: near-black cards need a brighter border (blue-400, not blue-500)
+// plus an inset glow ring — a plain shadow is invisible against #0a0a0a — and a
+// faint background lift so the card visibly separates from the page.
+const CARD_HOVER_FX = cn(
+  "transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+  "hover:-translate-y-0.5",
+  "hover:border-[color-mix(in_srgb,var(--primary)_45%,transparent)]",
+  "hover:shadow-[0_4px_10px_-6px_color-mix(in_srgb,var(--primary)_20%,transparent)]",
+  "active:border-[var(--primary)]",
+  "active:shadow-[0_3px_8px_-5px_color-mix(in_srgb,var(--primary)_28%,transparent)]",
+  "dark:hover:border-[#60a5fa8c]",
+  "dark:hover:bg-[color-mix(in_srgb,var(--card)_92%,var(--primary)_8%)]",
+  "dark:hover:shadow-[0_0_0_1px_#60a5fa33,0_5px_12px_-6px_#3b82f640]",
+  "dark:active:border-[#60a5fa]",
+  "dark:active:shadow-[0_0_0_1px_#60a5fa4d,0_3px_8px_-5px_#3b82f64d]"
+);
+
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
 const MOCK_ISSUES: Issue[] = [
@@ -157,8 +176,8 @@ function IssueCard({ issue, onAssign, onClick, isDragging }: IssueCardProps) {
     <div
       onClick={() => onClick(issue)}
       className={cn(
-        "group bg-card border border-border rounded-lg cursor-pointer transition-all duration-150",
-        isDragging ? "opacity-50 shadow-lg" : "hover:shadow-sm"
+        "group bg-card border border-border rounded-lg cursor-pointer overflow-hidden",
+        isDragging ? "opacity-50 shadow-lg transition-all duration-150" : CARD_HOVER_FX
       )}
     >
       <div className="p-4 flex flex-col gap-3">
@@ -215,7 +234,7 @@ function ActionCard({ action, onClick, onDragStart }: ActionCardProps) {
       draggable
       onDragStart={(e) => onDragStart(e, action)}
       onClick={() => onClick(action)}
-      className="group bg-card border border-border rounded-lg cursor-grab active:cursor-grabbing transition-all duration-150 hover:shadow-sm"
+      className={cn("group bg-card border border-border rounded-lg cursor-grab active:cursor-grabbing overflow-hidden", CARD_HOVER_FX)}
     >
       <div className="p-4 flex flex-col gap-3">
         {/* Title + drag handle */}
@@ -392,7 +411,7 @@ function DetailField({ icon: Icon, tone = "default", children }: { icon: React.E
 
 function GeneratedActionCard({ card, showAssign, onAssign }: { card: GeneratedCardData; showAssign: boolean; onAssign: () => void }) {
   return (
-    <div className="group bg-card border border-border rounded-lg transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--primary)_45%,transparent)] hover:shadow-[0_10px_28px_-10px_color-mix(in_srgb,var(--primary)_35%,transparent)] active:border-[var(--primary)] active:shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--primary)_50%,transparent)] overflow-hidden shrink-0">
+    <div className={cn("group bg-card border border-border rounded-lg overflow-hidden shrink-0", CARD_HOVER_FX)}>
       <div className="p-4 flex flex-col gap-3">
         <p className="text-[13px] font-semibold leading-snug line-clamp-2" style={{ color: "var(--foreground)" }}>
           {comboTitle(card)}
@@ -435,7 +454,7 @@ function AssignedActionCard({ action, showOverdueDays, onClick }: { action: Acti
   return (
     <div
       onClick={() => onClick(action)}
-      className="group bg-card border border-border rounded-lg cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--primary)_45%,transparent)] hover:shadow-[0_10px_28px_-10px_color-mix(in_srgb,var(--primary)_35%,transparent)] active:border-[var(--primary)] active:shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--primary)_50%,transparent)] overflow-hidden shrink-0">
+      className={cn("group bg-card border border-border rounded-lg cursor-pointer overflow-hidden shrink-0", CARD_HOVER_FX)}>
       <div className="p-4 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
           <p className="text-[13px] font-semibold leading-snug line-clamp-2 min-w-0" style={{ color: "var(--foreground)" }}>
