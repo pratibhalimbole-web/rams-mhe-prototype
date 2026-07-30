@@ -33,6 +33,7 @@ import { IMDSRulesAndAction } from "./pages/mhe/IMDSRulesAndAction";
 import { IMDSManageChecklists } from "./pages/mhe/IMDSManageChecklists";
 import { EscalationBoard } from "./pages/mhe/EscalationBoard";
 import { EscalationSettings } from "./pages/mhe/EscalationSettings";
+import { ReportedAudit } from "./pages/rack/ReportedAudit";
 
 // Create a placeholder component for pages not yet implemented
 function PlaceholderPage({ title }: { title: string }) {
@@ -138,7 +139,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "rack/irds/maintenance",
-        element: <PlaceholderPage title="Maintenance" />,
+        element: <ReportedAudit />,
       },
       {
         path: "rack/irds/compliance",

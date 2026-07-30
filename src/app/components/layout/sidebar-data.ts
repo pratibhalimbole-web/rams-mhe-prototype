@@ -67,7 +67,7 @@ export const domains: Domain[] = [
           { id: "boq", label: "Bill Of Quantity" },
           { id: "stock-mgmt", label: "Element Stock Management" },
           { id: "purchase-req", label: "Purchase Request & Specs" },
-          { id: "maintenance", label: "Maintenance" },
+          { id: "maintenance", label: "Reported Audit" },
           { id: "compliance", label: "Compliance" },
           { id: "rules-action", label: "Rules and Action" },
           { id: "escalation", label: "Escalation Logs" },
