@@ -20,6 +20,7 @@ import { ActionBoard1 } from "./pages/mhe/ActionBoard1";
 import { IncidentActions } from "./pages/mhe/IncidentActions";
 import { IncidentActionEvents } from "./pages/mhe/IncidentActionEvents";
 import { FMS } from "./pages/mhe/FMS";
+import { MheAssetDetails } from "./pages/mhe/MheAssetDetails";
 import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
@@ -211,7 +212,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/mms/mhe-asset",
-        element: <PlaceholderPage title="MHE Asset Details" />,
+        element: <MheAssetDetails />,
       },
       {
         path: "mhe/mms/operator-assign",
