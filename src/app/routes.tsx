@@ -22,6 +22,7 @@ import { IncidentActionEvents } from "./pages/mhe/IncidentActionEvents";
 import { FMS } from "./pages/mhe/FMS";
 import { MheAssetDetails } from "./pages/mhe/MheAssetDetails";
 import { OperatorAssignment } from "./pages/mhe/OperatorAssignment";
+import { OperationalSetting } from "./pages/mhe/OperationalSetting";
 import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
@@ -221,7 +222,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/mms/ops-settings",
-        element: <PlaceholderPage title="Operational Settings" />,
+        element: <OperationalSetting />,
       },
       {
         path: "mhe/mms/sensor-hub",
