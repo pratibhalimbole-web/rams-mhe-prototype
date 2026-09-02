@@ -1,31 +1,38 @@
 import * as React from "react"
+import { TrendingUp, TrendingDown } from "lucide-react"
 import {
-  BarChart, Bar, ScatterChart, Scatter, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell,
+  BarChart, Bar, ScatterChart, Scatter, LabelList,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts"
 import {
-  KpiCard, ChartCard, TooltipShell, seededRandom,
+  ChartCard, TooltipShell, cardStyle, seededRandom,
 } from "./shared"
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
-const OPERATOR_NAMES: Record<string, string> = {
-  "Operator 01": "Prakash Patil", "Operator 02": "Neha Kapoor", "Operator 03": "Amit Desai",
-  "Operator 04": "Rahul Sharma", "Operator 05": "Vikas Thorat",
+const OPERATOR_IDS: Record<string, string> = {
+  "Karan Jadhav": "KRJDLP", "Nilesh Bhosale": "NBGJDL", "Anil Chavan": "ANCHVN",
+  "Prakash Joshi": "PRJOSH", "Sunil Jadhav": "SUJDLP",
 }
 
 function generateOperatorLeaderboard() {
-  const rand = seededRandom(11)
-  return ["Operator 05", "Operator 04", "Operator 03", "Operator 02", "Operator 01"].map(id => ({
-    id, score: Math.round(10 + rand() * 25), operatorId: `${id.slice(-2)}GJDLP`.toUpperCase(),
-  }))
+  return [
+    { id: "Karan Jadhav", score: 100 },
+    { id: "Nilesh Bhosale", score: 66.32 },
+    { id: "Anil Chavan", score: 65.88 },
+    { id: "Prakash Joshi", score: 62.1 },
+    { id: "Sunil Jadhav", score: 61.45 },
+  ]
 }
 
 function generateMheLeaderboard() {
-  const rand = seededRandom(23)
-  return ["MHE 05", "MHE 04", "MHE 03", "MHE 02", "MHE 01"].map(id => ({
-    id, score: Math.round(10 + rand() * 25), mheId: `JKGSJGDGFJH`,
-  }))
+  return [
+    { id: "MHE 03", score: 100 },
+    { id: "MHE 05", score: 39.35 },
+    { id: "MHE 04", score: 32.2 },
+    { id: "MHE 08", score: 24.41 },
+    { id: "MHE 01", score: 4.48 },
+  ]
 }
 
 function generateIdleScatter() {
@@ -36,20 +43,27 @@ function generateIdleScatter() {
   }))
 }
 
-const SHIFTS = ["Day", "Evening", "Night"]
-const MHE_ROWS = ["MHE_08", "MHE_07", "MHE_06", "MHE_05", "MHE_04", "MHE_03", "MHE_02", "MHE_01"]
+// MHE list matches the MHE Asset Details mock data
+const MHE_ROWS = ["MHE 03", "MHE 06", "MHE 05", "MHE 02", "MHE 08", "Test No Warranty Field", "MHE 01", "MHE 10", "MHE 09", "MHE 04", "MHE 07"]
 
-function generateShiftUtilization() {
+const SESSIONS = ["Morning session", "Afternoon session", "Night session"]
+
+function generateSessionUtilization() {
   const rand = seededRandom(51)
   const grid: Record<string, Record<string, number>> = {}
   MHE_ROWS.forEach(m => {
     grid[m] = {}
-    SHIFTS.forEach(s => { grid[m][s] = rand() })
+    SESSIONS.forEach(s => { grid[m][s] = rand() })
   })
   return grid
 }
 
-const OPERATORS_MATRIX = ["Operator 01", "Operator 02", "Operator 03", "Operator 04", "Operator 05", "Operator 06"]
+// Operator list matches the Operator Assignment mock data
+const OPERATORS_MATRIX = [
+  "Anil Sharma", "Ganesh More", "Karan Jadhav", "Prakash Joshi", "Vishal Sawant",
+  "Rajesh Shinde", "Deepak Pawar", "Rahul Patil", "Anil Chavan", "Nilesh Bhosale",
+  "Sandeep Kulkarni", "Vivek Deshmukh", "Sunil Jadhav", "Suresh Patil", "Mahesh Gaikwad",
+]
 
 function generatePairingMatrix() {
   const rand = seededRandom(61)
@@ -61,31 +75,52 @@ function generatePairingMatrix() {
   return grid
 }
 
-function generateDailyUtilization() {
-  const rand = seededRandom(71)
-  return ["MHE 01", "MHE 02", "MHE 03", "MHE 04", "MHE 05"].map(id => {
-    const hours = Math.round(3 + rand() * 6)
-    const status = hours >= 7 ? "Overutilized" : hours <= 4 ? "Optimal Utilized" : "Underutilized"
-    return { id, hours, status }
-  })
-}
+// ─── Score KPI card (with trend icon) ────────────────────────────────────────
 
-const STATUS_COLOR: Record<string, string> = {
-  "Overutilized": "#dc2626",
-  "Optimal Utilized": "var(--primary)",
-  "Underutilized": "#f59e0b",
+function ScoreKpiCard({
+  icon: Icon, tone, title, value, score,
+}: {
+  icon: React.ElementType; tone: "up" | "down"; title: string; value: string; score: string
+}) {
+  const color = tone === "up" ? "#16a34a" : "#dc2626"
+  return (
+    <div style={{ ...cardStyle, padding: "16px 18px", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 24, height: 24, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", background: `color-mix(in srgb, ${color} 15%, transparent)` }}>
+          <Icon size={13} strokeWidth={2} style={{ color }} />
+        </div>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 12, color: "var(--w-text-2)" }}>{title}</span>
+      </div>
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: "var(--w-text-1)" }}>{value}</span>
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11.5, color: "var(--w-text-2)" }}>Score: {score}</span>
+    </div>
+  )
 }
 
 // ─── Tooltips ─────────────────────────────────────────────────────────────────
 
-function LeaderboardTooltip({ active, payload, isMhe }: any) {
+function OperatorLeaderboardTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
     <TooltipShell
-      headerLeft={isMhe ? "MHE_03" : (OPERATOR_NAMES[d.id] ?? d.id)}
+      headerLeft={d.id}
       rows={[
-        { label: isMhe ? "MHE ID" : "Operator ID", value: isMhe ? d.mheId : d.operatorId },
+        { label: "Operator ID", value: OPERATOR_IDS[d.id] ?? "-" },
+        { label: "Score", value: String(d.score), bold: true },
+      ]}
+    />
+  )
+}
+
+function MheLeaderboardTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
+  return (
+    <TooltipShell
+      headerLeft={d.id}
+      rows={[
+        { label: "MHE ID", value: d.id.replace(/\s/g, "") },
         { label: "Score", value: String(d.score), bold: true },
       ]}
     />
@@ -97,9 +132,9 @@ function IdleScatterTooltip({ active, payload }: any) {
   const d = payload[0].payload
   return (
     <TooltipShell
-      headerLeft="Prakash Patil"
+      headerLeft="Prakash Joshi"
       rows={[
-        { label: "Operator ID", value: "UGJDLP" },
+        { label: "Operator ID", value: OPERATOR_IDS["Prakash Joshi"] },
         { label: "Productivity", value: `${d.productivity} pallets/hr` },
         { label: "Idle Time", value: `${d.idle} min` },
       ]}
@@ -107,26 +142,28 @@ function IdleScatterTooltip({ active, payload }: any) {
   )
 }
 
-function DailyUtilTooltip({ active, payload }: any) {
-  if (!active || !payload?.length) return null
-  const d = payload[0].payload
+// ─── Bar % label ──────────────────────────────────────────────────────────────
+
+function PercentLabel(props: any) {
+  const { x, y, width, height, value } = props
   return (
-    <TooltipShell
-      headerLeft={d.id}
-      rows={[{ label: d.status, value: `${d.hours} Hours`, bold: true }]}
-    />
+    <text x={x + width + 6} y={y + height / 2} dy={4} fontFamily="Inter, sans-serif" fontSize={11} fontWeight={600} fill="var(--w-text-1)">
+      {value}%
+    </text>
   )
 }
 
 // ─── Heatmap grid with hover tooltip ─────────────────────────────────────────
 
 function HeatmapGrid<Row extends string, Col extends string>({
-  rows, cols, data, renderTooltip,
+  rows, cols, data, renderTooltip, colWidth = 70, truncateCols = false,
 }: {
   rows: Row[]
   cols: Col[]
   data: Record<string, Record<string, number>>
   renderTooltip: (row: Row, col: Col, value: number) => React.ReactNode
+  colWidth?: number
+  truncateCols?: boolean
 }) {
   const [hover, setHover] = React.useState<{ row: Row; col: Col; value: number; x: number; y: number } | null>(null)
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -137,15 +174,26 @@ function HeatmapGrid<Row extends string, Col extends string>({
   }
 
   return (
-    <div ref={containerRef} style={{ position: "relative" }}>
-      <div style={{ display: "grid", gridTemplateColumns: `70px repeat(${cols.length}, 1fr)`, gap: 4 }}>
+    <div ref={containerRef} style={{ position: "relative", overflowX: "auto" }}>
+      <div style={{ display: "grid", gridTemplateColumns: `92px repeat(${cols.length}, minmax(${colWidth}px, 1fr))`, gap: 4, minWidth: 92 + cols.length * colWidth }}>
         <div />
         {cols.map(c => (
-          <div key={c} style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", paddingBottom: 4 }}>{c}</div>
+          <div
+            key={c}
+            title={c}
+            style={{
+              textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", paddingBottom: 4,
+              overflow: truncateCols ? "hidden" : undefined, textOverflow: truncateCols ? "ellipsis" : undefined, whiteSpace: "nowrap",
+            }}
+          >
+            {truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c}
+          </div>
         ))}
         {rows.map(r => (
           <React.Fragment key={r}>
-            <div style={{ display: "flex", alignItems: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)" }}>{r}</div>
+            <div title={r} style={{ display: "flex", alignItems: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {r.length > 10 ? `${r.slice(0, 9)}…` : r}
+            </div>
             {cols.map(c => {
               const v = data[r]?.[c] ?? 0
               return (
@@ -181,60 +229,65 @@ export function AssetProductivityTab() {
   const operatorLeaderboard = React.useMemo(generateOperatorLeaderboard, [])
   const mheLeaderboard = React.useMemo(generateMheLeaderboard, [])
   const idleScatter = React.useMemo(generateIdleScatter, [])
-  const shiftUtil = React.useMemo(generateShiftUtilization, [])
+  const sessionUtil = React.useMemo(generateSessionUtilization, [])
   const pairingMatrix = React.useMemo(generatePairingMatrix, [])
-  const dailyUtil = React.useMemo(generateDailyUtilization, [])
+
+  const topOperator = operatorLeaderboard[0]
+  const lowestOperator = operatorLeaderboard[operatorLeaderboard.length - 1]
+  const topMhe = mheLeaderboard[0]
+  const lowestMhe = mheLeaderboard[mheLeaderboard.length - 1]
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
       {/* KPI row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
-        <KpiCard title="Top Operator Productivity Score" value="OPERATOR_005" />
-        <KpiCard title="Lowest Operator Productivity Score" value="OPERATOR_007" />
-        <KpiCard title="Top MHE Productivity Score" value="MHE_005" />
-        <KpiCard title="Lowest MHE Productivity Score" value="MHE_007" />
-        <KpiCard title="Fleet Utilization Score" value="18%" valueSuffix="Warehouse Utilization Score" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+        <ScoreKpiCard icon={TrendingUp} tone="up" title="Top Operator Productivity Score" value={topOperator.id} score={String(topOperator.score)} />
+        <ScoreKpiCard icon={TrendingDown} tone="down" title="Lowest Operator Productivity Score" value={lowestOperator.id} score={String(lowestOperator.score)} />
+        <ScoreKpiCard icon={TrendingUp} tone="up" title="Top MHE Productivity Score" value={topMhe.id} score={String(topMhe.score)} />
+        <ScoreKpiCard icon={TrendingDown} tone="down" title="Lowest MHE Productivity Score" value={lowestMhe.id} score={String(lowestMhe.score)} />
       </div>
 
       {/* Leaderboards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 16 }}>
-        <ChartCard title="Operator Productivity Leaderboard - Top 05" subtitle="Ranked by Score" badge="Daily" lastUpdated="03-03-2026">
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={operatorLeaderboard} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: 16 }}>
+        <ChartCard title="Operator Productivity Leaderboard — Top 5" subtitle="Ranked by productivity score">
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={operatorLeaderboard} layout="vertical" margin={{ top: 5, right: 50, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" horizontal={false} stroke="var(--w-bg-muted)" />
-              <XAxis type="number" domain={[0, 35]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="id" width={70} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <Tooltip content={<LeaderboardTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
-              <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={20}>
+              <XAxis type="number" domain={[0, 100]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="id" width={90} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+              <Tooltip content={<OperatorLeaderboardTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
+              <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={22}>
                 {operatorLeaderboard.map((_, i) => (
                   <Cell key={i} fill={`color-mix(in srgb, var(--primary) ${100 - i * 15}%, transparent)`} />
                 ))}
+                <LabelList dataKey="score" content={<PercentLabel />} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="MHE Productivity Leaderboard - Top 5" subtitle="Highlighting Utilization Status" badge="Weekly" lastUpdated="03-03-2026">
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={mheLeaderboard} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+        <ChartCard title="MHE Productivity Leaderboard — Top 5" subtitle="Highlighting utilization status">
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={mheLeaderboard} layout="vertical" margin={{ top: 5, right: 50, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" horizontal={false} stroke="var(--w-bg-muted)" />
-              <XAxis type="number" domain={[0, 35]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+              <XAxis type="number" domain={[0, 100]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="id" width={70} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <Tooltip content={<LeaderboardTooltip isMhe />} cursor={{ fill: "var(--w-bg-muted)" }} />
-              <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={20}>
+              <Tooltip content={<MheLeaderboardTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
+              <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={22}>
                 {mheLeaderboard.map((_, i) => (
                   <Cell key={i} fill={`color-mix(in srgb, var(--primary) ${100 - i * 15}%, transparent)`} />
                 ))}
+                <LabelList dataKey="score" content={<PercentLabel />} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
       </div>
 
-      {/* Scatter + shift heatmap */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 16 }}>
-        <ChartCard title="Operator Productivity vs Idle Time" subtitle="Wasted Time Analysis" badge="Daily">
+      {/* Idle time scatter + session heatmap */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: 16 }}>
+        <ChartCard title="Operator Productivity vs Idle Time" subtitle="Wasted time analysis">
           <ResponsiveContainer width="100%" height={260}>
             <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
@@ -246,18 +299,17 @@ export function AssetProductivityTab() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="MHE Utilization Across Shifts" subtitle="Usage Pattern Analysis">
+        <ChartCard title="MHE Utilization Across Sessions" subtitle="Usage Pattern Analysis(Sessions)">
           <HeatmapGrid
             rows={MHE_ROWS}
-            cols={SHIFTS}
-            data={shiftUtil}
+            cols={SESSIONS}
+            data={sessionUtil}
             renderTooltip={(row, col, value) => (
               <TooltipShell
                 headerLeft={row}
                 rows={[
                   { label: "Status", value: value > 0.75 ? "Overworked" : value > 0.4 ? "Balanced" : "Underutilized" },
-                  { label: "Shift", value: col },
-                  { label: "Score", value: `${Math.round(value * 100)}${value > 0.75 ? "(High)" : ""}` },
+                  { label: "Session", value: col },
                   { label: "Utilization %", value: `${Math.round(value * 100)}%` },
                 ]}
               />
@@ -271,56 +323,24 @@ export function AssetProductivityTab() {
         </ChartCard>
       </div>
 
-      {/* Pairing matrix + daily utilization */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: 16 }}>
-        <ChartCard title="Operator ↔ MHE Pairing Efficiency Matrix" subtitle="Optimal Combinations Analysis">
-          <HeatmapGrid
-            rows={MHE_ROWS}
-            cols={OPERATORS_MATRIX}
-            data={pairingMatrix}
-            renderTooltip={(row, col, value) => (
-              <TooltipShell
-                headerLeft={`${col} | ${row}`}
-                rows={[{ label: "Efficiency", value: `${Math.round(value * 100)}%`, bold: true }]}
-              />
-            )}
-          />
-        </ChartCard>
-
-        <ChartCard title="Daily MHE Utilization" subtitle="Workload Status" badge="Daily">
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 6 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--primary)" }} /> Optimal
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#dc2626" }} /> Overutilized
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} /> Underutilized
-            </span>
-          </div>
-          <ResponsiveContainer width="100%" height={230}>
-            <LineChart data={dailyUtil} margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
-              <XAxis dataKey="id" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <YAxis domain={[0, 8]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <ReferenceLine y={7} stroke="#dc2626" strokeDasharray="4 4" strokeWidth={1.2} />
-              <Tooltip content={<DailyUtilTooltip />} cursor={{ stroke: "var(--w-border)" }} />
-              <Line
-                type="monotone"
-                dataKey="hours"
-                stroke="var(--w-text-3)"
-                strokeWidth={1}
-                dot={(props: any) => {
-                  const { cx, cy, payload } = props
-                  return <circle key={payload.id} cx={cx} cy={cy} r={5} fill={STATUS_COLOR[payload.status]} stroke="var(--w-bg)" strokeWidth={2} />
-                }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
+      {/* Pairing matrix */}
+      <ChartCard title="Operator ↔ MHE Pairing Productivity Matrix" subtitle="Optimal Combinations Analysis">
+        <HeatmapGrid
+          rows={MHE_ROWS}
+          cols={OPERATORS_MATRIX}
+          data={pairingMatrix}
+          colWidth={64}
+          truncateCols
+          renderTooltip={(row, col, value) => (
+            <TooltipShell
+              headerLeft={col}
+              rows={[
+                { label: row, value: String(Math.round(value * 100)) },
+              ]}
+            />
+          )}
+        />
+      </ChartCard>
     </div>
   )
 }
