@@ -59,10 +59,6 @@ export function ProductivityAnalytics() {
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 16, padding: 24, overflowY: "auto", background: "var(--w-bg-page)" }}>
-      <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "var(--w-text-1)", margin: 0 }}>
-        Productivity Analytics
-      </h1>
-
       <TabBar active={tab} onChange={setTab} />
 
       {tab === "task" && <TaskProductivityTab />}
