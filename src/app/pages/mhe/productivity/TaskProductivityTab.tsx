@@ -220,7 +220,7 @@ export function TaskProductivityTab() {
       </div>
 
       {/* MHE Task Productivity table */}
-      <ChartCard title="MHE Task Productivity" subtitle="Equipment Utilization Performance" badge="Weekly">
+      <ChartCard title="MHE Task Productivity" subtitle="Equipment Utilization Performance" badge="Weekly" onRefresh={() => {}}>
         <TableShell columns={["MHE", "Utilization %", "Pallet/Hr", "Loaded vs Empty%", "Idle-with-Load (min)", "Productivity Score", "Trend"]}>
           {mhePaged.map(r => (
             <tr key={r.id}>
@@ -238,7 +238,7 @@ export function TaskProductivityTab() {
       </ChartCard>
 
       {/* Operator Task Productivity table */}
-      <ChartCard title="Operator Task Productivity" subtitle="Individual Operator Performance" badge="Weekly">
+      <ChartCard title="Operator Task Productivity" subtitle="Individual Operator Performance" badge="Weekly" onRefresh={() => {}}>
         <TableShell columns={["Operator", "Active %", "Pallet/Hr", "Loaded vs Empty%", "Idle-with-Load (min)", "Productivity Score", "Trend"]}>
           {opPaged.map(r => (
             <tr key={r.name}>

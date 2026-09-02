@@ -250,7 +250,7 @@ export function AssetProductivityTab() {
 
       {/* Leaderboards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: 16 }}>
-        <ChartCard title="Operator Productivity Leaderboard — Top 5" subtitle="Ranked by productivity score">
+        <ChartCard title="Operator Productivity Leaderboard — Top 5" subtitle="Ranked by productivity score" onRefresh={() => {}}>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={operatorLeaderboard} layout="vertical" margin={{ top: 5, right: 50, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" horizontal={false} stroke="var(--w-bg-muted)" />
@@ -267,7 +267,7 @@ export function AssetProductivityTab() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="MHE Productivity Leaderboard — Top 5" subtitle="Highlighting utilization status">
+        <ChartCard title="MHE Productivity Leaderboard — Top 5" subtitle="Highlighting utilization status" onRefresh={() => {}}>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={mheLeaderboard} layout="vertical" margin={{ top: 5, right: 50, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" horizontal={false} stroke="var(--w-bg-muted)" />
@@ -287,7 +287,7 @@ export function AssetProductivityTab() {
 
       {/* Idle time scatter + session heatmap */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: 16 }}>
-        <ChartCard title="Operator Productivity vs Idle Time" subtitle="Wasted time analysis">
+        <ChartCard title="Operator Productivity vs Idle Time" subtitle="Wasted time analysis" onRefresh={() => {}}>
           <ResponsiveContainer width="100%" height={260}>
             <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
@@ -299,7 +299,7 @@ export function AssetProductivityTab() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="MHE Utilization Across Sessions" subtitle="Usage Pattern Analysis(Sessions)">
+        <ChartCard title="MHE Utilization Across Sessions" subtitle="Usage Pattern Analysis(Sessions)" onRefresh={() => {}}>
           <HeatmapGrid
             rows={MHE_ROWS}
             cols={SESSIONS}
@@ -324,7 +324,7 @@ export function AssetProductivityTab() {
       </div>
 
       {/* Pairing matrix */}
-      <ChartCard title="Operator ↔ MHE Pairing Productivity Matrix" subtitle="Optimal Combinations Analysis">
+      <ChartCard title="Operator ↔ MHE Pairing Productivity Matrix" subtitle="Optimal Combinations Analysis" onRefresh={() => {}}>
         <HeatmapGrid
           rows={MHE_ROWS}
           cols={OPERATORS_MATRIX}
