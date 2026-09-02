@@ -21,6 +21,7 @@ import { IncidentActions } from "./pages/mhe/IncidentActions";
 import { IncidentActionEvents } from "./pages/mhe/IncidentActionEvents";
 import { FMS } from "./pages/mhe/FMS";
 import { MheAssetDetails } from "./pages/mhe/MheAssetDetails";
+import { OperatorAssignment } from "./pages/mhe/OperatorAssignment";
 import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
@@ -216,7 +217,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/mms/operator-assign",
-        element: <PlaceholderPage title="Operator Assignment" />,
+        element: <OperatorAssignment />,
       },
       {
         path: "mhe/mms/ops-settings",
