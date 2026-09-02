@@ -7,13 +7,12 @@ import { AssetProductivityTab } from "./productivity/AssetProductivityTab"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type TabId = "task" | "asset" | "environment" | "trends"
+type TabId = "task" | "asset" | "environment"
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "task", label: "Task Productivity" },
   { id: "asset", label: "Asset Productivity" },
   { id: "environment", label: "Environment Productivity" },
-  { id: "trends", label: "Trends & Insights" },
 ]
 
 function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabId) => void }) {
@@ -60,21 +59,15 @@ export function ProductivityAnalytics() {
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 16, padding: 24, overflowY: "auto", background: "var(--w-bg-page)" }}>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-        <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "var(--w-text-1)", margin: 0 }}>
-          Productivity Analytics
-        </h1>
-        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12.5, color: "var(--w-text-2)" }}>
-          (Real-time Operator &amp; MHE performance tracking with spatial, temporal, and efficiency insights.)
-        </span>
-      </div>
+      <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "var(--w-text-1)", margin: 0 }}>
+        Productivity Analytics
+      </h1>
 
       <TabBar active={tab} onChange={setTab} />
 
       {tab === "task" && <TaskProductivityTab />}
       {tab === "asset" && <AssetProductivityTab />}
       {tab === "environment" && <ComingSoonTab label="Environment Productivity" />}
-      {tab === "trends" && <ComingSoonTab label="Trends & Insights" />}
     </div>
   )
 }
