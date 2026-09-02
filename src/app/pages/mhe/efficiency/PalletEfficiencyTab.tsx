@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import {
-  ChartCard, TooltipShell, cardStyle, FilterSelect, seededRandom,
+  ChartCard, TooltipShell, cardStyle, seededRandom,
 } from "../productivity/shared"
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
@@ -69,14 +69,20 @@ function generateDistanceEfficiency() {
   })))
 }
 
+const UTILIZATION_OPERATORS = ["Suresh Pawar", "Anil Chavan", "Nilesh Bhosale", "Mahesh Gaikwad", "Deepak Pawar"]
+
 function generateOperatorUtilization() {
   const rand = seededRandom(55)
-  return Array.from({ length: 7 }, () => {
-    const utilised = Math.round(30 + rand() * 55)
-    const idle = Math.round(rand() * (100 - utilised) * 0.3)
-    const nonUtilised = 100 - utilised - idle
-    return { operator: "James Wilson", utilised, nonUtilised, idle }
+  return UTILIZATION_OPERATORS.map(operator => {
+    const utilised = Math.round(15 + rand() * 20)
+    const nonUtilised = Math.round(45 + rand() * 30)
+    const idle = 100 - utilised - nonUtilised
+    return { operator, utilised, nonUtilised, idle }
   })
+}
+
+function truncateName(name: string): string {
+  return name.length > 10 ? `${name.slice(0, 9)}...` : name
 }
 
 // ─── KPI card (icon top-right + delta line) ─────────────────────────────────
@@ -236,8 +242,6 @@ export function PalletEfficiencyTab() {
   const distanceEfficiency = React.useMemo(generateDistanceEfficiency, [])
   const operatorUtilization = React.useMemo(generateOperatorUtilization, [])
 
-  const [utilFilter, setUtilFilter] = React.useState("All")
-
   const highlightedRange = "15-20 min"
 
   return (
@@ -354,8 +358,7 @@ export function PalletEfficiencyTab() {
         <ChartCard
           title="Operator Utilization"
           subtitle=""
-          badge="Monthly"
-          filters={<FilterSelect value={utilFilter} onChange={setUtilFilter} options={["All", "Day", "Evening", "Night"]} />}
+          onRefresh={() => {}}
         >
           <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>Cycle Time:</span>
@@ -368,13 +371,13 @@ export function PalletEfficiencyTab() {
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={operatorUtilization} margin={{ top: 10, right: 10, left: -10, bottom: 5 }} barCategoryGap="35%">
-              <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
-              <XAxis dataKey="operator" tick={{ fontFamily: "Inter, sans-serif", fontSize: 9, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6} interval={0} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--w-bg-muted)" />
+              <XAxis dataKey="operator" tickFormatter={truncateName} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6} interval={0} />
               <YAxis domain={[0, 100]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4} />
               <Tooltip content={<UtilizationTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
-              <Bar dataKey="utilised" stackId="u" fill="var(--primary)" maxBarSize={14} radius={[3, 3, 0, 0]} />
-              <Bar dataKey="nonUtilised" stackId="u" fill="color-mix(in srgb, var(--primary) 55%, transparent)" maxBarSize={14} />
-              <Bar dataKey="idle" stackId="u" fill="color-mix(in srgb, var(--primary) 25%, transparent)" maxBarSize={14} radius={[0, 0, 3, 3]} />
+              <Bar dataKey="nonUtilised" stackId="u" fill="color-mix(in srgb, var(--primary) 45%, transparent)" maxBarSize={26} />
+              <Bar dataKey="idle" stackId="u" fill="color-mix(in srgb, var(--primary) 18%, transparent)" maxBarSize={26} />
+              <Bar dataKey="utilised" stackId="u" fill="var(--primary)" maxBarSize={26} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
