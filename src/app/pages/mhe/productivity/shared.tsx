@@ -89,7 +89,7 @@ export function FilterSelect({ value, onChange, options, minWidth }: { value: st
 }
 
 export function ChartCard({
-  title, subtitle, badge, lastUpdated, filters, onRefresh, children, minHeight = 300,
+  title, subtitle, badge, lastUpdated, filters, legend, onRefresh, children, minHeight = 300,
 }: {
   title: string
   subtitle: string
