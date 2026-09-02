@@ -281,6 +281,7 @@ export function PalletEfficiencyTab() {
         <ChartCard
           title="Pallets Per Hour - Hourly Trends"
           subtitle=""
+          legend={<MheTypeLegend />}
           onRefresh={() => {}}
           filters={
             <div style={{ display: "flex", alignItems: "center", gap: 6, height: 32, padding: "0 12px", border: "1px solid var(--w-border)", borderRadius: 6, background: "var(--w-bg)" }}>
@@ -289,7 +290,6 @@ export function PalletEfficiencyTab() {
             </div>
           }
         >
-          <div style={{ marginBottom: 10 }}><MheTypeLegend /></div>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={hourlyTrend} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
@@ -321,8 +321,7 @@ export function PalletEfficiencyTab() {
           </div>
         </ChartCard>
 
-        <ChartCard title="Speed vs Productivity Correlation" subtitle="" onRefresh={() => {}}>
-          <div style={{ marginBottom: 10 }}><MheTypeLegend /></div>
+        <ChartCard title="Speed vs Productivity Correlation" subtitle="" legend={<MheTypeLegend />} onRefresh={() => {}}>
           <ResponsiveContainer width="100%" height={280}>
             <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
@@ -339,8 +338,7 @@ export function PalletEfficiencyTab() {
 
       {/* Distance efficiency + operator utilization */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
-        <ChartCard title="Distance Efficiency Analysis" subtitle="" badge="Weekly" onRefresh={() => {}}>
-          <div style={{ marginBottom: 10 }}><MheTypeLegend /></div>
+        <ChartCard title="Distance Efficiency Analysis" subtitle="" badge="Weekly" legend={<MheTypeLegend />} onRefresh={() => {}}>
           <ResponsiveContainer width="100%" height={280}>
             <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
@@ -358,17 +356,19 @@ export function PalletEfficiencyTab() {
         <ChartCard
           title="Operator Utilization"
           subtitle=""
+          legend={
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>Cycle Time:</span>
+              {[["Utilized", "var(--primary)"], ["Non-Utilized", "color-mix(in srgb, var(--primary) 55%, transparent)"], ["Idle", "color-mix(in srgb, var(--primary) 25%, transparent)"]].map(([label, color]) => (
+                <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
+                  {label}
+                </span>
+              ))}
+            </div>
+          }
           onRefresh={() => {}}
         >
-          <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>Cycle Time:</span>
-            {[["Utilized", "var(--primary)"], ["Non-Utilized", "color-mix(in srgb, var(--primary) 55%, transparent)"], ["Idle", "color-mix(in srgb, var(--primary) 25%, transparent)"]].map(([label, color]) => (
-              <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-                {label}
-              </span>
-            ))}
-          </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={operatorUtilization} margin={{ top: 10, right: 10, left: -10, bottom: 5 }} barCategoryGap="35%">
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--w-bg-muted)" />

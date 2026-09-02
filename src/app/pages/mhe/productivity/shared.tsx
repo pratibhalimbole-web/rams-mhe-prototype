@@ -96,6 +96,7 @@ export function ChartCard({
   badge?: string
   lastUpdated?: string
   filters?: React.ReactNode
+  legend?: React.ReactNode
   onRefresh?: () => void
   children: React.ReactNode
   minHeight?: number
@@ -118,7 +119,8 @@ export function ChartCard({
               </span>
             )}
           </div>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11, color: "var(--w-text-2)" }}>{subtitle}</span>
+          {subtitle && <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11, color: "var(--w-text-2)" }}>{subtitle}</span>}
+          {legend && <div style={{ marginTop: 2 }}>{legend}</div>}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
           {filters}
