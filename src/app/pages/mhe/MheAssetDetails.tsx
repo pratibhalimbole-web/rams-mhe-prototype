@@ -14,6 +14,8 @@ import {
   Zap,
   ShieldCheck,
   Wrench,
+  Truck,
+  User,
 } from "lucide-react"
 import { useSidebar } from "../../components/layout/SidebarLayout"
 import { Button } from "../../components/ui/button"
@@ -65,9 +67,18 @@ interface MheAsset {
   name: string
   type: string
   oem: string
+  model: string
   ownership: Ownership | ""
+  powerType: string
+  supplier: string
   yearOfMfg: string
   warranty: WarrantyStatus
+  warrantyExpiry: string
+  loadCapacity: string
+  lastServiceDate: string
+  serviceIntervalKm: string
+  serviceIntervalDays: string
+  hydraulicServiceInterval: string
 }
 
 interface AssetForm {
@@ -104,23 +115,69 @@ const emptyForm = (): AssetForm => ({
   hydraulicServiceInterval: "",
 })
 
+function parseDMY(str: string): Date | undefined {
+  if (!str) return undefined
+  const d = new Date(str)
+  return isNaN(d.getTime()) ? undefined : d
+}
+
+function formToAsset(form: AssetForm, id: string, existingId?: string): MheAsset {
+  const warrantyExpiry = form.warrantyExpiry
+  return {
+    id: existingId ?? id,
+    name: form.name.trim(),
+    type: form.type,
+    oem: form.oem.trim(),
+    model: form.model.trim(),
+    ownership: (form.ownership as Ownership) || "",
+    powerType: form.powerType,
+    supplier: form.supplier.trim(),
+    yearOfMfg: form.yearOfMfg ? String(form.yearOfMfg.getFullYear()) : "",
+    warranty: warrantyExpiry ? (warrantyExpiry > new Date() ? "Active" : "Expired") : "-",
+    warrantyExpiry: warrantyExpiry ? warrantyExpiry.toISOString() : "",
+    loadCapacity: form.loadCapacity,
+    lastServiceDate: form.lastServiceDate ? form.lastServiceDate.toISOString() : "",
+    serviceIntervalKm: form.serviceIntervalKm,
+    serviceIntervalDays: form.serviceIntervalDays,
+    hydraulicServiceInterval: form.hydraulicServiceInterval,
+  }
+}
+
+function assetToForm(asset: MheAsset): AssetForm {
+  return {
+    name: asset.name,
+    type: asset.type,
+    oem: asset.oem,
+    model: asset.model,
+    yearOfMfg: asset.yearOfMfg ? new Date(Number(asset.yearOfMfg), 0, 1) : undefined,
+    ownership: asset.ownership,
+    powerType: asset.powerType,
+    supplier: asset.supplier,
+    warrantyExpiry: parseDMY(asset.warrantyExpiry),
+    loadCapacity: asset.loadCapacity,
+    lastServiceDate: parseDMY(asset.lastServiceDate),
+    serviceIntervalKm: asset.serviceIntervalKm,
+    serviceIntervalDays: asset.serviceIntervalDays,
+    hydraulicServiceInterval: asset.hydraulicServiceInterval,
+  }
+}
+
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
 const MHE_TYPES = ["forklift", "Order Picker", "BOPT", "Electric Pallet Jack", "Reach Truck", "VNA Truck", "Stacker", "Aisle Master"]
-const OEM_OPTIONS = ["Toyota", "Crown", "Elite Handling Technologies", "Hyster", "Jungheinrich"]
 
 const MOCK_ASSETS: MheAsset[] = [
-  { id: "KTTHCL4WO5X9HLO", name: "Test No Warranty Field", type: "forklift",            oem: "",                            ownership: "",       yearOfMfg: "",     warranty: "-" },
-  { id: "9QGSSML13VDD4IU", name: "MHE 09",                type: "Order Picker",         oem: "Toyota",                      ownership: "Buy",    yearOfMfg: "2017", warranty: "Active" },
-  { id: "IICM7QXZ7HHXIXT", name: "MHE 10",                type: "forklift",             oem: "Crown",                       ownership: "Lease",  yearOfMfg: "2018", warranty: "Expired" },
-  { id: "LQIYUA09VVK6GJ7", name: "MHE 08",                type: "BOPT",                 oem: "Toyota",                      ownership: "Buy",    yearOfMfg: "2021", warranty: "Expired" },
-  { id: "2T8L8UKCESTDF99", name: "MHE 07",                type: "forklift",             oem: "Toyota",                      ownership: "Lease",  yearOfMfg: "2009", warranty: "Expired" },
-  { id: "U5GW3B1XCQESNHL", name: "MHE 06",                type: "Electric Pallet Jack", oem: "Toyota",                      ownership: "Buy",    yearOfMfg: "2022", warranty: "Active" },
-  { id: "OE2BQ63OX8TSGTT", name: "MHE 05",                type: "BOPT",                 oem: "Elite Handling Technologies", ownership: "Buy",    yearOfMfg: "2022", warranty: "Expired" },
-  { id: "9AAIEIY84GNJUMN", name: "MHE 04",                type: "Order Picker",         oem: "Toyota",                      ownership: "Buy",    yearOfMfg: "2020", warranty: "Active" },
-  { id: "Z89H1I7IO9G84ZH", name: "MHE 03",                type: "Electric Pallet Jack", oem: "Elite Handling Technologies", ownership: "Rental", yearOfMfg: "2016", warranty: "Active" },
-  { id: "MUAQET9EOCA4SZF", name: "MHE 02",                type: "Reach Truck",          oem: "Crown",                       ownership: "Lease",  yearOfMfg: "2012", warranty: "Active" },
-  { id: "9YQPLM2XVCTR55A", name: "MHE 01",                type: "forklift",             oem: "Hyster",                      ownership: "Buy",    yearOfMfg: "2019", warranty: "Active" },
+  { id: "KTTHCL4WO5X9HLO", name: "Test No Warranty Field", type: "forklift",            oem: "",                            model: "",         ownership: "",       powerType: "",         supplier: "",                        yearOfMfg: "",     warranty: "-",       warrantyExpiry: "",                loadCapacity: "",     lastServiceDate: "",               serviceIntervalKm: "",    serviceIntervalDays: "",  hydraulicServiceInterval: "" },
+  { id: "9QGSSML13VDD4IU", name: "MHE 09",                type: "Order Picker",         oem: "Toyota",                      model: "TOY-1000", ownership: "Buy",    powerType: "Electric", supplier: "Toyota Material Handling", yearOfMfg: "2017", warranty: "Active",  warrantyExpiry: "2027-09-10",       loadCapacity: "2000", lastServiceDate: "2026-05-01",      serviceIntervalKm: "200", serviceIntervalDays: "60", hydraulicServiceInterval: "200" },
+  { id: "IICM7QXZ7HHXIXT", name: "MHE 10",                type: "forklift",             oem: "Crown",                       model: "CR-500",   ownership: "Lease",  powerType: "Diesel",   supplier: "Crown Equipment",          yearOfMfg: "2018", warranty: "Expired", warrantyExpiry: "2023-01-15",       loadCapacity: "2500", lastServiceDate: "2026-02-12",      serviceIntervalKm: "250", serviceIntervalDays: "45", hydraulicServiceInterval: "300" },
+  { id: "LQIYUA09VVK6GJ7", name: "MHE 08",                type: "BOPT",                 oem: "Toyota",                      model: "TOY-BOPT2",ownership: "Buy",    powerType: "Electric", supplier: "Toyota Material Handling", yearOfMfg: "2021", warranty: "Expired", warrantyExpiry: "2024-06-20",       loadCapacity: "1800", lastServiceDate: "2026-03-08",      serviceIntervalKm: "150", serviceIntervalDays: "30", hydraulicServiceInterval: "180" },
+  { id: "2T8L8UKCESTDF99", name: "MHE 07",                type: "forklift",             oem: "Toyota",                      model: "TOY-800",  ownership: "Lease",  powerType: "Diesel",   supplier: "Toyota Material Handling", yearOfMfg: "2009", warranty: "Expired", warrantyExpiry: "2014-11-01",       loadCapacity: "3000", lastServiceDate: "2026-01-22",      serviceIntervalKm: "300", serviceIntervalDays: "60", hydraulicServiceInterval: "400" },
+  { id: "U5GW3B1XCQESNHL", name: "MHE 06",                type: "Electric Pallet Jack", oem: "Toyota",                      model: "TOY-EPJ1", ownership: "Buy",    powerType: "Electric", supplier: "Toyota Material Handling", yearOfMfg: "2022", warranty: "Active",  warrantyExpiry: "2027-04-18",       loadCapacity: "1500", lastServiceDate: "2026-06-02",      serviceIntervalKm: "100", serviceIntervalDays: "30", hydraulicServiceInterval: "150" },
+  { id: "OE2BQ63OX8TSGTT", name: "MHE 05",                type: "BOPT",                 oem: "Elite Handling Technologies", model: "EHT-B3",   ownership: "Buy",    powerType: "Electric", supplier: "Elite Handling Technologies", yearOfMfg: "2022", warranty: "Expired", warrantyExpiry: "2025-02-14",    loadCapacity: "1900", lastServiceDate: "2026-04-19",      serviceIntervalKm: "180", serviceIntervalDays: "40", hydraulicServiceInterval: "220" },
+  { id: "9AAIEIY84GNJUMN", name: "MHE 04",                type: "Order Picker",         oem: "Toyota",                      model: "TOY-OP4",  ownership: "Buy",    powerType: "Electric", supplier: "Toyota Material Handling", yearOfMfg: "2020", warranty: "Active",  warrantyExpiry: "2027-08-09",       loadCapacity: "1200", lastServiceDate: "2026-05-30",      serviceIntervalKm: "120", serviceIntervalDays: "30", hydraulicServiceInterval: "160" },
+  { id: "Z89H1I7IO9G84ZH", name: "MHE 03",                type: "Electric Pallet Jack", oem: "Elite Handling Technologies", model: "EHT-EPJ2", ownership: "Rental", powerType: "Electric", supplier: "Elite Handling Technologies", yearOfMfg: "2016", warranty: "Active", warrantyExpiry: "2027-12-01",    loadCapacity: "1600", lastServiceDate: "2026-06-15",      serviceIntervalKm: "110", serviceIntervalDays: "30", hydraulicServiceInterval: "140" },
+  { id: "MUAQET9EOCA4SZF", name: "MHE 02",                type: "Reach Truck",          oem: "Crown",                       model: "CR-RT2",   ownership: "Lease",  powerType: "Electric", supplier: "Crown Equipment",          yearOfMfg: "2012", warranty: "Active",  warrantyExpiry: "2027-03-25",       loadCapacity: "2200", lastServiceDate: "2026-05-11",      serviceIntervalKm: "200", serviceIntervalDays: "45", hydraulicServiceInterval: "260" },
+  { id: "9YQPLM2XVCTR55A", name: "MHE 01",                type: "forklift",             oem: "Hyster",                      model: "HY-F100",  ownership: "Buy",    powerType: "LPG",      supplier: "Hyster India",              yearOfMfg: "2019", warranty: "Active",  warrantyExpiry: "2027-07-04",       loadCapacity: "2800", lastServiceDate: "2026-04-28",      serviceIntervalKm: "220", serviceIntervalDays: "50", hydraulicServiceInterval: "300" },
 ]
 
 // ─── Badges ──────────────────────────────────────────────────────────────────
@@ -212,15 +269,17 @@ function AssetFormSheet({
   onClose,
   onSave,
   editing,
+  initial,
 }: {
   open: boolean
   onClose: () => void
   onSave: (form: AssetForm) => void
   editing: boolean
+  initial?: AssetForm
 }) {
   const [form, setForm] = React.useState<AssetForm>(emptyForm())
 
-  useEffect(() => { if (open) setForm(emptyForm()) }, [open])
+  useEffect(() => { if (open) setForm(initial ?? emptyForm()) }, [open, initial])
 
   function set<K extends keyof AssetForm>(key: K, value: AssetForm[K]) {
     setForm(f => ({ ...f, [key]: value }))
@@ -406,9 +465,118 @@ function AssetFormSheet({
             Cancel
           </Button>
           <Button type="button" onClick={handleSave} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">
-            Save Asset
+            {editing ? "Update Asset" : "Save Asset"}
           </Button>
         </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+// ─── View / Overview Sheet ───────────────────────────────────────────────────
+
+function formatShortDate(iso: string): string {
+  if (!iso) return "—"
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return "—"
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+}
+
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-[var(--border)] last:border-0">
+      <span className="text-[10.5px] font-semibold uppercase tracking-wide shrink-0" style={{ color: "var(--muted-foreground)" }}>
+        {label}
+      </span>
+      <span className="text-[length:var(--text-sm)] font-medium text-right text-[var(--foreground)]">
+        {children}
+      </span>
+    </div>
+  )
+}
+
+function OverviewSection({ icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1 px-5 py-4 border-b border-[var(--border)]">
+      <div className="pb-1">
+        <SectionHeader icon={icon}>{title}</SectionHeader>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function AssetViewSheet({
+  asset,
+  open,
+  onClose,
+}: {
+  asset: MheAsset | null
+  open: boolean
+  onClose: () => void
+}) {
+  return (
+    <Sheet open={open} onOpenChange={v => { if (!v) onClose() }}>
+      <SheetContent side="right" className="w-[480px] sm:max-w-[480px] p-0 flex flex-col bg-[var(--card)] border-l border-[var(--border)] gap-0">
+        <SheetHeader className="px-5 py-4 border-b border-[var(--border)]">
+          <SheetTitle className="text-[length:var(--text-base)] font-semibold text-[var(--foreground)]">
+            MHE Asset Overview
+          </SheetTitle>
+        </SheetHeader>
+
+        {asset && (
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            {/* Identity header */}
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border)]">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, var(--primary) 12%, transparent)" }}>
+                <Truck className="w-5 h-5" strokeWidth={1.5} style={{ color: "var(--primary)" }} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[length:var(--text-base)] font-semibold text-[var(--foreground)] truncate">{asset.name}</span>
+                <span className="text-[12px] truncate" style={{ color: "var(--muted-foreground)" }}>
+                  {asset.type}{asset.oem ? ` · ${asset.oem}` : ""}
+                </span>
+              </div>
+            </div>
+
+            <OverviewSection icon={Info} title="Basic Details">
+              <DetailRow label="MHE Name">{asset.name || "—"}</DetailRow>
+              <DetailRow label="MHE Type">{asset.type || "—"}</DetailRow>
+              <DetailRow label="OEM / Make">{asset.oem || "—"}</DetailRow>
+              <DetailRow label="Model Number">
+                {asset.model ? <span style={{ color: "var(--primary)" }}>{asset.model}</span> : "—"}
+              </DetailRow>
+              <DetailRow label="Year of Mfg.">{asset.yearOfMfg || "—"}</DetailRow>
+            </OverviewSection>
+
+            <OverviewSection icon={Zap} title="Ownership & Power">
+              <DetailRow label="Ownership Type"><OwnershipBadge ownership={asset.ownership} /></DetailRow>
+              <DetailRow label="Supplier Name">{asset.supplier || "—"}</DetailRow>
+              <DetailRow label="Fuel / Power Type">{asset.powerType || "—"}</DetailRow>
+            </OverviewSection>
+
+            <OverviewSection icon={ShieldCheck} title="Safety Compliance">
+              <DetailRow label="Warranty Status"><WarrantyBadge warranty={asset.warranty} /></DetailRow>
+              <DetailRow label="Warranty Expiry">{formatShortDate(asset.warrantyExpiry)}</DetailRow>
+              <DetailRow label="Load Capacity">{asset.loadCapacity ? `${asset.loadCapacity} kg` : "—"}</DetailRow>
+            </OverviewSection>
+
+            <OverviewSection icon={Wrench} title="Service Information">
+              <DetailRow label="Last Service Date">{formatShortDate(asset.lastServiceDate)}</DetailRow>
+              <DetailRow label="Service Interval (km)">{asset.serviceIntervalKm || "—"}</DetailRow>
+              <DetailRow label="Service Interval (days)">{asset.serviceIntervalDays || "—"}</DetailRow>
+              <DetailRow label="Hydraulic Service Interval">{asset.hydraulicServiceInterval || "—"}</DetailRow>
+            </OverviewSection>
+
+            <div className="flex flex-col gap-2 px-5 py-4">
+              <SectionHeader icon={User}>Assigned Operators</SectionHeader>
+              <div className="flex items-center gap-2 py-2 text-[13px]" style={{ color: "var(--muted-foreground)" }}>
+                <User className="w-4 h-4" strokeWidth={1.5} />
+                No operators assigned
+              </div>
+            </div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   )
@@ -427,6 +595,10 @@ export function MheAssetDetails() {
 
   const [sheetOpen, setSheetOpen] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
+  const [editingForm, setEditingForm] = React.useState<AssetForm | undefined>(undefined)
+
+  const [viewOpen, setViewOpen] = React.useState(false)
+  const [viewAsset, setViewAsset] = React.useState<MheAsset | null>(null)
 
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -447,22 +619,33 @@ export function MheAssetDetails() {
 
   function handleAddAsset() {
     setEditingId(null)
+    setEditingForm(undefined)
     setSheetOpen(true)
   }
 
+  function handleEditAsset(asset: MheAsset) {
+    setEditingId(asset.id)
+    setEditingForm(assetToForm(asset))
+    setSheetOpen(true)
+  }
+
+  function handleViewAsset(asset: MheAsset) {
+    setViewAsset(asset)
+    setViewOpen(true)
+  }
+
   function handleSaveAsset(form: AssetForm) {
-    const newAsset: MheAsset = {
-      id: `NEW${Date.now()}`,
-      name: form.name.trim(),
-      type: form.type,
-      oem: form.oem.trim(),
-      ownership: (form.ownership as Ownership) || "",
-      yearOfMfg: form.yearOfMfg ? String(form.yearOfMfg.getFullYear()) : "",
-      warranty: form.warrantyExpiry ? (form.warrantyExpiry > new Date() ? "Active" : "Expired") : "-",
+    if (editingId) {
+      setAssets(prev => prev.map(a => a.id === editingId ? formToAsset(form, editingId, editingId) : a))
+      toast.success("MHE asset updated")
+    } else {
+      const newAsset = formToAsset(form, `NEW${Date.now()}`)
+      setAssets(prev => [newAsset, ...prev])
+      toast.success("MHE asset added")
     }
-    setAssets(prev => [newAsset, ...prev])
-    toast.success("MHE asset added")
     setSheetOpen(false)
+    setEditingId(null)
+    setEditingForm(undefined)
   }
 
   function handleDelete(id: string) {
@@ -525,10 +708,10 @@ export function MheAssetDetails() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewAsset(asset)}>
                             <Eye className="mr-2 h-4 w-4" strokeWidth={1.5} /> View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditAsset(asset)}>
                             <Pencil className="mr-2 h-4 w-4" strokeWidth={1.5} /> Edit
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -588,9 +771,16 @@ export function MheAssetDetails() {
 
       <AssetFormSheet
         open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
+        onClose={() => { setSheetOpen(false); setEditingId(null); setEditingForm(undefined) }}
         onSave={handleSaveAsset}
         editing={!!editingId}
+        initial={editingForm}
+      />
+
+      <AssetViewSheet
+        asset={viewAsset}
+        open={viewOpen}
+        onClose={() => { setViewOpen(false); setViewAsset(null) }}
       />
     </div>
   )
