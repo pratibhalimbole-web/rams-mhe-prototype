@@ -92,6 +92,7 @@ export const domains: Domain[] = [
           { id: "operator-assign", label: "Operator Assignment" },
           { id: "ops-settings", label: "Operational Settings" },
           { id: "sensor-hub", label: "Sensor Hub" },
+          { id: "documents", label: "Documents" },
         ],
       },
       {

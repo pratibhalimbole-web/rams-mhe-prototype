@@ -23,6 +23,8 @@ import { FMS } from "./pages/mhe/FMS";
 import { MheAssetDetails } from "./pages/mhe/MheAssetDetails";
 import { OperatorAssignment } from "./pages/mhe/OperatorAssignment";
 import { OperationalSetting } from "./pages/mhe/OperationalSetting";
+import { SensorHub } from "./pages/mhe/SensorHub";
+import { Documents as MmsDocuments } from "./pages/mhe/Documents";
 import { Stability } from "./pages/rack/Stability";
 import { StabilityDetail } from "./pages/rack/StabilityDetail";
 import { RackObservationDashboard } from "./pages/rack/RackObservationDashboard";
@@ -226,9 +228,13 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/mms/sensor-hub",
-        element: <PlaceholderPage title="Sensor Hub" />,
+        element: <SensorHub />,
       },
-      
+      {
+        path: "mhe/mms/documents",
+        element: <MmsDocuments />,
+      },
+
       // MHE → MEPS routes
       {
         path: "mhe/meps/mhe-monitor",
