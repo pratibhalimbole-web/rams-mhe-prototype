@@ -99,10 +99,10 @@ export const domains: Domain[] = [
         id: "meps",
         label: "MEPS",
         items: [
-          { id: "mhe-monitor", label: "MHE Monitor" },
           { id: "raw-data", label: "Raw Data" },
-          { id: "mhe-analytics", label: "MHE Analytics" },
-          { id: "driver-analytics", label: "Driver / Operator Analytics" },
+          { id: "safety-analytics", label: "Safety Analytics" },
+          { id: "productivity-analytics", label: "productivity analytics" },
+          { id: "efficiency-analytics", label: "efficiency analytics" },
         ],
       },
       {

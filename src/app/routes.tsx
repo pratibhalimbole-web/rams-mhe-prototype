@@ -13,8 +13,8 @@ import { TemplateBuilder } from "./pages/report/TemplateBuilder";
 import { TemplateLibrary } from "./pages/report/TemplateLibrary";
 import { ReportBuilder } from "./pages/report/ReportBuilder";
 import { ReportBuilderTest } from "./pages/report/ReportBuilderTest";
-import { MheAnalytics } from "./pages/mhe/MheAnalytics";
-import { OperatorMheDashboard } from "./pages/mhe/OperatorMheDashboard";
+import { RawData } from "./pages/mhe/RawData";
+import { ProductivityAnalytics } from "./pages/mhe/ProductivityAnalytics";
 import { ActionBoard } from "./pages/mhe/ActionBoard";
 import { ActionBoard1 } from "./pages/mhe/ActionBoard1";
 import { IncidentActions } from "./pages/mhe/IncidentActions";
@@ -237,22 +237,22 @@ export const router = createBrowserRouter([
 
       // MHE → MEPS routes
       {
-        path: "mhe/meps/mhe-monitor",
-        element: <PlaceholderPage title="MHE Monitor" />,
-      },
-      {
         path: "mhe/meps/raw-data",
-        element: <PlaceholderPage title="Raw Data" />,
+        element: <RawData />,
       },
       {
-        path: "mhe/meps/mhe-analytics",
-        element: <MheAnalytics />,
+        path: "mhe/meps/safety-analytics",
+        element: <PlaceholderPage title="Safety Analytics" />,
       },
       {
-        path: "mhe/meps/driver-analytics",
-        element: <OperatorMheDashboard />,
+        path: "mhe/meps/productivity-analytics",
+        element: <ProductivityAnalytics />,
       },
-      
+      {
+        path: "mhe/meps/efficiency-analytics",
+        element: <PlaceholderPage title="Efficiency Analytics" />,
+      },
+
       // MHE → RTSS routes
       {
         path: "mhe/rtss/safety-config",
