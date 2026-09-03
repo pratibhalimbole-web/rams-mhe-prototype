@@ -85,6 +85,21 @@ function truncateName(name: string): string {
   return name.length > 10 ? `${name.slice(0, 9)}...` : name
 }
 
+// ─── Y-axis title, vertically centered in the widget ─────────────────────────
+
+function YAxisTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 14, flexShrink: 0 }}>
+      <span style={{
+        fontFamily: "Inter, sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: 0.3, color: "var(--w-text-3)",
+        whiteSpace: "nowrap", transform: "rotate(-90deg)", display: "inline-block",
+      }}>
+        {children}
+      </span>
+    </div>
+  )
+}
+
 // ─── KPI card (icon top-right + delta line) ─────────────────────────────────
 
 function DeltaKpiCard({
@@ -263,21 +278,23 @@ export function PalletEfficiencyTab() {
           badge="Last 7 days"
           onRefresh={() => {}}
         >
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={cycleTimeData} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
-              <XAxis dataKey="range" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
-                label={{ value: "CYCLE TIME RANGE", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-              <YAxis domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4}
-                label={{ value: "FREQUENCY (PALLETS)", angle: -90, position: "insideLeft", fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-              <Tooltip content={<CycleTimeTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
-              <Bar dataKey="pallets" radius={[4, 4, 0, 0]} maxBarSize={44}>
-                {cycleTimeData.map(d => (
-                  <Cell key={d.range} fill={d.range === highlightedRange ? "var(--primary)" : "color-mix(in srgb, var(--primary) 16%, transparent)"} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <div style={{ display: "flex", alignItems: "stretch" }}>
+            <YAxisTitle>FREQUENCY (PALLETS)</YAxisTitle>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={cycleTimeData} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
+                <XAxis dataKey="range" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
+                  label={{ value: "CYCLE TIME RANGE", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
+                <YAxis domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4} />
+                <Tooltip content={<CycleTimeTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
+                <Bar dataKey="pallets" radius={[4, 4, 0, 0]} maxBarSize={44}>
+                  {cycleTimeData.map(d => (
+                    <Cell key={d.range} fill={d.range === highlightedRange ? "var(--primary)" : "color-mix(in srgb, var(--primary) 16%, transparent)"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
 
         <ChartCard
@@ -292,20 +309,22 @@ export function PalletEfficiencyTab() {
             </div>
           }
         >
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={hourlyTrend} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
-              <XAxis dataKey="hour" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
-                label={{ value: "TIME OF DAY", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-              <YAxis domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4}
-                label={{ value: "FREQUENCY (PALLETS)", angle: -90, position: "insideLeft", fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-              <ReferenceLine x="8am" stroke="#dc2626" strokeDasharray="4 4" strokeWidth={1.2} />
-              <Tooltip content={<HourlyTrendTooltip />} cursor={{ stroke: "var(--w-border)" }} />
-              {MHE_TYPES.map(t => (
-                <Line key={t} type="monotone" dataKey={t} stroke={MHE_TYPE_COLORS[t]} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+          <div style={{ display: "flex", alignItems: "stretch" }}>
+            <YAxisTitle>FREQUENCY (PALLETS)</YAxisTitle>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={hourlyTrend} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
+                <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
+                <XAxis dataKey="hour" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
+                  label={{ value: "TIME OF DAY", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
+                <YAxis domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4} />
+                <ReferenceLine x="8am" stroke="#dc2626" strokeDasharray="4 4" strokeWidth={1.2} />
+                <Tooltip content={<HourlyTrendTooltip />} cursor={{ stroke: "var(--w-border)" }} />
+                {MHE_TYPES.map(t => (
+                  <Line key={t} type="monotone" dataKey={t} stroke={MHE_TYPE_COLORS[t]} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
       </div>
 
@@ -326,13 +345,13 @@ export function PalletEfficiencyTab() {
         </ChartCard>
 
         <ChartCard title="Speed vs Productivity Correlation" subtitle="" legend={<MheTypeLegend />} onRefresh={() => {}}>
-          <div style={{ flex: 1, minHeight: 280, overflow: "hidden" }}>
+          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+            <YAxisTitle>PALLETS PER HOUR</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 10, right: 20, left: 4, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
                 <XAxis type="number" dataKey="speed" name="Average Speed" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} label={{ value: "AVERAGE SPEED (KM/H)", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-                <YAxis type="number" dataKey="pallets" name="Pallets Per Hour" domain={[0, "dataMax + 20"]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
-                  label={{ value: "PALLETS PER HOUR", angle: -90, position: "insideLeft", fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
+                <YAxis type="number" dataKey="pallets" name="Pallets Per Hour" domain={[0, "dataMax + 20"]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
                 <Tooltip content={<SpeedProductivityTooltip />} cursor={{ strokeDasharray: "3 3" }} />
                 {MHE_TYPES.map(t => (
                   <Scatter
@@ -351,14 +370,14 @@ export function PalletEfficiencyTab() {
       {/* Distance efficiency + operator utilization */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
         <ChartCard title="Distance Efficiency Analysis" subtitle="" badge="Weekly" legend={<MheTypeLegend />} onRefresh={() => {}}>
-          <div style={{ flex: 1, minHeight: 280, overflow: "hidden" }}>
+          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+            <YAxisTitle>CYCLE TIME RANGE (H)</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 16, right: 24, left: 0, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
                 <XAxis type="number" dataKey="distance" name="Average Distance Travelled" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
                   label={{ value: "AVERAGE DISTANCE TRAVELLED (METERS)", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-                <YAxis type="number" dataKey="cycleTime" name="Cycle Time Range" domain={[0, 40]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
-                  label={{ value: "CYCLE TIME RANGE (H)", angle: -90, position: "insideLeft", fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
+                <YAxis type="number" dataKey="cycleTime" name="Cycle Time Range" domain={[0, 40]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
                 <Tooltip content={<DistanceTooltip />} cursor={{ strokeDasharray: "3 3" }} />
                 {MHE_TYPES.map(t => (
                   <Scatter
@@ -390,19 +409,21 @@ export function PalletEfficiencyTab() {
           }
           onRefresh={() => {}}
         >
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={operatorUtilization} margin={{ top: 10, right: 10, left: 4, bottom: 16 }} barCategoryGap="35%">
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--w-bg-muted)" />
-              <XAxis dataKey="operator" tickFormatter={truncateName} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6} interval={0}
-                label={{ value: "OPERATOR", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-              <YAxis domain={[0, 100]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4}
-                label={{ value: "UTILIZATION DISTRIBUTION", angle: -90, position: "insideLeft", fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
-              <Tooltip content={<UtilizationTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
-              <Bar dataKey="nonUtilised" stackId="u" fill="color-mix(in srgb, var(--primary) 45%, transparent)" maxBarSize={26} />
-              <Bar dataKey="idle" stackId="u" fill="color-mix(in srgb, var(--primary) 18%, transparent)" maxBarSize={26} />
-              <Bar dataKey="utilised" stackId="u" fill="var(--primary)" maxBarSize={26} radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div style={{ display: "flex", alignItems: "stretch" }}>
+            <YAxisTitle>UTILIZATION DISTRIBUTION</YAxisTitle>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={operatorUtilization} margin={{ top: 10, right: 10, left: 4, bottom: 16 }} barCategoryGap="35%">
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--w-bg-muted)" />
+                <XAxis dataKey="operator" tickFormatter={truncateName} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6} interval={0}
+                  label={{ value: "OPERATOR", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" , textAnchor: "middle" }} />
+                <YAxis domain={[0, 100]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4} />
+                <Tooltip content={<UtilizationTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
+                <Bar dataKey="nonUtilised" stackId="u" fill="color-mix(in srgb, var(--primary) 45%, transparent)" maxBarSize={26} />
+                <Bar dataKey="idle" stackId="u" fill="color-mix(in srgb, var(--primary) 18%, transparent)" maxBarSize={26} />
+                <Bar dataKey="utilised" stackId="u" fill="var(--primary)" maxBarSize={26} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
       </div>
     </div>
