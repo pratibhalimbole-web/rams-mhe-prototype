@@ -109,13 +109,8 @@ export const domains: Domain[] = [
         id: "rtss",
         label: "RTSS",
         items: [
-          { id: "safety-config", label: "Safety Configuration" },
-          { id: "mhe-monitor-rtss", label: "MHE Monitor" },
           { id: "raw-data-rtss", label: "Raw Data" },
           { id: "safety-analytics-rtss", label: "Safety Analytics" },
-          { id: "violation-review", label: "Violation Review" },
-          { id: "mhe-analytics-rtss", label: "MHE Analytics" },
-          { id: "driver-analytics-rtss", label: "Driver Analytics" },
         ],
       },
       {

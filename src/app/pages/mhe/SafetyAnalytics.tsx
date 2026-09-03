@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import { ShieldAlert } from "lucide-react"
 import { useSidebar } from "../../components/layout/SidebarLayout"
 import { DrivingSafetyTab } from "./safety/DrivingSafetyTab"
+import { IncidentTrendsTab } from "./safety/IncidentTrendsTab"
 
 type TabId = "driving" | "incidents" | "environment" | "ai-insights"
 
@@ -57,7 +58,7 @@ export function SafetyAnalytics() {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 16, padding: 24, overflowY: "auto", background: "var(--w-bg-page)" }}>
       <TabBar active={tab} onChange={setTab} />
       {tab === "driving" && <DrivingSafetyTab />}
-      {tab === "incidents" && <ComingSoonTab label="Incident & Trends" />}
+      {tab === "incidents" && <IncidentTrendsTab />}
       {tab === "environment" && <ComingSoonTab label="Environment Safety" />}
       {tab === "ai-insights" && <ComingSoonTab label="AI Powered Insights" />}
     </div>
