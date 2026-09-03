@@ -269,6 +269,10 @@ export const router = createBrowserRouter([
         element: <PlaceholderPage title="Raw Data" />,
       },
       {
+        path: "mhe/rtss/safety-analytics-rtss",
+        element: <SafetyAnalytics />,
+      },
+      {
         path: "mhe/rtss/violation-review",
         element: <PlaceholderPage title="Violation Review" />,
       },
