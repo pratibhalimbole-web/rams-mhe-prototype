@@ -233,7 +233,7 @@ export function TableShell({ columns, children, maxVisibleRows = 5, align }: { c
   const scroll = rowCount > maxVisibleRows
   return (
     <div style={{ overflowX: "auto", overflowY: scroll ? "auto" : "visible", maxHeight: scroll ? maxVisibleRows * 45 + 37 : undefined }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter, sans-serif" }}>
+      <table className="w-table-shell" style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter, sans-serif" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--w-border)" }}>
             {columns.map((c, i) => (
