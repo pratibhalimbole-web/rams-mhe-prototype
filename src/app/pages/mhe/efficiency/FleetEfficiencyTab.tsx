@@ -350,28 +350,19 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
               const cell = data[from][to]
               if (!cell) {
                 return (
-                  <div key={to} style={{ height: 56, borderRadius: 6, border: "1px solid var(--w-border)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif", fontSize: 13, color: "var(--w-text-3)" }}>
+                  <div key={to} style={{ height: 32, borderRadius: 6, border: "1px solid var(--w-border)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif", fontSize: 13, color: "var(--w-text-3)" }}>
                     –
                   </div>
                 )
               }
-              const isDark = cycleIntensity(cell.cycleTime) > 0.45
-              const textColor = isDark ? "#fff" : "var(--w-text-1)"
-              const subTextColor = isDark ? "rgba(255,255,255,0.85)" : "var(--w-text-2)"
               return (
                 <div
                   key={to}
                   onMouseEnter={e => handleEnter(from, to, e)}
                   onMouseMove={e => handleEnter(from, to, e)}
                   onMouseLeave={() => setHover(null)}
-                  style={{
-                    height: 56, borderRadius: 6, background: zoneCellColor(cell.cycleTime), cursor: "pointer",
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
-                  }}
-                >
-                  <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 13, color: textColor }}>{cell.pallets}</span>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: subTextColor }}>{cell.cycleTime} min</span>
-                </div>
+                  style={{ height: 32, borderRadius: 6, background: zoneCellColor(cell.cycleTime), cursor: "pointer" }}
+                />
               )
             })}
           </React.Fragment>
