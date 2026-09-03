@@ -346,18 +346,20 @@ export function PalletEfficiencyTab() {
       {/* Distance efficiency + operator utilization */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
         <ChartCard title="Distance Efficiency Analysis" subtitle="" badge="Weekly" legend={<MheTypeLegend />} onRefresh={() => {}}>
-          <ResponsiveContainer width="100%" height={280}>
-            <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
-              <XAxis type="number" dataKey="distance" name="Average Distance Travelled" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <YAxis type="number" dataKey="cycleTime" name="Cycle Time Range" domain={[0, 40]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <ZAxis type="number" dataKey="size" range={[40, 300]} />
-              <Tooltip content={<DistanceTooltip />} cursor={{ strokeDasharray: "3 3" }} />
-              {MHE_TYPES.map(t => (
-                <Scatter key={t} data={distanceEfficiency.filter(d => d.type === t)} fill={MHE_TYPE_COLORS[t]} fillOpacity={0.7} />
-              ))}
-            </ScatterChart>
-          </ResponsiveContainer>
+          <div style={{ flex: 1, minHeight: 280, overflow: "hidden" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 16, right: 24, left: -10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
+                <XAxis type="number" dataKey="distance" name="Average Distance Travelled" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <YAxis type="number" dataKey="cycleTime" name="Cycle Time Range" domain={[0, 40]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <ZAxis type="number" dataKey="size" range={[30, 180]} />
+                <Tooltip content={<DistanceTooltip />} cursor={{ strokeDasharray: "3 3" }} />
+                {MHE_TYPES.map(t => (
+                  <Scatter key={t} data={distanceEfficiency.filter(d => d.type === t)} fill={MHE_TYPE_COLORS[t]} fillOpacity={0.7} />
+                ))}
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
 
         <ChartCard
