@@ -187,7 +187,7 @@ function MheShiftCard({ mhe, pcts, optimalIndex }: { mhe: string; pcts: number[]
 // ─── Heatmap grid with hover tooltip ─────────────────────────────────────────
 
 function HeatmapGrid<Row extends string, Col extends string>({
-  rows, cols, data, renderTooltip, colWidth = 70, truncateCols = false,
+  rows, cols, data, renderTooltip, colWidth = 70, truncateCols = false, rotateCols = false, colsAxisLabel,
 }: {
   rows: Row[]
   cols: Col[]
@@ -195,6 +195,8 @@ function HeatmapGrid<Row extends string, Col extends string>({
   renderTooltip: (row: Row, col: Col, value: number) => React.ReactNode
   colWidth?: number
   truncateCols?: boolean
+  rotateCols?: boolean
+  colsAxisLabel?: string
 }) {
   const [hover, setHover] = React.useState<{ row: Row; col: Col; value: number; x: number; y: number } | null>(null)
   const containerRef = React.useRef<HTMLDivElement>(null)
@@ -212,12 +214,25 @@ function HeatmapGrid<Row extends string, Col extends string>({
           <div
             key={c}
             title={c}
-            style={{
+            style={rotateCols ? {
+              display: "flex", alignItems: "center", justifyContent: "flex-end", paddingBottom: 4, height: 44,
+            } : {
               textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", paddingBottom: 4,
               overflow: truncateCols ? "hidden" : undefined, textOverflow: truncateCols ? "ellipsis" : undefined, whiteSpace: "nowrap",
             }}
           >
-            {truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c}
+            {rotateCols ? (
+              <span
+                style={{
+                  fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", whiteSpace: "nowrap",
+                  transform: "rotate(-40deg)", transformOrigin: "right", display: "inline-block",
+                }}
+              >
+                {truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c}
+              </span>
+            ) : (
+              truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c
+            )}
           </div>
         ))}
         {rows.map(r => (
@@ -245,6 +260,11 @@ function HeatmapGrid<Row extends string, Col extends string>({
           </React.Fragment>
         ))}
       </div>
+      {colsAxisLabel && (
+        <div style={{ textAlign: "center", marginTop: 8, fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>
+          {colsAxisLabel}
+        </div>
+      )}
       {hover && (
         <div style={{ position: "absolute", left: Math.min(hover.x + 12, 320), top: Math.max(hover.y - 40, 0), zIndex: 20, pointerEvents: "none" }}>
           {renderTooltip(hover.row, hover.col, hover.value)}
@@ -347,6 +367,8 @@ export function AssetProductivityTab() {
           data={pairingMatrix}
           colWidth={64}
           truncateCols
+          rotateCols
+          colsAxisLabel="OPERATORS"
           renderTooltip={(row, col, value) => (
             <TooltipShell
               headerLeft={col}
