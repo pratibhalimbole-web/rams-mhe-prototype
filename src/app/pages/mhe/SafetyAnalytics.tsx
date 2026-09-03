@@ -4,11 +4,13 @@ import { ShieldAlert } from "lucide-react"
 import { useSidebar } from "../../components/layout/SidebarLayout"
 import { DrivingSafetyTab } from "./safety/DrivingSafetyTab"
 
-type TabId = "driving" | "incidents"
+type TabId = "driving" | "incidents" | "environment" | "ai-insights"
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "driving", label: "Driving Safety" },
   { id: "incidents", label: "Incident & Trends" },
+  { id: "environment", label: "Environment Safety" },
+  { id: "ai-insights", label: "AI Powered Insights" },
 ]
 
 function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabId) => void }) {
@@ -56,6 +58,8 @@ export function SafetyAnalytics() {
       <TabBar active={tab} onChange={setTab} />
       {tab === "driving" && <DrivingSafetyTab />}
       {tab === "incidents" && <ComingSoonTab label="Incident & Trends" />}
+      {tab === "environment" && <ComingSoonTab label="Environment Safety" />}
+      {tab === "ai-insights" && <ComingSoonTab label="AI Powered Insights" />}
     </div>
   )
 }
