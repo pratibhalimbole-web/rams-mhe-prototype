@@ -278,9 +278,9 @@ export function PalletEfficiencyTab() {
           badge="Last 7 days"
           onRefresh={() => {}}
         >
-          <div style={{ display: "flex", alignItems: "stretch" }}>
+          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>FREQUENCY (PALLETS)</YAxisTitle>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={cycleTimeData} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
                 <XAxis dataKey="range" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
@@ -309,9 +309,9 @@ export function PalletEfficiencyTab() {
             </div>
           }
         >
-          <div style={{ display: "flex", alignItems: "stretch" }}>
+          <div style={{ flex: 1, minHeight: 250, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>FREQUENCY (PALLETS)</YAxisTitle>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hourlyTrend} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="" vertical={false} stroke="var(--w-bg-muted)" />
                 <XAxis dataKey="hour" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
@@ -409,9 +409,9 @@ export function PalletEfficiencyTab() {
           }
           onRefresh={() => {}}
         >
-          <div style={{ display: "flex", alignItems: "stretch" }}>
+          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>UTILIZATION DISTRIBUTION</YAxisTitle>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={operatorUtilization} margin={{ top: 10, right: 10, left: 4, bottom: 16 }} barCategoryGap="35%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--w-bg-muted)" />
                 <XAxis dataKey="operator" tickFormatter={truncateName} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6} interval={0}
