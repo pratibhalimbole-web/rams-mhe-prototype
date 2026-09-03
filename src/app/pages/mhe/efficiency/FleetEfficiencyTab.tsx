@@ -343,10 +343,6 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
   return (
     <div ref={containerRef} style={{ position: "relative", overflowX: "auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: `84px repeat(${ZONES.length}, minmax(110px, 1fr))`, gap: 6, minWidth: 84 + ZONES.length * 110 }}>
-        <div />
-        {ZONES.map(z => (
-          <div key={z} style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)", paddingBottom: 4 }}>{z}</div>
-        ))}
         {ZONES.map(from => (
           <React.Fragment key={from}>
             <div style={{ display: "flex", alignItems: "center", fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>{from}</div>
@@ -379,6 +375,10 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
               )
             })}
           </React.Fragment>
+        ))}
+        <div />
+        {ZONES.map(z => (
+          <div key={z} style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)", paddingTop: 4 }}>{z}</div>
         ))}
       </div>
       {hover && hoverCell && (
