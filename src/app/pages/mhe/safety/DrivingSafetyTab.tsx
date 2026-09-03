@@ -1,11 +1,11 @@
 import * as React from "react"
-import { RotateCw } from "lucide-react"
+import { AlertTriangle, ShieldCheck, Gauge, Siren } from "lucide-react"
 import {
   LineChart, Line, ScatterChart, Scatter, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import {
-  ChartCard, KpiCard, FilterSelect, cardStyle, seededRandom,
+  ChartCard, FilterSelect, cardStyle, seededRandom,
   Avatar, TableShell, Td, Pagination,
 } from "../productivity/shared"
 import { Badge } from "../../../components/ui/badge"
@@ -87,18 +87,26 @@ const ACCOUNTABILITY_ROWS = (() => {
   }))
 })()
 
-// ─── KPI with inline risk badge ──────────────────────────────────────────────
+// ─── Safety KPI card (icon chip + value + subtitle) ──────────────────────────
 
-function RiskKpiCard({ title, value, badge }: { title: string; value: string; badge: string }) {
+function SafetyKpiCard({
+  icon: Icon, color, title, value, valueSuffix, subtitle,
+}: {
+  icon: React.ElementType; color: string; title: string; value: string; valueSuffix?: string; subtitle: string
+}) {
   return (
     <div style={{ ...cardStyle, padding: "16px 18px", gap: 10 }}>
-      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 12, color: "var(--w-text-2)" }}>{title}</span>
-      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "var(--w-text-1)", display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 26, height: 26, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", background: `color-mix(in srgb, ${color} 15%, transparent)` }}>
+          <Icon size={14} strokeWidth={1.5} style={{ color }} />
+        </div>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 12, color: "var(--w-text-2)" }}>{title}</span>
+      </div>
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "var(--w-text-1)" }}>
         {value}
-        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, color: "#dc2626", background: "color-mix(in srgb, #dc2626 12%, transparent)", borderRadius: 6, padding: "3px 8px" }}>
-          {badge}
-        </span>
+        {valueSuffix && <span style={{ fontWeight: 400, fontSize: 13, color: "var(--w-text-2)", marginLeft: 4 }}>{valueSuffix}</span>}
       </span>
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11.5, color: "var(--w-text-2)" }}>{subtitle}</span>
     </div>
   )
 }
@@ -226,10 +234,10 @@ export function DrivingSafetyTab() {
 
       {/* KPI row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
-        <KpiCard title="Safety Violations" value="05" />
-        <KpiCard title="Compliance" value="94%" />
-        <KpiCard title="Skill Score" value="85%" />
-        <RiskKpiCard title="High Risk Shift" value="30%" badge="High Risk" />
+        <SafetyKpiCard icon={AlertTriangle} color="#dc2626" title="Safety Violation" value="05" subtitle="Incidents flagged this week" />
+        <SafetyKpiCard icon={ShieldCheck} color="#16a34a" title="Compliance" value="94" valueSuffix="%" subtitle="Within safe speed limits" />
+        <SafetyKpiCard icon={Gauge} color="#2563eb" title="Skill Score" value="85.4" subtitle="Avg skill score" />
+        <SafetyKpiCard icon={Siren} color="#f59e0b" title="High Risk Session" value="30" valueSuffix="%" subtitle="Sessions flagged high risk" />
       </div>
 
       {/* Speed vs time charts */}
