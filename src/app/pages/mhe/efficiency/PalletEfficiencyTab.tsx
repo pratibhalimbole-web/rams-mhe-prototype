@@ -322,17 +322,19 @@ export function PalletEfficiencyTab() {
         </ChartCard>
 
         <ChartCard title="Speed vs Productivity Correlation" subtitle="" legend={<MheTypeLegend />} onRefresh={() => {}}>
-          <ResponsiveContainer width="100%" height={280}>
-            <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
-              <XAxis type="number" dataKey="speed" name="Average Speed" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} label={{ value: "AVERAGE SPEED (KM/H)", position: "insideBottom", offset: -4, fontSize: 9, fill: "var(--w-text-3)" }} />
-              <YAxis type="number" dataKey="pallets" name="Pallets Per Hour" domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <Tooltip content={<SpeedProductivityTooltip />} cursor={{ strokeDasharray: "3 3" }} />
-              {MHE_TYPES.map(t => (
-                <Scatter key={t} data={speedProductivity.filter(d => d.type === t)} fill={MHE_TYPE_COLORS[t]} />
-              ))}
-            </ScatterChart>
-          </ResponsiveContainer>
+          <div style={{ flex: 1, minHeight: 280 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
+                <XAxis type="number" dataKey="speed" name="Average Speed" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} label={{ value: "AVERAGE SPEED (KM/H)", position: "insideBottom", offset: -4, fontSize: 9, fill: "var(--w-text-3)" }} />
+                <YAxis type="number" dataKey="pallets" name="Pallets Per Hour" domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <Tooltip content={<SpeedProductivityTooltip />} cursor={{ strokeDasharray: "3 3" }} />
+                {MHE_TYPES.map(t => (
+                  <Scatter key={t} data={speedProductivity.filter(d => d.type === t)} fill={MHE_TYPE_COLORS[t]} />
+                ))}
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
       </div>
 
