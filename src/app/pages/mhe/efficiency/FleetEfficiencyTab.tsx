@@ -359,7 +359,9 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
                   </div>
                 )
               }
-              const cat = cycleCategory(cell.cycleTime)
+              const isDark = cycleIntensity(cell.cycleTime) > 0.45
+              const textColor = isDark ? "#fff" : "var(--w-text-1)"
+              const subTextColor = isDark ? "rgba(255,255,255,0.85)" : "var(--w-text-2)"
               return (
                 <div
                   key={to}
@@ -371,8 +373,8 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                   }}
                 >
-                  <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 13, color: "var(--w-text-1)" }}>{cell.pallets}</span>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-2)" }}>{cell.cycleTime} min</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 13, color: textColor }}>{cell.pallets}</span>
+                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: subTextColor }}>{cell.cycleTime} min</span>
                 </div>
               )
             })}
