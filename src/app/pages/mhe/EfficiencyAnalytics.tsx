@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import { LineChart as LineChartIcon } from "lucide-react"
 import { useSidebar } from "../../components/layout/SidebarLayout"
 import { PalletEfficiencyTab } from "./efficiency/PalletEfficiencyTab"
+import { FleetEfficiencyTab } from "./efficiency/FleetEfficiencyTab"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ export function EfficiencyAnalytics() {
       <TabBar active={tab} onChange={setTab} />
 
       {tab === "pallet" && <PalletEfficiencyTab />}
-      {tab === "fleet" && <ComingSoonTab label="Fleet Efficiency" />}
+      {tab === "fleet" && <FleetEfficiencyTab />}
       {tab === "environment" && <ComingSoonTab label="Environment Productivity" />}
       {tab === "trends" && <ComingSoonTab label="Trends & Insights" />}
     </div>
