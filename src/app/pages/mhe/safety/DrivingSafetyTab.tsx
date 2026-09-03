@@ -75,15 +75,14 @@ const DRIVING_SESSIONS = (() => {
 
 const ACCOUNTABILITY_ROWS = (() => {
   const rand = seededRandom(91)
-  const names = ["James Wilson", "Karan Jadhav", "Anil Chavan", "Nilesh Bhosale", "Prakash Joshi", "Rahul Patil", "Vishal Sawant", "Deepak Pawar", "Suresh Pawar"]
+  const names = ["Amit Sharma", "Ganesh More", "Karan Jadhav", "Prakash Joshi", "Vishal Sawant", "Anil Chavan", "Nilesh Bhosale", "Rahul Patil", "Deepak Pawar", "Suresh Pawar"]
   return names.map(name => ({
     name,
-    overspeed: Math.round(5 + rand() * 20),
-    fatigue: Math.round(5 + rand() * 20),
-    rash: Math.round(5 + rand() * 20),
-    overallScore: Math.round(5 + rand() * 20),
-    todayScore: Math.round(rand() * 100),
-    locationCompliance: Math.round(5 + rand() * 20),
+    overspeed: Math.floor(rand() * 4),
+    fatigue: Math.floor(rand() * 3),
+    rash: Math.floor(rand() * 3),
+    loadCompliance: Math.floor(rand() * 2),
+    safetyScore: Math.round((55 + rand() * 44) * 100) / 100,
   }))
 })()
 
@@ -196,15 +195,16 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-// ─── Gradient safety score bar ────────────────────────────────────────────────
+// ─── Safety score bar ─────────────────────────────────────────────────────────
 
 function SafetyScoreBar({ value }: { value: number }) {
+  const color = value >= 90 ? "#16a34a" : value >= 60 ? "#f59e0b" : "#dc2626"
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 140 }}>
-      <div style={{ position: "relative", flex: 1, height: 6, borderRadius: 4, background: "linear-gradient(to right, #16a34a, #f59e0b, #dc2626)" }}>
-        <div style={{ position: "absolute", left: `calc(${value}% - 6px)`, top: -3, width: 12, height: 12, borderRadius: "50%", background: "var(--w-bg)", border: "2px solid var(--w-text-1)" }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 180 }}>
+      <div style={{ flex: 1, height: 6, borderRadius: 4, background: "var(--w-bg-muted)" }}>
+        <div style={{ width: `${value}%`, height: "100%", borderRadius: 4, background: color }} />
       </div>
-      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11.5, color: "var(--w-text-1)", whiteSpace: "nowrap" }}>{value}%</span>
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11.5, color: "var(--w-text-1)", whiteSpace: "nowrap" }}>{value.toFixed(2)}%</span>
     </div>
   )
 }
@@ -349,8 +349,8 @@ export function DrivingSafetyTab() {
       </div>
 
       {/* Operator accountability report */}
-      <ChartCard title="Operator Accountability Report" subtitle="Overspeeding, fatigue, rash driving, and safety compliance by shift" badge="Realtime">
-        <TableShell columns={["MHE Operator", "Overspeed Count", "Fatigue Alerts", "Rash Driving", "Overall Safety Score", "Today's Safety Score", "Location Compliance"]}>
+      <ChartCard title="Operator Accountability Report" subtitle="Overspeeding, fatigue, rash driving, and safety compliance by operator over the last 30 days" onRefresh={() => {}}>
+        <TableShell columns={["MHE Operator", "Overspeed Count", "Fatigue Alerts", "Rash Driving", "Load Compliance", "Safety Score"]}>
           {accPaged.map((r, i) => (
             <tr key={i}>
               <Td>
@@ -359,12 +359,11 @@ export function DrivingSafetyTab() {
                   {r.name}
                 </div>
               </Td>
-              <Td>{String(r.overspeed).padStart(2, "0")}</Td>
-              <Td>{String(r.fatigue).padStart(2, "0")}</Td>
-              <Td>{String(r.rash).padStart(2, "0")}</Td>
-              <Td>{String(r.overallScore).padStart(2, "0")}</Td>
-              <Td><SafetyScoreBar value={r.todayScore} /></Td>
-              <Td>{String(r.locationCompliance).padStart(2, "0")}</Td>
+              <Td>{r.overspeed}</Td>
+              <Td>{r.fatigue}</Td>
+              <Td>{r.rash}</Td>
+              <Td>{r.loadCompliance}</Td>
+              <Td><SafetyScoreBar value={r.safetyScore} /></Td>
             </tr>
           ))}
         </TableShell>
