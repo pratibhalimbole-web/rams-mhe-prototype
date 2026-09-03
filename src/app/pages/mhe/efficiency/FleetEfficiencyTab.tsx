@@ -353,7 +353,7 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
               {ZONES.map(to => {
                 const cell = data[from][to]
                 if (!cell) {
-                  return <div key={to} style={{ height: 32 }} />
+                  return <div key={to} style={{ height: 32, borderRadius: 6, background: "var(--w-bg)", border: "1px solid var(--w-border)" }} />
                 }
                 return (
                   <div
