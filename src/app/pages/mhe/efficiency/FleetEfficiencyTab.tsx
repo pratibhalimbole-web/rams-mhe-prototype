@@ -504,9 +504,12 @@ export function FleetEfficiencyTab() {
               {mhePaged.map((r, i) => (
                 <tr key={i}>
                   <Td>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 36 }}>
                       <Avatar label="MH" seed={r.id} />
-                      {r.id}
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12.5, color: "var(--w-text-1)" }}>{r.id}</span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>{r.efficiencyPct}% Efficiency</span>
+                      </div>
                     </div>
                   </Td>
                   <Td>{r.palletsPerHour}</Td>
