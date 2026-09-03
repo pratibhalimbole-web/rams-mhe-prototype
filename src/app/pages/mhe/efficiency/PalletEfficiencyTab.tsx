@@ -348,10 +348,12 @@ export function PalletEfficiencyTab() {
         <ChartCard title="Distance Efficiency Analysis" subtitle="" badge="Weekly" legend={<MheTypeLegend />} onRefresh={() => {}}>
           <div style={{ flex: 1, minHeight: 280, overflow: "hidden" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 16, right: 24, left: -10, bottom: 5 }}>
+              <ScatterChart margin={{ top: 16, right: 24, left: 0, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
-                <XAxis type="number" dataKey="distance" name="Average Distance Travelled" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-                <YAxis type="number" dataKey="cycleTime" name="Cycle Time Range" domain={[0, 40]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <XAxis type="number" dataKey="distance" name="Average Distance Travelled" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
+                  label={{ value: "AVERAGE DISTANCE TRAVELLED (METERS)", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)" }} />
+                <YAxis type="number" dataKey="cycleTime" name="Cycle Time Range" domain={[0, 40]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
+                  label={{ value: "CYCLE TIME RANGE (H)", angle: -90, position: "insideLeft", fontSize: 9, fill: "var(--w-text-3)" }} />
                 <Tooltip content={<DistanceTooltip />} cursor={{ strokeDasharray: "3 3" }} />
                 {MHE_TYPES.map(t => (
                   <Scatter
