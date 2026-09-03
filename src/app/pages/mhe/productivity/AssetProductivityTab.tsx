@@ -1,5 +1,5 @@
 import * as React from "react"
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { TrendingUp, TrendingDown, Forklift } from "lucide-react"
 import {
   BarChart, Bar, ScatterChart, Scatter, LabelList,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
@@ -46,16 +46,19 @@ function generateIdleScatter() {
 // MHE list matches the MHE Asset Details mock data
 const MHE_ROWS = ["MHE 03", "MHE 06", "MHE 05", "MHE 02", "MHE 08", "Test No Warranty Field", "MHE 01", "MHE 10", "MHE 09", "MHE 04", "MHE 07"]
 
-const SESSIONS = ["Morning session", "Afternoon session", "Night session"]
+const SHIFT_LABELS = ["1st Session", "2nd Session", "3rd Session", "4th Session"]
 
-function generateSessionUtilization() {
+function generateShiftUtilization() {
   const rand = seededRandom(51)
-  const grid: Record<string, Record<string, number>> = {}
-  MHE_ROWS.forEach(m => {
-    grid[m] = {}
-    SESSIONS.forEach(s => { grid[m][s] = rand() })
+  return MHE_ROWS.map(mhe => {
+    const raw = SHIFT_LABELS.map(() => 0.15 + rand())
+    const total = raw.reduce((a, b) => a + b, 0)
+    let pcts = raw.map(v => Math.round((v / total) * 100))
+    const diff = 100 - pcts.reduce((a, b) => a + b, 0)
+    pcts[0] += diff
+    const optimalIndex = pcts.indexOf(Math.max(...pcts))
+    return { mhe, pcts, optimalIndex }
   })
-  return grid
 }
 
 // Operator list matches the Operator Assignment mock data
@@ -153,6 +156,34 @@ function PercentLabel(props: any) {
   )
 }
 
+// ─── MHE shift utilization card ──────────────────────────────────────────────
+
+function MheShiftCard({ mhe, pcts, optimalIndex }: { mhe: string; pcts: number[]; optimalIndex: number }) {
+  return (
+    <div style={{ border: "1px solid var(--w-border)", borderRadius: 10, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "color-mix(in srgb, var(--primary) 12%, transparent)" }}>
+            <Forklift size={16} strokeWidth={1.5} style={{ color: "var(--primary)" }} />
+          </div>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 13, color: "var(--w-text-1)" }}>{mhe}</span>
+        </div>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 11, color: "var(--w-text-2)", background: "var(--w-bg-muted)", borderRadius: 6, padding: "5px 10px", whiteSpace: "nowrap" }}>
+          Optimal Shift : {SHIFT_LABELS[optimalIndex]}
+        </span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${SHIFT_LABELS.length}, 1fr)`, gap: 12 }}>
+        {SHIFT_LABELS.map((label, i) => (
+          <div key={label} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11.5, color: "var(--w-text-2)" }}>{label}</span>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 15, color: "var(--w-text-1)" }}>{pcts[i]}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Heatmap grid with hover tooltip ─────────────────────────────────────────
 
 function HeatmapGrid<Row extends string, Col extends string>({
@@ -229,7 +260,7 @@ export function AssetProductivityTab() {
   const operatorLeaderboard = React.useMemo(generateOperatorLeaderboard, [])
   const mheLeaderboard = React.useMemo(generateMheLeaderboard, [])
   const idleScatter = React.useMemo(generateIdleScatter, [])
-  const sessionUtil = React.useMemo(generateSessionUtilization, [])
+  const shiftUtil = React.useMemo(generateShiftUtilization, [])
   const pairingMatrix = React.useMemo(generatePairingMatrix, [])
 
   const topOperator = operatorLeaderboard[0]
@@ -299,26 +330,11 @@ export function AssetProductivityTab() {
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="MHE Utilization Across Sessions" subtitle="Usage Pattern Analysis(Sessions)" onRefresh={() => {}}>
-          <HeatmapGrid
-            rows={MHE_ROWS}
-            cols={SESSIONS}
-            data={sessionUtil}
-            renderTooltip={(row, col, value) => (
-              <TooltipShell
-                headerLeft={row}
-                rows={[
-                  { label: "Status", value: value > 0.75 ? "Overworked" : value > 0.4 ? "Balanced" : "Underutilized" },
-                  { label: "Session", value: col },
-                  { label: "Utilization %", value: `${Math.round(value * 100)}%` },
-                ]}
-              />
-            )}
-          />
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>0%</span>
-            <div style={{ flex: 1, height: 6, borderRadius: 4, background: "linear-gradient(to right, var(--w-bg-muted), var(--primary))" }} />
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>100%</span>
+        <ChartCard title="MHE Utilization Across Shifts" subtitle="Usage Pattern Analysis(Shifts)" onRefresh={() => {}}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {shiftUtil.map(row => (
+              <MheShiftCard key={row.mhe} mhe={row.mhe} pcts={row.pcts} optimalIndex={row.optimalIndex} />
+            ))}
           </div>
         </ChartCard>
       </div>
