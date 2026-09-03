@@ -5,13 +5,12 @@ import { useSidebar } from "../../components/layout/SidebarLayout"
 import { DrivingSafetyTab } from "./safety/DrivingSafetyTab"
 import { IncidentTrendsTab } from "./safety/IncidentTrendsTab"
 
-type TabId = "driving" | "incidents" | "environment" | "ai-insights"
+type TabId = "driving" | "incidents" | "environment"
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "driving", label: "Driving Safety" },
   { id: "incidents", label: "Incident & Trends" },
   { id: "environment", label: "Environment Safety" },
-  { id: "ai-insights", label: "AI Powered Insights" },
 ]
 
 function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabId) => void }) {
@@ -60,7 +59,6 @@ export function SafetyAnalytics() {
       {tab === "driving" && <DrivingSafetyTab />}
       {tab === "incidents" && <IncidentTrendsTab />}
       {tab === "environment" && <ComingSoonTab label="Environment Safety" />}
-      {tab === "ai-insights" && <ComingSoonTab label="AI Powered Insights" />}
     </div>
   )
 }
