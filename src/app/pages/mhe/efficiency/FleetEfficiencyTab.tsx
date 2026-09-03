@@ -339,41 +339,42 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
   }
 
   const hoverCell = hover ? data[hover.from][hover.to] : null
+  const containerSize = containerRef.current?.getBoundingClientRect()
+  const tooltipLeft = hover ? Math.min(hover.x + 12, Math.max(0, (containerSize?.width ?? 600) - 200)) : 0
+  const tooltipTop = hover ? Math.min(Math.max(hover.y - 60, 0), Math.max(0, (containerSize?.height ?? 300) - 140)) : 0
 
   return (
-    <div ref={containerRef} style={{ position: "relative", overflowX: "auto" }}>
-      <div style={{ display: "grid", gridTemplateColumns: `84px repeat(${ZONES.length}, minmax(110px, 1fr))`, gap: 6, minWidth: 84 + ZONES.length * 110 }}>
-        {ZONES.map(from => (
-          <React.Fragment key={from}>
-            <div style={{ display: "flex", alignItems: "center", fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>{from}</div>
-            {ZONES.map(to => {
-              const cell = data[from][to]
-              if (!cell) {
+    <div ref={containerRef} style={{ position: "relative", overflow: "visible" }}>
+      <div style={{ overflowX: "auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: `84px repeat(${ZONES.length}, minmax(110px, 1fr))`, gap: 6, minWidth: 84 + ZONES.length * 110 }}>
+          {ZONES.map(from => (
+            <React.Fragment key={from}>
+              <div style={{ display: "flex", alignItems: "center", fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>{from}</div>
+              {ZONES.map(to => {
+                const cell = data[from][to]
+                if (!cell) {
+                  return <div key={to} style={{ height: 32 }} />
+                }
                 return (
-                  <div key={to} style={{ height: 32, borderRadius: 6, border: "1px solid var(--w-border)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif", fontSize: 13, color: "var(--w-text-3)" }}>
-                    –
-                  </div>
+                  <div
+                    key={to}
+                    onMouseEnter={e => handleEnter(from, to, e)}
+                    onMouseMove={e => handleEnter(from, to, e)}
+                    onMouseLeave={() => setHover(null)}
+                    style={{ height: 32, borderRadius: 6, background: zoneCellColor(cell.cycleTime), cursor: "pointer" }}
+                  />
                 )
-              }
-              return (
-                <div
-                  key={to}
-                  onMouseEnter={e => handleEnter(from, to, e)}
-                  onMouseMove={e => handleEnter(from, to, e)}
-                  onMouseLeave={() => setHover(null)}
-                  style={{ height: 32, borderRadius: 6, background: zoneCellColor(cell.cycleTime), cursor: "pointer" }}
-                />
-              )
-            })}
-          </React.Fragment>
-        ))}
-        <div />
-        {ZONES.map(z => (
-          <div key={z} style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)", paddingTop: 4 }}>{z}</div>
-        ))}
+              })}
+            </React.Fragment>
+          ))}
+          <div />
+          {ZONES.map(z => (
+            <div key={z} style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)", paddingTop: 4 }}>{z}</div>
+          ))}
+        </div>
       </div>
       {hover && hoverCell && (
-        <div style={{ position: "absolute", left: Math.min(hover.x + 12, 420), top: Math.max(hover.y - 60, 0), zIndex: 20, pointerEvents: "none" }}>
+        <div style={{ position: "absolute", left: tooltipLeft, top: tooltipTop, zIndex: 20, pointerEvents: "none" }}>
           <TooltipShell
             headerLeft=""
             rows={[
