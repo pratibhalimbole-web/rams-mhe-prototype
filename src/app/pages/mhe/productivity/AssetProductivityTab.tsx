@@ -331,7 +331,7 @@ export function AssetProductivityTab() {
         </ChartCard>
 
         <ChartCard title="MHE Utilization Across Shifts" subtitle="Usage Pattern Analysis(Shifts)" onRefresh={() => {}}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, height: 280, overflowY: "auto", paddingRight: 4 }}>
             {shiftUtil.map(row => (
               <MheShiftCard key={row.mhe} mhe={row.mhe} pcts={row.pcts} optimalIndex={row.optimalIndex} />
             ))}
