@@ -297,27 +297,41 @@ export function DrivingSafetyTab() {
 
       {/* Quadrant + detailed sessions */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
-        <ChartCard title="Skill vs Behavior Quadrant" subtitle="" badge="Last 7 days">
-          <ResponsiveContainer width="100%" height={280}>
-            <ScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
-              <XAxis type="number" dataKey="behavior" domain={[0, 100]} ticks={[0, 17, 33, 50, 67, 80, 100]}
-                tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <YAxis type="number" dataKey="skill" domain={[0, 100]} ticks={[0, 17, 33, 50, 67, 83, 100]}
-                tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <ReferenceLine x={50} stroke="var(--w-border)" />
-              <ReferenceLine y={50} stroke="var(--w-border)" />
-              <Tooltip content={<QuadrantTooltip />} cursor={{ strokeDasharray: "3 3" }} />
-              <Scatter data={quadrantData}>
-                {quadrantData.map((d, i) => (
-                  <Cell key={i} fill={quadrantColor(d.skill, d.behavior)} r={d.isHighlighted ? 6 : 5} />
-                ))}
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: -4 }}>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>LOW SKILL</span>
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>BAD BEHAVIOR → GOOD BEHAVIOR</span>
+        <ChartCard title="Skill vs Behavior Quadrant" subtitle="Operators plotted by skill vs behavior score" onRefresh={() => {}}>
+          <div style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>
+            HIGH SKILL
+          </div>
+          <div style={{ display: "flex", alignItems: "stretch" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 16 }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)", whiteSpace: "nowrap", transform: "rotate(-90deg)" }}>
+                BAD BEHAVIOR
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
+                <XAxis type="number" dataKey="behavior" domain={[0, 100]} ticks={[0, 17, 33, 50, 67, 83, 100]}
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <YAxis type="number" dataKey="skill" domain={[0, 100]} ticks={[0, 17, 33, 50, 67, 83, 100]}
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <ReferenceLine x={50} stroke="var(--w-border)" />
+                <ReferenceLine y={50} stroke="var(--w-border)" />
+                <Tooltip content={<QuadrantTooltip />} cursor={{ strokeDasharray: "3 3" }} />
+                <Scatter data={quadrantData}>
+                  {quadrantData.map((d, i) => (
+                    <Cell key={i} fill={quadrantColor(d.skill, d.behavior)} r={d.isHighlighted ? 6 : 5} />
+                  ))}
+                </Scatter>
+              </ScatterChart>
+            </ResponsiveContainer>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 16 }}>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)", whiteSpace: "nowrap", transform: "rotate(90deg)" }}>
+                GOOD BEHAVIOR
+              </span>
+            </div>
+          </div>
+          <div style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>
+            LOW SKILL
           </div>
         </ChartCard>
 
