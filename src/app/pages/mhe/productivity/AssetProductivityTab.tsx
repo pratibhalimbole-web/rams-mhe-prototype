@@ -206,35 +206,41 @@ function HeatmapGrid<Row extends string, Col extends string>({
     setHover({ row, col, value, x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) })
   }
 
+  const colHeaderRow = (
+    <>
+      <div />
+      {cols.map(c => (
+        <div
+          key={c}
+          title={c}
+          style={rotateCols ? {
+            display: "flex", alignItems: "flex-start", justifyContent: "flex-end", paddingTop: 4, height: 44,
+          } : {
+            textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", paddingTop: 4,
+            overflow: truncateCols ? "hidden" : undefined, textOverflow: truncateCols ? "ellipsis" : undefined, whiteSpace: "nowrap",
+          }}
+        >
+          {rotateCols ? (
+            <span
+              style={{
+                fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", whiteSpace: "nowrap",
+                transform: "rotate(-40deg)", transformOrigin: "right", display: "inline-block",
+              }}
+            >
+              {truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c}
+            </span>
+          ) : (
+            truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c
+          )}
+        </div>
+      ))}
+    </>
+  )
+
   return (
     <div ref={containerRef} style={{ position: "relative", overflowX: "auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: `92px repeat(${cols.length}, minmax(${colWidth}px, 1fr))`, gap: 4, minWidth: 92 + cols.length * colWidth }}>
-        <div />
-        {cols.map(c => (
-          <div
-            key={c}
-            title={c}
-            style={rotateCols ? {
-              display: "flex", alignItems: "center", justifyContent: "flex-end", paddingBottom: 4, height: 44,
-            } : {
-              textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", paddingBottom: 4,
-              overflow: truncateCols ? "hidden" : undefined, textOverflow: truncateCols ? "ellipsis" : undefined, whiteSpace: "nowrap",
-            }}
-          >
-            {rotateCols ? (
-              <span
-                style={{
-                  fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", whiteSpace: "nowrap",
-                  transform: "rotate(-40deg)", transformOrigin: "right", display: "inline-block",
-                }}
-              >
-                {truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c}
-              </span>
-            ) : (
-              truncateCols && c.length > 8 ? `${c.slice(0, 7)}…` : c
-            )}
-          </div>
-        ))}
+        {!rotateCols && colHeaderRow}
         {rows.map(r => (
           <React.Fragment key={r}>
             <div title={r} style={{ display: "flex", alignItems: "center", fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -259,6 +265,7 @@ function HeatmapGrid<Row extends string, Col extends string>({
             })}
           </React.Fragment>
         ))}
+        {rotateCols && colHeaderRow}
       </div>
       {colsAxisLabel && (
         <div style={{ textAlign: "center", marginTop: 8, fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>
