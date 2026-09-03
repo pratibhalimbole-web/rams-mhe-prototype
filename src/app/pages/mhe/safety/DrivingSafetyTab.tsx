@@ -200,7 +200,7 @@ function StatusBadge({ status }: { status: string }) {
 function SafetyScoreBar({ value }: { value: number }) {
   const color = value >= 90 ? "#16a34a" : value >= 60 ? "#f59e0b" : "#dc2626"
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 180 }}>
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, width: 180 }}>
       <div style={{ flex: 1, height: 6, borderRadius: 4, background: "var(--w-bg-muted)" }}>
         <div style={{ width: `${value}%`, height: "100%", borderRadius: 4, background: color }} />
       </div>
@@ -350,7 +350,7 @@ export function DrivingSafetyTab() {
 
       {/* Operator accountability report */}
       <ChartCard title="Operator Accountability Report" subtitle="Overspeeding, fatigue, rash driving, and safety compliance by operator over the last 30 days" onRefresh={() => {}}>
-        <TableShell columns={["MHE Operator", "Overspeed Count", "Fatigue Alerts", "Rash Driving", "Load Compliance", "Safety Score"]}>
+        <TableShell columns={["MHE Operator", "Overspeed Count", "Fatigue Alerts", "Rash Driving", "Load Compliance", "Safety Score"]} align={["left", "center", "center", "center", "center", "center"]}>
           {accPaged.map((r, i) => (
             <tr key={i}>
               <Td>
@@ -359,11 +359,11 @@ export function DrivingSafetyTab() {
                   {r.name}
                 </div>
               </Td>
-              <Td>{r.overspeed}</Td>
-              <Td>{r.fatigue}</Td>
-              <Td>{r.rash}</Td>
-              <Td>{r.loadCompliance}</Td>
-              <Td><SafetyScoreBar value={r.safetyScore} /></Td>
+              <Td align="center">{r.overspeed}</Td>
+              <Td align="center">{r.fatigue}</Td>
+              <Td align="center">{r.rash}</Td>
+              <Td align="center">{r.loadCompliance}</Td>
+              <Td align="center"><SafetyScoreBar value={r.safetyScore} /></Td>
             </tr>
           ))}
         </TableShell>

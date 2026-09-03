@@ -228,7 +228,7 @@ export function TrendBadge({ pct, up }: { pct: number; up: boolean }) {
 
 // ─── Table shell + pagination ────────────────────────────────────────────────
 
-export function TableShell({ columns, children, maxVisibleRows = 5 }: { columns: string[]; children: React.ReactNode; maxVisibleRows?: number }) {
+export function TableShell({ columns, children, maxVisibleRows = 5, align }: { columns: string[]; children: React.ReactNode; maxVisibleRows?: number; align?: ("left" | "center" | "right")[] }) {
   const rowCount = React.Children.count(children)
   const scroll = rowCount > maxVisibleRows
   return (
@@ -236,8 +236,8 @@ export function TableShell({ columns, children, maxVisibleRows = 5 }: { columns:
       <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter, sans-serif" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--w-border)" }}>
-            {columns.map(c => (
-              <th key={c} style={{ position: scroll ? "sticky" : undefined, top: 0, background: "var(--w-bg)", textAlign: "left", padding: "10px 8px", fontSize: 11, fontWeight: 600, color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
+            {columns.map((c, i) => (
+              <th key={c} style={{ position: scroll ? "sticky" : undefined, top: 0, background: "var(--w-bg)", textAlign: align?.[i] ?? "left", padding: "10px 8px", fontSize: 11, fontWeight: 600, color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
                 {c}
               </th>
             ))}
@@ -249,8 +249,8 @@ export function TableShell({ columns, children, maxVisibleRows = 5 }: { columns:
   )
 }
 
-export function Td({ children }: { children: React.ReactNode }) {
-  return <td style={{ padding: "12px 8px", fontSize: 12.5, color: "var(--w-text-1)", borderBottom: "1px solid var(--w-divider)", whiteSpace: "nowrap" }}>{children}</td>
+export function Td({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "center" | "right" }) {
+  return <td style={{ padding: "12px 8px", fontSize: 12.5, color: "var(--w-text-1)", borderBottom: "1px solid var(--w-divider)", whiteSpace: "nowrap", textAlign: align }}>{children}</td>
 }
 
 export function Pagination({
