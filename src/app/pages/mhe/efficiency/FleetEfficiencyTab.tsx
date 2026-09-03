@@ -1,7 +1,7 @@
 import * as React from "react"
 import { ArrowUp, ArrowDown, Forklift } from "lucide-react"
 import {
-  ScatterChart, Scatter, Line, BarChart, Bar,
+  ComposedChart, Scatter, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import {
@@ -232,24 +232,6 @@ function CycleTimeLegend() {
 
 // ─── Tooltips ─────────────────────────────────────────────────────────────────
 
-function FleetDistributionTooltip({ active, payload }: any) {
-  if (!active || !payload?.length) return null
-  const point = payload.find((p: any) => p.payload?.mheName)
-  if (!point) return null
-  const d = point.payload
-  return (
-    <TooltipShell
-      headerLeft=""
-      rows={[
-        { label: "Status", value: d.status, bold: true },
-        { label: "MHE Name", value: d.mheName },
-        { label: "MHE", value: d.mheType },
-        { label: "Productivity", value: `${d.pallets} pallets/hour` },
-      ]}
-    />
-  )
-}
-
 function UtilizationDistTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
@@ -399,6 +381,8 @@ export function FleetEfficiencyTab() {
   const shiftUtil = React.useMemo(generateShiftUtilization, [])
   const zoneFlow = React.useMemo(generateZoneFlow, [])
 
+  const [distributionHover, setDistributionHover] = React.useState<{ x: number; y: number; d: any } | null>(null)
+
   const [operatorPageSize, setOperatorPageSize] = React.useState(5)
   const [operatorPageIndex, setOperatorPageIndex] = React.useState(0)
   const operatorPaged = OPERATOR_EFFICIENCY_ROWS.slice(operatorPageIndex * operatorPageSize, operatorPageIndex * operatorPageSize + operatorPageSize)
@@ -423,22 +407,42 @@ export function FleetEfficiencyTab() {
       <ChartCard title="Fleet Efficiency Distribution" subtitle="" badge="Last 7 days" legend={<FleetTypeLegend />} onRefresh={() => {}}>
         <div style={{ display: "flex", alignItems: "stretch" }}>
           <YAxisTitle>PALLETS MOVED PER HOUR</YAxisTitle>
-          <ResponsiveContainer width="100%" height={340}>
-            <ScatterChart margin={{ top: 10, right: 20, left: 4, bottom: 16 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
-              <XAxis type="number" dataKey="utilization" domain={[0, 100]} unit="%" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
-                label={{ value: "UTILIZATION (%)", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)", textAnchor: "middle" }} />
-              <YAxis type="number" dataKey="pallets" domain={[0, "dataMax + 30"]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-              <ReferenceLine x={33} stroke="#dc2626" strokeDasharray="4 4" />
-              <ReferenceLine x={75} stroke="#16a34a" strokeDasharray="4 4" />
-              <Tooltip content={<FleetDistributionTooltip />} cursor={{ strokeDasharray: "3 3" }} />
-              <Line data={TREND_LINE} type="monotone" dataKey="trend" stroke="var(--primary)" strokeWidth={2} strokeDasharray="7 5" dot={false} isAnimationActive={false} />
-              {MHE_TYPES.map(t => (
-                <Scatter key={t} data={fleetDistribution.filter(d => d.mheType === t)} fill={MHE_TYPE_COLORS[t]}
-                  shape={(props: any) => <circle cx={props.cx} cy={props.cy} r={4} fill={props.fill} />} />
-              ))}
-            </ScatterChart>
-          </ResponsiveContainer>
+          <div style={{ position: "relative", flex: 1 }}>
+            <ResponsiveContainer width="100%" height={340}>
+              <ComposedChart margin={{ top: 10, right: 20, left: 4, bottom: 16 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
+                <XAxis type="number" dataKey="utilization" domain={[0, 100]} unit="%" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
+                  label={{ value: "UTILIZATION (%)", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)", textAnchor: "middle" }} />
+                <YAxis type="number" dataKey="pallets" domain={[0, "dataMax + 30"]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <ReferenceLine x={33} stroke="#dc2626" strokeDasharray="4 4" />
+                <ReferenceLine x={75} stroke="#16a34a" strokeDasharray="4 4" />
+                <Line data={TREND_LINE} type="monotone" dataKey="trend" stroke="var(--primary)" strokeWidth={2} strokeDasharray="7 5" dot={false} isAnimationActive={false} />
+                {MHE_TYPES.map(t => (
+                  <Scatter
+                    key={t}
+                    data={fleetDistribution.filter(d => d.mheType === t)}
+                    fill={MHE_TYPE_COLORS[t]}
+                    shape={(props: any) => <circle cx={props.cx} cy={props.cy} r={4} fill={props.fill} />}
+                    onMouseEnter={(point: any) => setDistributionHover({ x: point.cx, y: point.cy, d: point.payload })}
+                    onMouseLeave={() => setDistributionHover(null)}
+                  />
+                ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+            {distributionHover && (
+              <div style={{ position: "absolute", left: Math.min(distributionHover.x + 12, 620), top: Math.max(distributionHover.y - 70, 0), zIndex: 20, pointerEvents: "none" }}>
+                <TooltipShell
+                  headerLeft=""
+                  rows={[
+                    { label: "Status", value: distributionHover.d.status, bold: true },
+                    { label: "MHE Name", value: distributionHover.d.mheName },
+                    { label: "MHE", value: distributionHover.d.mheType },
+                    { label: "Productivity", value: `${distributionHover.d.pallets} pallets/hour` },
+                  ]}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </ChartCard>
 
