@@ -1,7 +1,7 @@
 import * as React from "react"
 import { ArrowUp, AlertTriangle, Maximize2, ChevronDown } from "lucide-react"
 import {
-  BarChart, Bar, LineChart, Line, ScatterChart, Scatter, ZAxis, Cell,
+  BarChart, Bar, LineChart, Line, ScatterChart, Scatter, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import {
@@ -352,10 +352,15 @@ export function PalletEfficiencyTab() {
                 <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
                 <XAxis type="number" dataKey="distance" name="Average Distance Travelled" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
                 <YAxis type="number" dataKey="cycleTime" name="Cycle Time Range" domain={[0, 40]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
-                <ZAxis type="number" dataKey="size" range={[30, 180]} />
                 <Tooltip content={<DistanceTooltip />} cursor={{ strokeDasharray: "3 3" }} />
                 {MHE_TYPES.map(t => (
-                  <Scatter key={t} data={distanceEfficiency.filter(d => d.type === t)} fill={MHE_TYPE_COLORS[t]} fillOpacity={0.7} />
+                  <Scatter
+                    key={t}
+                    data={distanceEfficiency.filter(d => d.type === t)}
+                    fill={MHE_TYPE_COLORS[t]}
+                    fillOpacity={0.7}
+                    shape={(props: any) => <circle cx={props.cx} cy={props.cy} r={5} fill={props.fill} fillOpacity={0.7} />}
+                  />
                 ))}
               </ScatterChart>
             </ResponsiveContainer>
