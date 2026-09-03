@@ -1,7 +1,7 @@
 import * as React from "react"
 import { ArrowUp, ArrowDown, Forklift } from "lucide-react"
 import {
-  ComposedChart, Scatter, Line, BarChart, Bar,
+  ScatterChart, Scatter, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import {
@@ -110,7 +110,10 @@ const MHE_EFFICIENCY_ROWS = (() => {
   }))
 })()
 
-const ZONES = ["Receiving", "Storage-A", "Storage-B", "Picking", "Loading"]
+const ZONES = ["Receiving", "Storage-A", "Storage-B", "Storage-C", "Picking", "Packing", "Staging", "Loading"]
+
+const CYCLE_MIN = 6
+const CYCLE_MAX = 20
 
 function cycleCategory(minutes: number): "fast" | "moderate" | "slow" {
   if (minutes <= 10) return "fast"
@@ -118,10 +121,13 @@ function cycleCategory(minutes: number): "fast" | "moderate" | "slow" {
   return "slow"
 }
 
-const ZONE_CATEGORY_COLOR: Record<string, string> = {
-  fast: "color-mix(in srgb, var(--primary) 18%, transparent)",
-  moderate: "color-mix(in srgb, var(--primary) 40%, transparent)",
-  slow: "color-mix(in srgb, var(--primary) 70%, transparent)",
+function cycleIntensity(minutes: number): number {
+  return Math.min(1, Math.max(0, (minutes - CYCLE_MIN) / (CYCLE_MAX - CYCLE_MIN)))
+}
+
+function zoneCellColor(minutes: number): string {
+  const intensity = cycleIntensity(minutes)
+  return `color-mix(in srgb, var(--primary) ${Math.round(intensity * 80) + 12}%, var(--w-bg-muted))`
 }
 
 function generateZoneFlow() {
@@ -132,7 +138,7 @@ function generateZoneFlow() {
     ZONES.forEach(to => {
       grid[from][to] = from === to ? null : {
         pallets: Math.round(80 + rand() * 300),
-        cycleTime: Math.round((6 + rand() * 14) * 10) / 10,
+        cycleTime: Math.round((CYCLE_MIN + rand() * (CYCLE_MAX - CYCLE_MIN)) * 10) / 10,
       }
     })
   })
@@ -215,14 +221,11 @@ function UtilZoneLegend() {
 
 function CycleTimeLegend() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>Cycle Time:</span>
-      {[["Fast (≤ 10 min)", "fast"], ["Moderate (10-15 min)", "moderate"], ["Slow (> 15 min)", "slow"]].map(([label, key]) => (
-        <span key={key} style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: ZONE_CATEGORY_COLOR[key] }} />
-          {label}
-        </span>
-      ))}
+      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>Fast</span>
+      <div style={{ width: 90, height: 6, borderRadius: 4, background: "linear-gradient(to right, var(--w-bg-muted), var(--primary))" }} />
+      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10, color: "var(--w-text-3)" }}>Slow</span>
     </div>
   )
 }
@@ -364,7 +367,7 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
                   onMouseMove={e => handleEnter(from, to, e)}
                   onMouseLeave={() => setHover(null)}
                   style={{
-                    height: 56, borderRadius: 6, background: ZONE_CATEGORY_COLOR[cat], cursor: "pointer",
+                    height: 56, borderRadius: 6, background: zoneCellColor(cell.cycleTime), cursor: "pointer",
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                   }}
                 >
@@ -427,7 +430,7 @@ export function FleetEfficiencyTab() {
         <div style={{ display: "flex", alignItems: "stretch" }}>
           <YAxisTitle>PALLETS MOVED PER HOUR</YAxisTitle>
           <ResponsiveContainer width="100%" height={340}>
-            <ComposedChart margin={{ top: 10, right: 20, left: 4, bottom: 16 }}>
+            <ScatterChart margin={{ top: 10, right: 20, left: 4, bottom: 16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
               <XAxis type="number" dataKey="utilization" domain={[0, 100]} unit="%" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false}
                 label={{ value: "UTILIZATION (%)", position: "insideBottom", offset: -6, fontSize: 9, fill: "var(--w-text-3)", textAnchor: "middle" }} />
@@ -440,7 +443,7 @@ export function FleetEfficiencyTab() {
                 <Scatter key={t} data={fleetDistribution.filter(d => d.mheType === t)} fill={MHE_TYPE_COLORS[t]}
                   shape={(props: any) => <circle cx={props.cx} cy={props.cy} r={4} fill={props.fill} />} />
               ))}
-            </ComposedChart>
+            </ScatterChart>
           </ResponsiveContainer>
         </div>
       </ChartCard>
