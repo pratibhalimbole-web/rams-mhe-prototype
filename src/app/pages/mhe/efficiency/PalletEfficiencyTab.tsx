@@ -322,7 +322,7 @@ export function PalletEfficiencyTab() {
         </ChartCard>
 
         <ChartCard title="Speed vs Productivity Correlation" subtitle="" legend={<MheTypeLegend />} onRefresh={() => {}}>
-          <div style={{ flex: 1, minHeight: 280 }}>
+          <div style={{ flex: 1, minHeight: 280, overflow: "hidden" }}>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
@@ -330,7 +330,12 @@ export function PalletEfficiencyTab() {
                 <YAxis type="number" dataKey="pallets" name="Pallets Per Hour" domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
                 <Tooltip content={<SpeedProductivityTooltip />} cursor={{ strokeDasharray: "3 3" }} />
                 {MHE_TYPES.map(t => (
-                  <Scatter key={t} data={speedProductivity.filter(d => d.type === t)} fill={MHE_TYPE_COLORS[t]} />
+                  <Scatter
+                    key={t}
+                    data={speedProductivity.filter(d => d.type === t)}
+                    fill={MHE_TYPE_COLORS[t]}
+                    shape={(props: any) => <circle cx={props.cx} cy={props.cy} r={4} fill={props.fill} />}
+                  />
                 ))}
               </ScatterChart>
             </ResponsiveContainer>
