@@ -239,7 +239,7 @@ function HeatmapGrid<Row extends string, Col extends string>({
 
   return (
     <div ref={containerRef} style={{ position: "relative", overflowX: "auto" }}>
-      <div style={{ display: "grid", gridTemplateColumns: `92px repeat(${cols.length}, minmax(${colWidth}px, 1fr))`, gap: 4, minWidth: 92 + cols.length * colWidth }}>
+      <div style={{ display: "grid", gridTemplateColumns: `56px repeat(${cols.length}, minmax(${colWidth}px, 1fr))`, gap: 2, minWidth: 56 + cols.length * colWidth }}>
         {!rotateCols && colHeaderRow}
         {rows.map(r => (
           <React.Fragment key={r}>
@@ -255,8 +255,8 @@ function HeatmapGrid<Row extends string, Col extends string>({
                   onMouseMove={e => handleEnter(r, c, v, e)}
                   onMouseLeave={() => setHover(null)}
                   style={{
-                    height: 26,
-                    borderRadius: 4,
+                    height: 24,
+                    borderRadius: 3,
                     background: `color-mix(in srgb, var(--primary) ${Math.round(v * 88) + 8}%, var(--w-bg-muted))`,
                     cursor: "pointer",
                   }}
@@ -372,7 +372,7 @@ export function AssetProductivityTab() {
           rows={MHE_ROWS}
           cols={OPERATORS_MATRIX}
           data={pairingMatrix}
-          colWidth={64}
+          colWidth={48}
           truncateCols
           rotateCols
           colsAxisLabel="OPERATORS"
