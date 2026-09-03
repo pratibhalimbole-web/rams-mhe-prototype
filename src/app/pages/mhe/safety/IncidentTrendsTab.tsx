@@ -1,13 +1,34 @@
 import * as React from "react"
-import { RotateCw } from "lucide-react"
+import { RotateCw, AlertTriangle, ShieldAlert, ShieldCheck, HardHat } from "lucide-react"
 import {
   PieChart, Pie, Cell, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts"
 import {
-  ChartCard, KpiCard, TooltipShell, seededRandom, FilterSelect,
+  ChartCard, TooltipShell, cardStyle, seededRandom, FilterSelect,
 } from "../productivity/shared"
 import { Badge } from "../../../components/ui/badge"
+
+// ─── Safety KPI card (icon chip + value + subtitle, matches Driving Safety) ──
+
+function SafetyKpiCard({
+  icon: Icon, color, title, value, subtitle,
+}: {
+  icon: React.ElementType; color: string; title: string; value: string; subtitle: string
+}) {
+  return (
+    <div style={{ ...cardStyle, padding: "16px 18px", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 26, height: 26, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", background: `color-mix(in srgb, ${color} 15%, transparent)` }}>
+          <Icon size={14} strokeWidth={1.5} style={{ color }} />
+        </div>
+        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 12, color: "var(--w-text-2)" }}>{title}</span>
+      </div>
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "var(--w-text-1)" }}>{value}</span>
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11.5, color: "var(--w-text-2)" }}>{subtitle}</span>
+    </div>
+  )
+}
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 
@@ -252,10 +273,10 @@ export function IncidentTrendsTab() {
 
       {/* KPI row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
-        <KpiCard title="Total Alerts" value="05" />
-        <KpiCard title="Near Misses" value="14" />
-        <KpiCard title="Fleet Safety Score" value="85%" />
-        <KpiCard title="PPE Compliances" value="70%" />
+        <SafetyKpiCard icon={AlertTriangle} color="#dc2626" title="Total Alerts" value="05" subtitle="Alerts raised this week" />
+        <SafetyKpiCard icon={ShieldAlert} color="#f59e0b" title="Near Misses" value="14" subtitle="Close-call events logged" />
+        <SafetyKpiCard icon={ShieldCheck} color="#16a34a" title="Fleet Safety Score" value="85%" subtitle="Overall fleet safety rating" />
+        <SafetyKpiCard icon={HardHat} color="#2563eb" title="PPE Compliances" value="70%" subtitle="Operators wearing required PPE" />
       </div>
 
       <RefreshRow range={range} onRangeChange={setRange} />
