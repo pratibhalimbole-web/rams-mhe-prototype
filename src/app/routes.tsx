@@ -16,6 +16,7 @@ import { ReportBuilderTest } from "./pages/report/ReportBuilderTest";
 import { RawData } from "./pages/mhe/RawData";
 import { ProductivityAnalytics } from "./pages/mhe/ProductivityAnalytics";
 import { EfficiencyAnalytics } from "./pages/mhe/EfficiencyAnalytics";
+import { SafetyAnalytics } from "./pages/mhe/SafetyAnalytics";
 import { ActionBoard } from "./pages/mhe/ActionBoard";
 import { ActionBoard1 } from "./pages/mhe/ActionBoard1";
 import { IncidentActions } from "./pages/mhe/IncidentActions";
@@ -243,7 +244,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/meps/safety-analytics",
-        element: <PlaceholderPage title="Safety Analytics" />,
+        element: <SafetyAnalytics />,
       },
       {
         path: "mhe/meps/productivity-analytics",

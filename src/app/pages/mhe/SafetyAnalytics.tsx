@@ -1,0 +1,61 @@
+import * as React from "react"
+import { useEffect } from "react"
+import { ShieldAlert } from "lucide-react"
+import { useSidebar } from "../../components/layout/SidebarLayout"
+import { DrivingSafetyTab } from "./safety/DrivingSafetyTab"
+
+type TabId = "driving" | "incidents"
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: "driving", label: "Driving Safety" },
+  { id: "incidents", label: "Incident & Trends" },
+]
+
+function TabBar({ active, onChange }: { active: TabId; onChange: (t: TabId) => void }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 24, borderBottom: "1px solid var(--w-border)" }}>
+      {TABS.map(t => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => onChange(t.id)}
+          style={{
+            position: "relative", paddingBottom: 10, background: "none", border: "none", cursor: "pointer",
+            fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 600,
+            color: active === t.id ? "var(--w-text-1)" : "var(--w-text-2)",
+          }}
+        >
+          {t.label}
+          {active === t.id && (
+            <span style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 2, borderRadius: 2, background: "var(--primary)" }} />
+          )}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function ComingSoonTab({ label }: { label: string }) {
+  return (
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: "64px 24px" }}>
+      <ShieldAlert size={28} strokeWidth={1.5} style={{ color: "var(--w-text-3)" }} />
+      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 13, color: "var(--w-text-1)" }}>{label}</span>
+      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "var(--w-text-2)" }}>Design coming soon</span>
+    </div>
+  )
+}
+
+export function SafetyAnalytics() {
+  const sidebar = useSidebar()
+  useEffect(() => { sidebar?.setSubPageTitle("safety analytics") }, [])
+
+  const [tab, setTab] = React.useState<TabId>("driving")
+
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", gap: 16, padding: 24, overflowY: "auto", background: "var(--w-bg-page)" }}>
+      <TabBar active={tab} onChange={setTab} />
+      {tab === "driving" && <DrivingSafetyTab />}
+      {tab === "incidents" && <ComingSoonTab label="Incident & Trends" />}
+    </div>
+  )
+}
