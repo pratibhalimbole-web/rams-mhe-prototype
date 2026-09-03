@@ -228,14 +228,16 @@ export function TrendBadge({ pct, up }: { pct: number; up: boolean }) {
 
 // ─── Table shell + pagination ────────────────────────────────────────────────
 
-export function TableShell({ columns, children }: { columns: string[]; children: React.ReactNode }) {
+export function TableShell({ columns, children, maxVisibleRows = 5 }: { columns: string[]; children: React.ReactNode; maxVisibleRows?: number }) {
+  const rowCount = React.Children.count(children)
+  const scroll = rowCount > maxVisibleRows
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div style={{ overflowX: "auto", overflowY: scroll ? "auto" : "visible", maxHeight: scroll ? maxVisibleRows * 45 + 37 : undefined }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Inter, sans-serif" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--w-border)" }}>
             {columns.map(c => (
-              <th key={c} style={{ textAlign: "left", padding: "10px 8px", fontSize: 11, fontWeight: 600, color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
+              <th key={c} style={{ position: scroll ? "sticky" : undefined, top: 0, background: "var(--w-bg)", textAlign: "left", padding: "10px 8px", fontSize: 11, fontWeight: 600, color: "var(--w-text-2)", whiteSpace: "nowrap" }}>
                 {c}
               </th>
             ))}
