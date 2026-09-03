@@ -110,7 +110,7 @@ const MHE_EFFICIENCY_ROWS = (() => {
   }))
 })()
 
-const ZONES = ["Receiving", "Storage-A", "Storage-B", "Storage-C", "Picking", "Packing", "Staging", "Loading"]
+const ZONES = ["Receiving", "Storage-A", "Storage-B", "Storage-C", "Picking", "Packing", "Staging", "Dispatch", "Loading"]
 
 const CYCLE_MIN = 6
 const CYCLE_MAX = 20
