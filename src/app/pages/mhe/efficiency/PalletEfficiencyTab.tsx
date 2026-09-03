@@ -55,7 +55,7 @@ function generateSpeedProductivity() {
   return MHE_TYPES.flatMap(type => Array.from({ length: 5 }, () => ({
     type,
     speed: Math.round((5 + rand() * 4.5) * 10) / 10,
-    pallets: Math.round(50 + rand() * 280),
+    pallets: Math.round(10 + rand() * 380),
   })))
 }
 
@@ -327,7 +327,7 @@ export function PalletEfficiencyTab() {
               <ScatterChart margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="" stroke="var(--w-bg-muted)" />
                 <XAxis type="number" dataKey="speed" name="Average Speed" domain={[5, 9.5]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} label={{ value: "AVERAGE SPEED (KM/H)", position: "insideBottom", offset: -4, fontSize: 9, fill: "var(--w-text-3)" }} />
-                <YAxis type="number" dataKey="pallets" name="Pallets Per Hour" domain={[0, 400]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                <YAxis type="number" dataKey="pallets" name="Pallets Per Hour" domain={[0, "dataMax + 20"]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
                 <Tooltip content={<SpeedProductivityTooltip />} cursor={{ strokeDasharray: "3 3" }} />
                 {MHE_TYPES.map(t => (
                   <Scatter
