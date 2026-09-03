@@ -396,7 +396,7 @@ export function IncidentTrendsTab() {
       </div>
 
       {/* Proximity heatmap */}
-      <ChartCard title="Speed Violation By Zone" subtitle="Hour × Day pattern for proximity events">
+      <ChartCard title="Speed Violation By Zone" subtitle="Hour × Day pattern for proximity events" minHeight={0}>
         <ProximityHeatmap data={proximityHeatmap} />
       </ChartCard>
     </div>
