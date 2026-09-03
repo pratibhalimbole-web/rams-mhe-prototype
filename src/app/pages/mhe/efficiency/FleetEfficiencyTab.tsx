@@ -482,44 +482,50 @@ export function FleetEfficiencyTab() {
       {/* Efficiency tables */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
         <ChartCard title="Operator Efficiency Table" subtitle="Operator performance and productivity metrics" onRefresh={() => {}}>
-          <TableShell columns={["Operator", "Pallets Per Hour", "Idle-with-Load (min)", "Deadhead %"]}>
-            {operatorPaged.map((r, i) => (
-              <tr key={i}>
-                <Td>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <EfficiencyRing value={r.efficiency} />
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12.5, color: "var(--w-text-1)" }}>{r.name}</span>
-                      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>{r.efficiency}% Efficiency</span>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <TableShell columns={["Operator", "Pallets Per Hour", "Idle-with-Load (min)", "Deadhead %"]}>
+              {operatorPaged.map((r, i) => (
+                <tr key={i}>
+                  <Td>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <EfficiencyRing value={r.efficiency} />
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12.5, color: "var(--w-text-1)" }}>{r.name}</span>
+                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>{r.efficiency}% Efficiency</span>
+                      </div>
                     </div>
-                  </div>
-                </Td>
-                <Td>{r.palletsPerHour}</Td>
-                <Td>{r.idleWithLoad}</Td>
-                <Td><EfficiencyBadge pct={r.deadheadPct} up={r.deadheadUp} /></Td>
-              </tr>
-            ))}
-          </TableShell>
-          <Pagination pageSize={operatorPageSize} setPageSize={setOperatorPageSize} pageIndex={operatorPageIndex} setPageIndex={setOperatorPageIndex} totalRows={OPERATOR_EFFICIENCY_ROWS.length} />
+                  </Td>
+                  <Td>{r.palletsPerHour}</Td>
+                  <Td>{r.idleWithLoad}</Td>
+                  <Td><EfficiencyBadge pct={r.deadheadPct} up={r.deadheadUp} /></Td>
+                </tr>
+              ))}
+            </TableShell>
+            <div style={{ flex: 1 }} />
+            <Pagination pageSize={operatorPageSize} setPageSize={setOperatorPageSize} pageIndex={operatorPageIndex} setPageIndex={setOperatorPageIndex} totalRows={OPERATOR_EFFICIENCY_ROWS.length} />
+          </div>
         </ChartCard>
 
         <ChartCard title="MHE Efficiency Table" subtitle="Machine performance and energy metrics" onRefresh={() => {}}>
-          <TableShell columns={["MHE", "Pallets Per Hour", "Energy Loss (Kwh)", "Efficiency"]}>
-            {mhePaged.map((r, i) => (
-              <tr key={i}>
-                <Td>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Avatar label="MH" seed={r.id} />
-                    {r.id}
-                  </div>
-                </Td>
-                <Td>{r.palletsPerHour}</Td>
-                <Td>{r.energyLoss}%</Td>
-                <Td><EfficiencyBadge pct={r.efficiencyPct} up={r.efficiencyUp} /></Td>
-              </tr>
-            ))}
-          </TableShell>
-          <Pagination pageSize={mhePageSize} setPageSize={setMhePageSize} pageIndex={mhePageIndex} setPageIndex={setMhePageIndex} totalRows={MHE_EFFICIENCY_ROWS.length} />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <TableShell columns={["MHE", "Pallets Per Hour", "Energy Loss (Kwh)", "Efficiency"]}>
+              {mhePaged.map((r, i) => (
+                <tr key={i}>
+                  <Td>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <Avatar label="MH" seed={r.id} />
+                      {r.id}
+                    </div>
+                  </Td>
+                  <Td>{r.palletsPerHour}</Td>
+                  <Td>{r.energyLoss}%</Td>
+                  <Td><EfficiencyBadge pct={r.efficiencyPct} up={r.efficiencyUp} /></Td>
+                </tr>
+              ))}
+            </TableShell>
+            <div style={{ flex: 1 }} />
+            <Pagination pageSize={mhePageSize} setPageSize={setMhePageSize} pageIndex={mhePageIndex} setPageIndex={setMhePageIndex} totalRows={MHE_EFFICIENCY_ROWS.length} />
+          </div>
         </ChartCard>
       </div>
 
