@@ -266,7 +266,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "mhe/rtss/raw-data-rtss",
-        element: <PlaceholderPage title="Raw Data" />,
+        element: <RawData />,
       },
       {
         path: "mhe/rtss/safety-analytics-rtss",
