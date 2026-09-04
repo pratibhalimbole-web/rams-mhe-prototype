@@ -73,14 +73,89 @@ function generateOperatorRows(): OperatorRow[] {
 
 // ─── Range brush (visual) ─────────────────────────────────────────────────────
 
-function RangeBrush({ from, to }: { from: string; to: string }) {
+function RangeBrush({
+  labels, start, end, onChange,
+}: {
+  labels: string[]
+  start: number
+  end: number
+  onChange: (start: number, end: number) => void
+}) {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const dragModeRef = React.useRef<null | "left" | "right" | "move">(null)
+  const dragStartRef = React.useRef({ x: 0, start: 0, end: 0 })
+  const total = labels.length - 1
+
+  function idxFromClientX(clientX: number) {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect || total <= 0) return 0
+    const pct = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    return Math.round(pct * total)
+  }
+
+  const handleMove = React.useCallback((e: PointerEvent) => {
+    const mode = dragModeRef.current
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!mode || !rect || total <= 0) return
+    if (mode === "left") {
+      const idx = Math.min(idxFromClientX(e.clientX), dragStartRef.current.end - 1)
+      onChange(Math.max(0, idx), dragStartRef.current.end)
+    } else if (mode === "right") {
+      const idx = Math.max(idxFromClientX(e.clientX), dragStartRef.current.start + 1)
+      onChange(dragStartRef.current.start, Math.min(total, idx))
+    } else {
+      const deltaIdx = Math.round(((e.clientX - dragStartRef.current.x) / rect.width) * total)
+      const width = dragStartRef.current.end - dragStartRef.current.start
+      let newStart = dragStartRef.current.start + deltaIdx
+      let newEnd = dragStartRef.current.end + deltaIdx
+      if (newStart < 0) { newStart = 0; newEnd = width }
+      if (newEnd > total) { newEnd = total; newStart = total - width }
+      onChange(newStart, newEnd)
+    }
+  }, [onChange, total])
+
+  const handleUp = React.useCallback(() => {
+    dragModeRef.current = null
+    window.removeEventListener("pointermove", handleMove)
+    window.removeEventListener("pointerup", handleUp)
+  }, [handleMove])
+
+  function startDrag(mode: "left" | "right" | "move", e: React.PointerEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragModeRef.current = mode
+    dragStartRef.current = { x: e.clientX, start, end }
+    window.addEventListener("pointermove", handleMove)
+    window.addEventListener("pointerup", handleUp)
+  }
+
+  const leftPct = total > 0 ? (start / total) * 100 : 0
+  const widthPct = total > 0 ? ((end - start) / total) * 100 : 100
+
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-3)", whiteSpace: "nowrap" }}>{from}</span>
-      <div style={{ flex: 1, height: 22, borderRadius: 6, background: "var(--w-bg-muted)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", left: "22%", width: "18%", top: 0, bottom: 0, background: "color-mix(in srgb, var(--primary) 35%, transparent)", borderLeft: "2px solid var(--primary)", borderRight: "2px solid var(--primary)" }} />
+      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-3)", whiteSpace: "nowrap" }}>{labels[start]}</span>
+      <div ref={containerRef} style={{ flex: 1, height: 22, borderRadius: 6, background: "var(--w-bg-muted)", position: "relative" }}>
+        <div
+          onPointerDown={e => startDrag("move", e)}
+          style={{
+            position: "absolute", left: `${leftPct}%`, width: `${widthPct}%`, top: 0, bottom: 0,
+            background: "color-mix(in srgb, var(--primary) 35%, transparent)",
+            borderLeft: "2px solid var(--primary)", borderRight: "2px solid var(--primary)",
+            cursor: "grab",
+          }}
+        >
+          <div
+            onPointerDown={e => startDrag("left", e)}
+            style={{ position: "absolute", left: -5, top: -2, bottom: -2, width: 10, cursor: "ew-resize" }}
+          />
+          <div
+            onPointerDown={e => startDrag("right", e)}
+            style={{ position: "absolute", right: -5, top: -2, bottom: -2, width: 10, cursor: "ew-resize" }}
+          />
+        </div>
       </div>
-      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-3)", whiteSpace: "nowrap" }}>{to}</span>
+      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-3)", whiteSpace: "nowrap" }}>{labels[end]}</span>
     </div>
   )
 }
@@ -120,6 +195,9 @@ export function TaskProductivityTab() {
   const [mheFilter, setMheFilter] = React.useState("All MHE")
   const [operatorFilter, setOperatorFilter] = React.useState("All Operator")
 
+  const [brushRange, setBrushRange] = React.useState({ start: 1, end: 6 })
+  const brushedPalletsData = palletsData.slice(brushRange.start, brushRange.end + 1)
+
   const [mhePageSize, setMhePageSize] = React.useState(5)
   const [mhePageIndex, setMhePageIndex] = React.useState(0)
   const [opPageSize, setOpPageSize] = React.useState(5)
@@ -156,7 +234,7 @@ export function TaskProductivityTab() {
       >
         <div style={{ flex: 1, minHeight: 240 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={palletsData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+            <AreaChart data={brushedPalletsData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
               <defs>
                 <linearGradient id="palletsFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
@@ -180,7 +258,12 @@ export function TaskProductivityTab() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <RangeBrush from="2026-01-03 11:26:08" to="2026-01-03 01:26:08" />
+        <RangeBrush
+          labels={HOUR_LABELS}
+          start={brushRange.start}
+          end={brushRange.end}
+          onChange={(start, end) => setBrushRange({ start, end })}
+        />
       </ChartCard>
 
       {/* Congestion + Break impact */}
