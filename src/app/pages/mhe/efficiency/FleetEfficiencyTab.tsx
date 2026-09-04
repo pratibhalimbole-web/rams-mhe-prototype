@@ -360,11 +360,11 @@ function ZoneFlowMatrix({ data }: { data: ReturnType<typeof generateZoneFlow> })
           <TooltipShell
             headerLeft=""
             rows={[
-              { label: "Status", value: cycleCategory(hoverCell.cycleTime), bold: true },
-              { label: "From", value: hover.from },
-              { label: "To", value: hover.to },
-              { label: "No of pallets", value: String(hoverCell.pallets) },
-              { label: "Average cycle time", value: `${hoverCell.cycleTime} min` },
+              { label: "Status", value: cycleCategory(hoverCell.cycleTime), bold: true, color: zoneCellColor(hoverCell.cycleTime) },
+              { label: "From", value: hover.from, hideDot: true },
+              { label: "To", value: hover.to, hideDot: true },
+              { label: "No of pallets", value: String(hoverCell.pallets), hideDot: true },
+              { label: "Average cycle time", value: `${hoverCell.cycleTime} min`, hideDot: true },
             ]}
           />
         </div>
