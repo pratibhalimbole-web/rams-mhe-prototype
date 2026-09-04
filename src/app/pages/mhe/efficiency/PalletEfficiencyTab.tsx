@@ -12,9 +12,9 @@ import {
 
 const MHE_TYPES = ["BOPT", "Forklift", "Reach Truck"] as const
 const MHE_TYPE_COLORS: Record<string, string> = {
-  BOPT: "color-mix(in srgb, var(--primary) 55%, transparent)",
-  Forklift: "var(--primary)",
-  "Reach Truck": "color-mix(in srgb, var(--primary) 30%, transparent)",
+  BOPT: "#16a34a",
+  Forklift: "#f59e0b",
+  "Reach Truck": "#2563eb",
 }
 
 function generateCycleTimeDistribution() {
@@ -153,9 +153,9 @@ function HourlyTrendTooltip({ active, payload, label }: any) {
     <TooltipShell
       headerLeft=""
       rows={[
-        { label: "MHE Type:", value: p.dataKey, bold: true },
-        { label: "Time:", value: label },
-        { label: "Pallets/Hour:", value: String(p.value) },
+        { label: "MHE Type:", value: p.dataKey, bold: true, color: MHE_TYPE_COLORS[p.dataKey] },
+        { label: "Time:", value: label, hideDot: true },
+        { label: "Pallets/Hour:", value: String(p.value), hideDot: true },
       ]}
     />
   )
@@ -168,9 +168,9 @@ function SpeedProductivityTooltip({ active, payload }: any) {
     <TooltipShell
       headerLeft=""
       rows={[
-        { label: "MHE Type:", value: d.type, bold: true },
-        { label: "Speed:", value: `${d.speed} km/h` },
-        { label: "Pallets/Hour:", value: String(d.pallets) },
+        { label: "MHE Type:", value: d.type, bold: true, color: MHE_TYPE_COLORS[d.type] },
+        { label: "Speed:", value: `${d.speed} km/h`, hideDot: true },
+        { label: "Pallets/Hour:", value: String(d.pallets), hideDot: true },
       ]}
     />
   )
@@ -183,9 +183,9 @@ function DistanceTooltip({ active, payload }: any) {
     <TooltipShell
       headerLeft=""
       rows={[
-        { label: "MHE Type:", value: d.type, bold: true },
-        { label: "Distance:", value: `${d.distance} m` },
-        { label: "Cycle Time:", value: `${d.cycleTime} min` },
+        { label: "MHE Type:", value: d.type, bold: true, color: MHE_TYPE_COLORS[d.type] },
+        { label: "Distance:", value: `${d.distance} m`, hideDot: true },
+        { label: "Cycle Time:", value: `${d.cycleTime} min`, hideDot: true },
       ]}
     />
   )
