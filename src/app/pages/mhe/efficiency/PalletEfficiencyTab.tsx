@@ -1,11 +1,11 @@
 import * as React from "react"
-import { ArrowUp, AlertTriangle, Maximize2, ChevronDown } from "lucide-react"
+import { ArrowUp, AlertTriangle, Maximize2 } from "lucide-react"
 import {
   BarChart, Bar, LineChart, Line, ScatterChart, Scatter, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import {
-  ChartCard, TooltipShell, cardStyle, seededRandom,
+  ChartCard, TooltipShell, cardStyle, seededRandom, FilterSelect,
 } from "../productivity/shared"
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
@@ -24,9 +24,10 @@ function generateCycleTimeDistribution() {
 }
 
 const HOURS = ["6am", "7am", "8am", "9am", "10am", "11am", "12am", "1pm"]
+const TREND_DATES = ["7 Jan 2026", "6 Jan 2026", "5 Jan 2026", "4 Jan 2026"]
 
-function generateHourlyTrend() {
-  const rand = seededRandom(15)
+function generateHourlyTrend(dateIndex: number) {
+  const rand = seededRandom(15 + dateIndex * 31)
   return HOURS.map(h => {
     const row: any = { hour: h }
     MHE_TYPES.forEach(t => { row[t] = Math.round(80 + rand() * 280) })
@@ -251,7 +252,8 @@ function PairingRankRow({ row }: { row: PairingRow }) {
 
 export function PalletEfficiencyTab() {
   const cycleTimeData = React.useMemo(generateCycleTimeDistribution, [])
-  const hourlyTrend = React.useMemo(generateHourlyTrend, [])
+  const [trendDate, setTrendDate] = React.useState(TREND_DATES[0])
+  const hourlyTrend = React.useMemo(() => generateHourlyTrend(TREND_DATES.indexOf(trendDate)), [trendDate])
   const pairingRanking = React.useMemo(generatePairingRanking, [])
   const speedProductivity = React.useMemo(generateSpeedProductivity, [])
   const distanceEfficiency = React.useMemo(generateDistanceEfficiency, [])
@@ -303,10 +305,7 @@ export function PalletEfficiencyTab() {
           legend={<MheTypeLegend />}
           onRefresh={() => {}}
           filters={
-            <div style={{ display: "flex", alignItems: "center", gap: 6, height: 32, padding: "0 12px", border: "1px solid var(--w-border)", borderRadius: 6, background: "var(--w-bg)" }}>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-1)" }}>7 Jan 2026</span>
-              <ChevronDown size={12} strokeWidth={1.5} style={{ color: "var(--w-text-3)" }} />
-            </div>
+            <FilterSelect value={trendDate} onChange={setTrendDate} options={TREND_DATES} minWidth={120} />
           }
         >
           <div style={{ flex: 1, minHeight: 250, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
