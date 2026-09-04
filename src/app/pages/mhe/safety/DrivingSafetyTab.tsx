@@ -6,7 +6,7 @@ import {
 } from "recharts"
 import {
   ChartCard, FilterSelect, cardStyle, seededRandom,
-  Avatar, TableShell, Td, Pagination,
+  Avatar, TableShell, Td, Pagination, RangeBrush,
 } from "../productivity/shared"
 import { Badge } from "../../../components/ui/badge"
 
@@ -155,20 +155,6 @@ function SpeedTooltip({ active, payload, label, series }: any) {
   )
 }
 
-// ─── Decorative time range scrubber ──────────────────────────────────────────
-
-function TimeRangeScrubber({ startLabel, endLabel }: { startLabel: string; endLabel: string }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
-      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-2)", whiteSpace: "nowrap" }}>{startLabel}</span>
-      <div style={{ position: "relative", flex: 1, height: 8, borderRadius: 4, background: "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
-        <div style={{ position: "absolute", left: "28%", width: "16%", top: 0, bottom: 0, borderRadius: 4, background: "var(--primary)" }} />
-      </div>
-      <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-2)", whiteSpace: "nowrap" }}>{endLabel}</span>
-    </div>
-  )
-}
-
 // ─── Quadrant tooltip ─────────────────────────────────────────────────────────
 
 function QuadrantTooltip({ active, payload }: any) {
@@ -246,6 +232,11 @@ export function DrivingSafetyTab() {
   const [opRange, setOpRange] = React.useState("Last 7 days")
   const [opFilter, setOpFilter] = React.useState("All Operator")
 
+  const [mheBrush, setMheBrush] = React.useState({ start: 0, end: TIME_POINTS.length - 1 })
+  const [opBrush, setOpBrush] = React.useState({ start: 0, end: TIME_POINTS.length - 1 })
+  const mheSpeedBrushed = mheSpeed.slice(mheBrush.start, mheBrush.end + 1)
+  const operatorSpeedBrushed = operatorSpeed.slice(opBrush.start, opBrush.end + 1)
+
   const [sessionPageSize, setSessionPageSize] = React.useState(5)
   const [sessionPageIndex, setSessionPageIndex] = React.useState(0)
   const sessionPaged = DRIVING_SESSIONS.slice(sessionPageIndex * sessionPageSize, sessionPageIndex * sessionPageSize + sessionPageSize)
@@ -278,7 +269,7 @@ export function DrivingSafetyTab() {
           }
         >
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={mheSpeed} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+            <LineChart data={mheSpeedBrushed} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
               <XAxis dataKey="time" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
                 label={{ value: "TIME (IN SECONDS)", position: "insideBottom", offset: -2, fontSize: 9, fill: "var(--w-text-3)" }} />
@@ -290,7 +281,12 @@ export function DrivingSafetyTab() {
               ))}
             </LineChart>
           </ResponsiveContainer>
-          <TimeRangeScrubber startLabel="2026-01-03 11:26:08" endLabel="2026-01-03 01:26:08" />
+          <RangeBrush
+            labels={TIME_POINTS}
+            start={mheBrush.start}
+            end={mheBrush.end}
+            onChange={(start, end) => setMheBrush({ start, end })}
+          />
         </ChartCard>
 
         <ChartCard
@@ -304,7 +300,7 @@ export function DrivingSafetyTab() {
           }
         >
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={operatorSpeed} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+            <LineChart data={operatorSpeedBrushed} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
               <XAxis dataKey="time" tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dy={6}
                 label={{ value: "TIME (IN SECONDS)", position: "insideBottom", offset: -2, fontSize: 9, fill: "var(--w-text-3)" }} />
@@ -316,7 +312,12 @@ export function DrivingSafetyTab() {
               ))}
             </LineChart>
           </ResponsiveContainer>
-          <TimeRangeScrubber startLabel="2026-01-03 11:26:08" endLabel="2026-01-03 01:26:08" />
+          <RangeBrush
+            labels={TIME_POINTS}
+            start={opBrush.start}
+            end={opBrush.end}
+            onChange={(start, end) => setOpBrush({ start, end })}
+          />
         </ChartCard>
       </div>
 
