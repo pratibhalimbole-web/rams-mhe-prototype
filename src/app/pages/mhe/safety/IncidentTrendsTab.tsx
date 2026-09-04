@@ -249,6 +249,9 @@ function ProximityHeatmap({ data }: { data: ReturnType<typeof generateProximityH
           <div key={hour} style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 9, color: "var(--w-text-3)", paddingTop: 4 }}>{hour}</div>
         ))}
       </div>
+      <div style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 600, color: "var(--w-text-2)", marginTop: 6, letterSpacing: 0.3 }}>
+        TIME
+      </div>
       {hover && (
         <div style={{ position: "absolute", left: Math.min(hover.x + 12, 700), top: Math.max(hover.y - 50, 0), zIndex: 20, pointerEvents: "none" }}>
           <TooltipShell headerLeft={hover.day} rows={[{ label: "Events", value: String(hover.value), bold: true }]} />
