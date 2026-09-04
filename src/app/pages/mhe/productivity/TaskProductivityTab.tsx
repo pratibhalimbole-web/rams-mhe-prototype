@@ -82,8 +82,7 @@ function RangeBrush({
   onChange: (start: number, end: number) => void
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const dragModeRef = React.useRef<null | "left" | "right" | "move">(null)
-  const dragStartRef = React.useRef({ x: 0, start: 0, end: 0 })
+  const dragRef = React.useRef<{ mode: "left" | "right" | "move"; x: number; start: number; end: number } | null>(null)
   const total = labels.length - 1
 
   function idxFromClientX(clientX: number) {
@@ -93,65 +92,68 @@ function RangeBrush({
     return Math.round(pct * total)
   }
 
-  const handleMove = React.useCallback((e: PointerEvent) => {
-    const mode = dragModeRef.current
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!mode || !rect || total <= 0) return
-    if (mode === "left") {
-      const idx = Math.min(idxFromClientX(e.clientX), dragStartRef.current.end - 1)
-      onChange(Math.max(0, idx), dragStartRef.current.end)
-    } else if (mode === "right") {
-      const idx = Math.max(idxFromClientX(e.clientX), dragStartRef.current.start + 1)
-      onChange(dragStartRef.current.start, Math.min(total, idx))
+  function onDown(mode: "left" | "right" | "move", e: React.PointerEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragRef.current = { mode, x: e.clientX, start, end }
+    ;(e.target as Element).setPointerCapture(e.pointerId)
+  }
+
+  function onMove(e: React.PointerEvent) {
+    const drag = dragRef.current
+    if (!drag || total <= 0) return
+    e.preventDefault()
+    if (drag.mode === "left") {
+      const idx = Math.min(idxFromClientX(e.clientX), drag.end - 1)
+      onChange(Math.max(0, idx), drag.end)
+    } else if (drag.mode === "right") {
+      const idx = Math.max(idxFromClientX(e.clientX), drag.start + 1)
+      onChange(drag.start, Math.min(total, idx))
     } else {
-      const deltaIdx = Math.round(((e.clientX - dragStartRef.current.x) / rect.width) * total)
-      const width = dragStartRef.current.end - dragStartRef.current.start
-      let newStart = dragStartRef.current.start + deltaIdx
-      let newEnd = dragStartRef.current.end + deltaIdx
+      const rect = containerRef.current?.getBoundingClientRect()
+      if (!rect) return
+      const deltaIdx = Math.round(((e.clientX - drag.x) / rect.width) * total)
+      const width = drag.end - drag.start
+      let newStart = drag.start + deltaIdx
+      let newEnd = drag.end + deltaIdx
       if (newStart < 0) { newStart = 0; newEnd = width }
       if (newEnd > total) { newEnd = total; newStart = total - width }
       onChange(newStart, newEnd)
     }
-  }, [onChange, total])
+  }
 
-  const handleUp = React.useCallback(() => {
-    dragModeRef.current = null
-    window.removeEventListener("pointermove", handleMove)
-    window.removeEventListener("pointerup", handleUp)
-  }, [handleMove])
-
-  function startDrag(mode: "left" | "right" | "move", e: React.PointerEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    dragModeRef.current = mode
-    dragStartRef.current = { x: e.clientX, start, end }
-    window.addEventListener("pointermove", handleMove)
-    window.addEventListener("pointerup", handleUp)
+  function onUp(e: React.PointerEvent) {
+    dragRef.current = null
+    try { (e.target as Element).releasePointerCapture(e.pointerId) } catch {}
   }
 
   const leftPct = total > 0 ? (start / total) * 100 : 0
   const widthPct = total > 0 ? ((end - start) / total) * 100 : 100
+  const dragProps = { onPointerMove: onMove, onPointerUp: onUp, onPointerCancel: onUp }
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
       <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, color: "var(--w-text-3)", whiteSpace: "nowrap" }}>{labels[start]}</span>
-      <div ref={containerRef} style={{ flex: 1, height: 22, borderRadius: 6, background: "var(--w-bg-muted)", position: "relative" }}>
+      <div ref={containerRef} style={{ flex: 1, height: 22, borderRadius: 6, background: "var(--w-bg-muted)", position: "relative", touchAction: "none", userSelect: "none" }}>
         <div
-          onPointerDown={e => startDrag("move", e)}
+          onPointerDown={e => onDown("move", e)}
+          {...dragProps}
           style={{
             position: "absolute", left: `${leftPct}%`, width: `${widthPct}%`, top: 0, bottom: 0,
             background: "color-mix(in srgb, var(--primary) 35%, transparent)",
             borderLeft: "2px solid var(--primary)", borderRight: "2px solid var(--primary)",
-            cursor: "grab",
+            cursor: "grab", touchAction: "none",
           }}
         >
           <div
-            onPointerDown={e => startDrag("left", e)}
-            style={{ position: "absolute", left: -5, top: -2, bottom: -2, width: 10, cursor: "ew-resize" }}
+            onPointerDown={e => onDown("left", e)}
+            {...dragProps}
+            style={{ position: "absolute", left: -6, top: -3, bottom: -3, width: 14, cursor: "ew-resize", touchAction: "none" }}
           />
           <div
-            onPointerDown={e => startDrag("right", e)}
-            style={{ position: "absolute", right: -5, top: -2, bottom: -2, width: 10, cursor: "ew-resize" }}
+            onPointerDown={e => onDown("right", e)}
+            {...dragProps}
+            style={{ position: "absolute", right: -6, top: -3, bottom: -3, width: 14, cursor: "ew-resize", touchAction: "none" }}
           />
         </div>
       </div>
