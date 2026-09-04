@@ -119,7 +119,12 @@ function generateProximityHeatmap() {
 
 function RefreshRow({ range, onRangeChange }: { range: string; onRangeChange: (v: string) => void }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10 }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 15, fontWeight: 600, color: "var(--w-text-1)" }}>Safety Event Analytics</span>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "var(--w-text-2)" }}>Trends and breakdowns across the fleet</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <Badge variant="outline" className="border-transparent bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px] font-semibold">
         Refreshed Just Now
       </Badge>
@@ -130,6 +135,7 @@ function RefreshRow({ range, onRangeChange }: { range: string; onRangeChange: (v
       >
         <RotateCw size={14} strokeWidth={1.5} style={{ color: "var(--primary)" }} />
       </button>
+      </div>
     </div>
   )
 }
