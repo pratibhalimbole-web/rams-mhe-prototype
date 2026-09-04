@@ -152,10 +152,15 @@ export function TooltipShell({
       boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
       minWidth: 190,
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 6, marginBottom: 8, borderBottom: "1px solid var(--w-divider)" }}>
-        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12.5, color: "var(--w-text-1)" }}>{headerLeft}</span>
-        {headerRight && <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 10, color: "var(--w-text-2)" }}>{headerRight}</span>}
-      </div>
+      {(headerLeft || headerRight) && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 6, marginBottom: 8,
+          borderBottom: rows.length > 1 ? "1px solid var(--w-divider)" : "none",
+        }}>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12.5, color: "var(--w-text-1)" }}>{headerLeft}</span>
+          {headerRight && <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 10, color: "var(--w-text-2)" }}>{headerRight}</span>}
+        </div>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         {rows.map(r => (
           <div key={r.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
