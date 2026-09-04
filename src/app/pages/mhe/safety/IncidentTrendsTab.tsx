@@ -161,9 +161,9 @@ function ShiftTooltip({ active, payload, label }: any) {
     <TooltipShell
       headerLeft={label}
       rows={[
-        { label: "Critical", value: String(d.critical) },
-        { label: "High", value: String(d.high) },
-        { label: "Warning", value: String(d.warning) },
+        { label: "Critical", value: String(d.critical), color: "var(--primary)" },
+        { label: "High", value: String(d.high), color: "color-mix(in srgb, var(--primary) 55%, transparent)" },
+        { label: "Warning", value: String(d.warning), color: "color-mix(in srgb, var(--primary) 22%, transparent)" },
       ]}
     />
   )
@@ -182,9 +182,9 @@ function SpeedZoneTooltip({ active, payload, label }: any) {
     <TooltipShell
       headerLeft={label}
       rows={[
-        { label: "Excessive", value: String(d.excessive) },
-        { label: "Moderate", value: String(d.moderate) },
-        { label: "Minor", value: String(d.minor) },
+        { label: "Excessive", value: String(d.excessive), color: "var(--primary)" },
+        { label: "Moderate", value: String(d.moderate), color: "color-mix(in srgb, var(--primary) 55%, transparent)" },
+        { label: "Minor", value: String(d.minor), color: "color-mix(in srgb, var(--primary) 20%, transparent)" },
       ]}
     />
   )
@@ -197,9 +197,8 @@ function TrendTooltip({ active, payload, label }: any) {
     <TooltipShell
       headerLeft={label}
       rows={[
-        { label: "Critical", value: String(d.critical) },
-        { label: "High", value: String(d.high) },
-        { label: "Warning", value: String(d.warning) },
+        { label: "Total", value: String(d.total), color: "color-mix(in srgb, var(--primary) 55%, transparent)" },
+        { label: "Warning", value: String(d.warning), color: "var(--primary)" },
       ]}
     />
   )

@@ -141,7 +141,7 @@ export function TooltipShell({
 }: {
   headerLeft: string
   headerRight?: string
-  rows: { label: string; value: string; bold?: boolean }[]
+  rows: { label: string; value: string; bold?: boolean; color?: string }[]
 }) {
   return (
     <div style={{
@@ -160,7 +160,7 @@ export function TooltipShell({
         {rows.map(r => (
           <div key={r.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
             <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontWeight: 400, fontSize: 11.5, color: "var(--w-text-2)" }}>
-              <span style={{ width: 8, height: 8, borderRadius: 2, background: "var(--primary)", flexShrink: 0 }} />
+              <span style={{ width: 8, height: 8, borderRadius: 2, background: r.color ?? "var(--primary)", flexShrink: 0 }} />
               {r.label}
             </span>
             <span style={{ fontFamily: "Inter, sans-serif", fontWeight: r.bold ? 700 : 600, fontSize: 12.5, color: "var(--w-text-1)" }}>{r.value}</span>
