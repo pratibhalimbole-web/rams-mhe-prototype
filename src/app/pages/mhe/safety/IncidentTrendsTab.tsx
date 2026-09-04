@@ -324,11 +324,7 @@ export function IncidentTrendsTab() {
               <YAxis domain={[0, 16]} tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4}
                 label={{ value: "INCIDENT COUNT", angle: -90, position: "insideLeft", fontSize: 9, fill: "var(--w-text-3)" }} />
               <Tooltip content={<ZoneIncidentTooltip />} cursor={{ fill: "var(--w-bg-muted)" }} />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={44}>
-                {incidentsByZone.map(d => (
-                  <Cell key={d.zone} fill={d.count >= 14 ? "var(--primary)" : "color-mix(in srgb, var(--primary) 16%, transparent)"} />
-                ))}
-              </Bar>
+              <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={44} fill="var(--primary)" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
