@@ -1,7 +1,7 @@
 import * as React from "react"
 import { AlertTriangle, ShieldCheck, Gauge, Siren } from "lucide-react"
 import {
-  LineChart, Line, ScatterChart, Scatter, Cell,
+  LineChart, Line, ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import {
@@ -45,11 +45,27 @@ function generateQuadrantData() {
     "Anil Sharma", "Ganesh More", "Karan Jadhav", "Prakash Joshi", "Vishal Sawant",
     "Rajesh Shinde", "Deepak Pawar", "Rahul Patil", "Anil Chavan", "James Wilson",
   ]
-  return names.map((name, i) => {
-    const skill = Math.round(rand() * 100)
-    const behavior = Math.round(rand() * 100)
-    return { name, skill, behavior, isHighlighted: i === names.length - 1 }
+  const raw = names.map((name, i) => ({
+    name,
+    skill: Math.round(rand() * 100),
+    behavior: Math.round(rand() * 100),
+    isHighlighted: i === names.length - 1,
+  }))
+  // Two operators can land on the exact same skill/behavior reading -- group them into one plotted point
+  raw.push({ name: "Mahesh Gaikwad", skill: raw[6].skill, behavior: raw[6].behavior, isHighlighted: false })
+
+  const grouped = new Map<string, { skill: number; behavior: number; operators: string[]; isHighlighted: boolean }>()
+  raw.forEach(d => {
+    const key = `${d.skill}-${d.behavior}`
+    const existing = grouped.get(key)
+    if (existing) {
+      existing.operators.push(d.name)
+      existing.isHighlighted = existing.isHighlighted || d.isHighlighted
+    } else {
+      grouped.set(key, { skill: d.skill, behavior: d.behavior, operators: [d.name], isHighlighted: d.isHighlighted })
+    }
   })
+  return Array.from(grouped.values())
 }
 
 function quadrantColor(skill: number, behavior: number) {
@@ -158,23 +174,32 @@ function TimeRangeScrubber({ startLabel, endLabel }: { startLabel: string; endLa
 function QuadrantTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
+  const operators: string[] = d.operators
   return (
     <div style={{
       background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: 8, padding: "10px 14px",
       boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", minWidth: 190,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, paddingBottom: 6, marginBottom: 8, borderBottom: "1px solid var(--w-divider)" }}>
-        <span style={{ width: 8, height: 8, borderRadius: "50%", background: quadrantColor(d.skill, d.behavior) }} />
-        <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12.5, color: "var(--w-text-1)" }}>{d.name}</span>
-      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11.5, color: "var(--w-text-2)" }}>Skill Score</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11.5, color: "var(--w-text-2)" }}>Skill</span>
           <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12.5, color: "var(--w-text-1)" }}>{d.skill.toFixed(2)}/100</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11.5, color: "var(--w-text-2)" }}>Behaviour Score</span>
-          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12.5, color: "var(--w-text-1)" }}>{d.behavior}/100</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11.5, color: "var(--w-text-2)" }}>Behaviour</span>
+          <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12.5, color: "var(--w-text-1)" }}>{d.behavior.toFixed(2)}/100</span>
+        </div>
+      </div>
+      <div style={{ marginTop: 10, paddingTop: operators.length > 1 ? 8 : 0, borderTop: operators.length > 1 ? "1px solid var(--w-divider)" : "none" }}>
+        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "var(--w-text-2)" }}>
+          {operators.length} Operator{operators.length > 1 ? "s" : ""}
+        </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3, marginTop: 4 }}>
+          {operators.map((name, i) => (
+            <span key={name} style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 12, color: "var(--w-text-1)" }}>
+              {i + 1}. {name}
+            </span>
+          ))}
         </div>
       </div>
     </div>
@@ -298,39 +323,51 @@ export function DrivingSafetyTab() {
       {/* Quadrant + detailed sessions */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
         <ChartCard title="Skill vs Behavior Quadrant" subtitle="Operators plotted by skill vs behavior score" onRefresh={() => {}}>
-          <div style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>
+          <div style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)", marginBottom: 2 }}>
             HIGH SKILL
           </div>
-          <div style={{ display: "flex", alignItems: "stretch" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 16 }}>
+          <div style={{ display: "flex", alignItems: "stretch", flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 12 }}>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)", whiteSpace: "nowrap", transform: "rotate(-90deg)" }}>
                 BAD BEHAVIOR
               </span>
             </div>
             <ResponsiveContainer width="100%" height={280}>
-              <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
+              <ScatterChart margin={{ top: 6, right: 6, left: -16, bottom: 6 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--w-bg-muted)" />
                 <XAxis type="number" dataKey="behavior" domain={[0, 100]} ticks={[0, 17, 33, 50, 67, 83, 100]}
                   tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
                 <YAxis type="number" dataKey="skill" domain={[0, 100]} ticks={[0, 17, 33, 50, 67, 83, 100]}
-                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} />
+                  tick={{ fontFamily: "Inter, sans-serif", fontSize: 10, fill: "var(--w-text-2)" }} axisLine={false} tickLine={false} dx={-4} />
                 <ReferenceLine x={50} stroke="var(--w-border)" />
                 <ReferenceLine y={50} stroke="var(--w-border)" />
                 <Tooltip content={<QuadrantTooltip />} cursor={{ strokeDasharray: "3 3" }} />
-                <Scatter data={quadrantData}>
-                  {quadrantData.map((d, i) => (
-                    <Cell key={i} fill={quadrantColor(d.skill, d.behavior)} r={d.isHighlighted ? 6 : 5} />
-                  ))}
-                </Scatter>
+                <Scatter
+                  data={quadrantData}
+                  shape={(props: any) => {
+                    const { cx, cy, payload } = props
+                    if (payload.operators.length > 1) {
+                      return (
+                        <g>
+                          <circle cx={cx} cy={cy} r={9} fill="#f87171" stroke="var(--w-bg)" strokeWidth={2} />
+                          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight={700} fill="#fff" fontFamily="Inter, sans-serif">
+                            {payload.operators.length}
+                          </text>
+                        </g>
+                      )
+                    }
+                    return <circle cx={cx} cy={cy} r={payload.isHighlighted ? 6 : 5} fill={quadrantColor(payload.skill, payload.behavior)} />
+                  }}
+                />
               </ScatterChart>
             </ResponsiveContainer>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 12 }}>
               <span style={{ fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)", whiteSpace: "nowrap", transform: "rotate(90deg)" }}>
                 GOOD BEHAVIOR
               </span>
             </div>
           </div>
-          <div style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)" }}>
+          <div style={{ textAlign: "center", fontFamily: "Inter, sans-serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.5, color: "var(--w-text-3)", marginTop: 2 }}>
             LOW SKILL
           </div>
         </ChartCard>
