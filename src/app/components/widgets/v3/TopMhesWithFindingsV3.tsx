@@ -91,9 +91,9 @@ function CustomTooltip({ active, payload, label }: any) {
   const remaining    = Math.max(redSorted.length - MAX_TOOLTIP_ROWS, 0);
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "200px" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.16)", minWidth: "200px" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", paddingBottom: "6px", borderBottom: "0.64px solid #e2e8f0" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", paddingBottom: "6px", borderBottom: "0.64px solid var(--w-divider)" }}>
         <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)" }}>{label}</span>
         <div style={{ display: "flex", gap: "8px" }}>
           <span style={{ fontFamily: "Inter, sans-serif", fontSize: "10px", fontWeight: 700, color: "#ef4444" }}>R: {d.red}</span>
