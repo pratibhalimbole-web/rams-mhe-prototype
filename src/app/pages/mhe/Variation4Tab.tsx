@@ -422,17 +422,17 @@ function TrendTooltip({ active, payload, label }: any) {
   ];
   return (
     <div style={{
-      background: "#1e2433",
-      border: "1px solid rgba(255,255,255,0.08)",
+      background: "var(--w-bg)",
+      border: "1px solid var(--w-border)",
       borderRadius: 10,
       padding: "12px 14px",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.16)",
       minWidth: 180,
       pointerEvents: "none",
       fontFamily: FF,
     }}>
       {/* Header */}
-      <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--w-text-1)", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid var(--w-divider)" }}>
         {label}
       </div>
       {/* Metric rows */}
@@ -443,8 +443,8 @@ function TrendTooltip({ active, payload, label }: any) {
             <svg width="9" height="9" viewBox="0 0 9 9" style={{ flexShrink: 0 }}>
               <circle cx="4.5" cy="4.5" r="4.5" fill={color} />
             </svg>
-            <span style={{ fontSize: 11, fontWeight: 500, color: "#94a3b8", flex: 1 }}>{l}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9" }}>{entry.value}</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: "var(--w-text-2)", flex: 1 }}>{l}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--w-text-1)" }}>{entry.value}</span>
           </div>
         ) : null;
       })}
