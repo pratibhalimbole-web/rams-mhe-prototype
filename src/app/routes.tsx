@@ -19,8 +19,6 @@ import { EfficiencyAnalytics } from "./pages/mhe/EfficiencyAnalytics";
 import { SafetyAnalytics } from "./pages/mhe/SafetyAnalytics";
 import { ActionBoard } from "./pages/mhe/ActionBoard";
 import { ActionBoard1 } from "./pages/mhe/ActionBoard1";
-import { IncidentActions } from "./pages/mhe/IncidentActions";
-import { IncidentActionEvents } from "./pages/mhe/IncidentActionEvents";
 import { FMS } from "./pages/mhe/FMS";
 import { MheAssetDetails } from "./pages/mhe/MheAssetDetails";
 import { OperatorAssignment } from "./pages/mhe/OperatorAssignment";
@@ -307,14 +305,6 @@ export const router = createBrowserRouter([
       {
         path: "mhe/action-board-1",
         element: <ActionBoard1 />,
-      },
-      {
-        path: "mhe/incident-actions",
-        element: <IncidentActions />,
-      },
-      {
-        path: "mhe/incident-actions/:actionId/events",
-        element: <IncidentActionEvents />,
       },
       {
         path: "mhe/escalation-logs",
