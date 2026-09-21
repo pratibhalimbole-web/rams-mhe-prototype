@@ -17,7 +17,6 @@ import { RawData } from "./pages/mhe/RawData";
 import { ProductivityAnalytics } from "./pages/mhe/ProductivityAnalytics";
 import { EfficiencyAnalytics } from "./pages/mhe/EfficiencyAnalytics";
 import { SafetyAnalytics } from "./pages/mhe/SafetyAnalytics";
-import { ActionBoard } from "./pages/mhe/ActionBoard";
 import { ActionBoard1 } from "./pages/mhe/ActionBoard1";
 import { FMS } from "./pages/mhe/FMS";
 import { MheAssetDetails } from "./pages/mhe/MheAssetDetails";
@@ -300,10 +299,6 @@ export const router = createBrowserRouter([
       // MHE → Shared Features (not under any suite)
       {
         path: "mhe/action-board",
-        element: <ActionBoard />,
-      },
-      {
-        path: "mhe/action-board-1",
         element: <ActionBoard1 />,
       },
       {
