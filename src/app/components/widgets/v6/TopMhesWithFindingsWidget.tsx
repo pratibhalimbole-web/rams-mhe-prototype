@@ -24,7 +24,7 @@ function CustomTooltip({ active, payload, label }: any) {
   const red   = payload.find((p: any) => p.dataKey === "red")?.value   ?? 0;
   const amber = payload.find((p: any) => p.dataKey === "amber")?.value ?? 0;
   return (
-    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "130px" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.16)", minWidth: "130px" }}>
       <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)", margin: "0 0 8px" }}>{label}</p>
       {([["Red", "#ef4444", red], ["Amber", "#f59e0b", amber]] as [string, string, number][]).map(([l, c, v]) => (
         <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>

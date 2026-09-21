@@ -26,7 +26,7 @@ const FS: React.CSSProperties = {
 function ChartTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: "#fff", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "7px 10px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", fontFamily: "Inter, sans-serif" }}>
+    <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "7px 10px", boxShadow: "0 4px 12px rgba(0,0,0,0.16)", fontFamily: "Inter, sans-serif" }}>
       <p style={{ fontSize: "10px", fontWeight: 600, color: "var(--w-text-1)", margin: "0 0 1px" }}>{payload[0].value} incidents</p>
       <p style={{ fontSize: "9px", color: "var(--w-text-3)", margin: 0 }}>per 1,000 op-hrs</p>
     </div>

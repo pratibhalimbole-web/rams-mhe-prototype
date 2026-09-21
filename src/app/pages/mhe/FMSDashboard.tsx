@@ -1178,7 +1178,7 @@ export function FMSDashboard() {
             ] as { label: string; value: string; sub: string }[]
           ).map(({ label, value, sub }) => (
             <div key={label} className="col-span-12 md:col-span-6 xl:col-span-3">
-              <div style={{ background: "#fff", border: "1px solid var(--w-border)", borderRadius: "12px", padding: "16px 20px 18px", height: "100%", boxSizing: "border-box" }}>
+              <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "12px", padding: "16px 20px 18px", height: "100%", boxSizing: "border-box" }}>
                 <p style={{ fontSize: "10px", fontWeight: 600, color: "var(--w-text-3)", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 10px" }}>{label}</p>
                 <p style={{ fontSize: "32px", fontWeight: 700, color: "var(--w-text-1)", margin: "0 0 6px", lineHeight: 1 }}>{value}</p>
                 <p style={{ fontSize: "12px", color: "var(--w-text-2)", margin: 0 }}>{sub}</p>
@@ -1476,7 +1476,7 @@ export function FMSDashboard() {
               const { name, value, color } = payload[0].payload;
               const pct = Math.round((value / d.total) * 100);
               return (
-                <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "140px" }}>
+                <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.16)", minWidth: "140px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
                     <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: color, flexShrink: 0, display: "inline-block" }} />
                     <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)" }}>{name}</span>
@@ -1704,7 +1704,7 @@ export function FMSDashboard() {
                 const a = payload.find((p: any) => p.dataKey === "Attention")?.value ?? 0;
                 const h = payload.find((p: any) => p.dataKey === "Healthy")?.value   ?? 0;
                 return (
-                  <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", minWidth: "150px" }}>
+                  <div style={{ background: "var(--w-bg)", border: "1px solid var(--w-border)", borderRadius: "6px", padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,0.16)", minWidth: "150px" }}>
                     <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: "11px", color: "var(--w-text-1)", margin: "0 0 8px" }}>{fullName}</p>
                     {([["Red", "#1b59f8", c], ["Amber", "#7397f6", a], ["Green", "#c9dbff", h]] as [string, string, number][]).map(([l, col, v]) => (
                       <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "4px" }}>
