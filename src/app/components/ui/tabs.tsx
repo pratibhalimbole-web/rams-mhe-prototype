@@ -38,7 +38,7 @@ function TabsList({
         width: "fit-content",
         alignItems: "center",
         justifyContent: "center",
-        borderRadius: "var(--radius)",
+        borderRadius: "var(--radius-xl)",
         padding: "3px",
         ...style,
       }}
@@ -62,7 +62,7 @@ function TabsTrigger({
         alignItems: "center",
         justifyContent: "center",
         gap: "var(--spacing-1-5)",
-        borderRadius: "var(--radius-sm)",
+        borderRadius: "var(--radius-xl)",
         border: "1px solid transparent",
         paddingLeft: "var(--spacing-2)",
         paddingRight: "var(--spacing-2)",
