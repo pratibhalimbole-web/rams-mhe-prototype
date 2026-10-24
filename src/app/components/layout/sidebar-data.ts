@@ -85,7 +85,7 @@ export const domains: Domain[] = [
     content: [
       {
         id: "mms",
-        label: "MMS",
+        label: "FMS",
         items: [
           { id: "dashboard1", label: "Dashboard" },
           { id: "mhe-asset", label: "MHE Asset Details" },

@@ -1,6 +1,6 @@
 // ─── Suite & Severity ───────────────────────────────────────────────────────
 
-export type Suite = "MEPS" | "RTSS" | "MMS";
+export type Suite = "MEPS" | "RTSS" | "FMS";
 export type Severity = "Critical" | "High" | "Medium" | "Low";
 export type KanbanStatus = "incoming" | "assigned" | "in-progress" | "review" | "done";
 export type ActionSource = "system" | "manual";
