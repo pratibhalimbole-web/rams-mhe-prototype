@@ -5,14 +5,6 @@ import { SecondarySidebar } from "./SecondarySidebar";
 import { domains, Domain, Suite, Feature } from "./sidebar-data";
 import { cn } from "../ui/utils";
 import { isFigmaMakeActive } from "../../../utils/figma-make";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../ui/breadcrumb";
 
 // --- Context Definition ---
 
@@ -268,113 +260,28 @@ const handleDomainSelect = (domainId: string) => {
           <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background transition-all duration-300">
             {/* Header - Fixed, not scrolling */}
             <header
-              className="flex flex-col border-b bg-card shrink-0"
+              className="flex items-center justify-between border-b bg-card shrink-0"
               style={{
                 borderColor: "var(--border)",
                 padding: "10px 20px",
-                gap: "4px"
+                gap: "16px"
               }}
             >
-              <div className="flex items-center justify-between" style={{ gap: "16px" }}>
-                <h1
-                  className="tracking-tight text-foreground"
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: "600",
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                >
-                  {pageTitle}
-                </h1>
-                {headerActions && (
-                  <div className="flex items-center" style={{ gap: "var(--spacing-2)" }}>
-                    {headerActions}
-                  </div>
-                )}
-              </div>
-              <Breadcrumb>
-                <BreadcrumbList>
-                  {!subPageTitle && !activeSuite && activeFeature ? null : subPageTitle ? (
-                    <>
-                      <BreadcrumbItem>
-                        <BreadcrumbLink
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (subPageBack) {
-                              subPageBack();
-                            } else if (activeFeature && activeSuiteId) {
-                              navigate(`/${activeDomainId}/${activeSuiteId}/${activeFeatureId}`);
-                            } else if (activeFeature) {
-                              navigate(`/${activeDomainId}/${activeFeatureId}`);
-                            }
-                          }}
-                          className="hover:text-foreground cursor-pointer transition-colors"
-                          style={{ fontFamily: "'Inter', sans-serif" }}
-                        >
-                          {activeFeature?.label ?? activeSuite?.label ?? activeDomain.label}
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage style={{ fontFamily: "'Inter', sans-serif" }}>{subPageTitle}</BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </>
-                  ) : (
-                    <>
-                      <BreadcrumbItem>
-                        {!activeSuite && !activeFeature ? (
-                          <BreadcrumbPage>{activeDomain.label}</BreadcrumbPage>
-                        ) : (
-                          <BreadcrumbLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (activeDomain.type === "suite" || activeDomain.type === "mixed") {
-                                const firstSuite = (activeDomain.content as Suite[])[0];
-                                if (firstSuite && firstSuite.items.length > 0) {
-                                  navigate(`/${activeDomainId}/${firstSuite.id}/${firstSuite.items[0].id}`);
-                                }
-                              } else {
-                                const firstFeature = (activeDomain.content as Feature[])[0];
-                                if (firstFeature) navigate(`/${activeDomainId}/${firstFeature.id}`);
-                              }
-                            }}
-                            className="hover:text-foreground cursor-pointer transition-colors"
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                          >
-                            {activeDomain.label}
-                          </BreadcrumbLink>
-                        )}
-                      </BreadcrumbItem>
-
-                      {activeSuite && (
-                        <>
-                          <BreadcrumbSeparator />
-                          <BreadcrumbItem>
-                            {!activeFeature ? (
-                              <BreadcrumbPage style={{ fontFamily: "'Inter', sans-serif" }}>{activeSuite.label}</BreadcrumbPage>
-                            ) : (
-                              <BreadcrumbLink
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  if (activeSuite.items.length > 0) {
-                                    navigate(`/${activeDomainId}/${activeSuiteId}/${activeSuite.items[0].id}`);
-                                  }
-                                }}
-                                style={{ fontFamily: "'Inter', sans-serif" }}
-                              >
-                                {activeSuite.label}
-                              </BreadcrumbLink>
-                            )}
-                          </BreadcrumbItem>
-                        </>
-                      )}
-                    </>
-                  )}
-                </BreadcrumbList>
-              </Breadcrumb>
+              <h1
+                className="tracking-tight text-foreground"
+                style={{
+                  fontSize: "15px",
+                  fontWeight: "600",
+                  fontFamily: "'Inter', sans-serif"
+                }}
+              >
+                {pageTitle}
+              </h1>
+              {headerActions && (
+                <div className="flex items-center" style={{ gap: "var(--spacing-2)" }}>
+                  {headerActions}
+                </div>
+              )}
             </header>
             
             {/* Scrollable Content Container - ONLY THIS SCROLLS */}
