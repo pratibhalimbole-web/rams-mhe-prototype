@@ -96,7 +96,7 @@ export function SidebarLayout() {
   const { domainId: activeDomainId, suiteId: activeSuiteId, featureId: activeFeatureId } = selection;
   
   // Layout State
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("floating");
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("pinned");
   const [isNavHovered, setIsNavHovered] = useState(false);
   const hoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
