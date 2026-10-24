@@ -54,30 +54,18 @@ export function SecondarySidebar({
   );
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      <div 
-        className="flex h-14 items-center justify-between border-b border-sidebar-border/50 shrink-0" 
-        style={{ padding: "0 var(--spacing-4)" }}
-      >
-        <h2 
-          className="tracking-tight text-sidebar-foreground" 
-          style={{ 
-            fontFamily: "'Inter', sans-serif",
-            fontSize: "var(--text-base)",
-            fontWeight: "var(--font-weight-semi-bold)"
-          }}
-        >
+    <div className="flex h-full w-full flex-col overflow-hidden min-h-0">
+      <div className="flex shrink-0 items-center gap-1 pl-2 pr-2 border-b border-sidebar-border/50 overflow-hidden" style={{ minHeight: 44 }}>
+        <h2 className="flex-1 min-w-0 pl-1 truncate text-[11px] font-semibold tracking-wide uppercase text-sidebar-foreground/50">
           {activeDomain.label}
         </h2>
-        
+
         {/* Toggle Control: Only controls Pinned vs Floating mode */}
-        <Button 
-            type="button"
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 text-sidebar-foreground/70 hover:text-sidebar-foreground" 
-            onClick={onToggleMode}
-            style={{ borderRadius: "var(--radius)" }}
+        <button
+          type="button"
+          onClick={onToggleMode}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+          aria-label={sidebarMode === "pinned" ? "Collapse Sidebar" : "Pin Sidebar"}
         >
             {sidebarMode === "pinned" ? (
                 // Pinned Mode: Show "Collapse" icon (<<)
@@ -86,13 +74,10 @@ export function SecondarySidebar({
                 // Floating Mode: Show "Pin" icon (>>)
                 <ChevronsRight className="h-4 w-4" />
             )}
-            <span className="sr-only">
-              {sidebarMode === "pinned" ? "Collapse Sidebar" : "Pin Sidebar"}
-            </span>
-        </Button>
+        </button>
       </div>
-      <ScrollArea className="flex-1 pr-1">
-        <div style={{ padding: "var(--spacing-2)" }}>
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="p-1.5">
           {activeDomain.type === "flat" ? (
             <div className="flex flex-col" style={{ gap: "2px" }}>
               {(activeDomain.content as Feature[]).map(renderFeature)}
@@ -109,8 +94,7 @@ export function SecondarySidebar({
                 collapsible={true}
                 value={activeSuiteId || ""}
                 onValueChange={onSuiteSelect}
-                className="w-full"
-                style={{ gap: "var(--spacing-1)" }}
+                className="w-full space-y-0.5"
               >
                 {(activeDomain.content as Suite[]).map((suite) => (
                   <AccordionItem
@@ -120,30 +104,14 @@ export function SecondarySidebar({
                   >
                     <AccordionTrigger
                       className={cn(
-                        "flex w-full items-center justify-between rounded-md hover:no-underline text-sidebar-foreground transition-colors",
-                        activeSuiteId === suite.id
-                          ? "bg-[var(--sidebar-primary)]/10 text-sidebar-foreground hover:bg-[var(--sidebar-primary)]/20"
-                          : "bg-transparent hover:bg-[var(--sidebar-primary)]/10"
+                        "flex w-full items-center justify-between gap-2 rounded-[4px] px-2 pr-1 py-1.5 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground hover:no-underline [&>svg]:shrink-0 [&>svg]:translate-y-0",
+                        activeSuiteId === suite.id && "bg-sidebar-accent/40 text-sidebar-foreground"
                       )}
-                      style={{
-                        padding: "var(--spacing-2)",
-                        fontSize: "var(--text-sm)",
-                        fontWeight: "var(--font-weight-medium)",
-                        fontFamily: "'Inter', sans-serif",
-                        borderRadius: "var(--radius)"
-                      }}
                     >
-                      <span className="truncate text-left" style={{ fontSize: "12px" }}>{suite.label}</span>
+                      <span className="truncate text-left">{suite.label}</span>
                     </AccordionTrigger>
-                    <AccordionContent style={{ paddingBottom: "var(--spacing-1)", paddingTop: "var(--spacing-1)" }}>
-                      <div
-                        className="flex flex-col border-l border-sidebar-border/50"
-                        style={{
-                          gap: "2px",
-                          marginLeft: "var(--spacing-2)",
-                          paddingLeft: "var(--spacing-2)"
-                        }}
-                      >
+                    <AccordionContent className="pb-0.5 pt-0.5">
+                      <div className="flex flex-col gap-0.5 ml-2 border-l border-sidebar-border/40 pl-2">
                         {suite.items.map(renderFeature)}
                       </div>
                     </AccordionContent>
