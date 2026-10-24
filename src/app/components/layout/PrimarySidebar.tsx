@@ -39,6 +39,15 @@ export function PrimarySidebar({
       onMouseEnter={() => onHoverChange?.(true)}
       onMouseLeave={() => onHoverChange?.(false)}
     >
+      <div className="flex items-center justify-center pb-3">
+        <span
+          className="text-[22px] font-extrabold leading-none"
+          style={{ color: "#f97316", fontFamily: "'Inter', sans-serif" }}
+        >
+          R
+        </span>
+      </div>
+
       <TooltipProvider delayDuration={0}>
         <div className="flex-1 min-h-0 overflow-y-auto w-full px-1.5 [&::-webkit-scrollbar]:hidden">
           <div className="flex flex-col py-0.5">
@@ -83,6 +92,9 @@ export function PrimarySidebar({
 
       <div className="mt-auto flex flex-col items-center gap-2 pt-3 pb-1">
         <ModeToggle />
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sidebar-primary)]/15 text-[10px] font-bold text-[var(--sidebar-primary)]">
+          WH
+        </div>
       </div>
     </div>
   );
