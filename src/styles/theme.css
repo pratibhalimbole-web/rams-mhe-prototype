@@ -13,7 +13,7 @@
 
   /* Widget color tokens — used in inline styles so they auto-respond to .dark */
   --w-bg:        rgba(255, 255, 255, 1);   /* #ffffff  card background      */
-  --w-bg-page:   rgba(248, 250, 252, 1);   /* #f8fafc  page background      */
+  --w-bg-page:   rgba(255, 255, 255, 1);   /* #ffffff  page background      */
   --w-bg-muted:  rgba(241, 245, 249, 1);   /* #f1f5f9  chips / dividers     */
   --w-border:    rgba(226, 232, 240, 1);   /* #e2e8f0  main borders         */
   --w-divider:   rgba(241, 245, 249, 1);   /* #f1f5f9  internal dividers    */
@@ -70,7 +70,7 @@
   --progress-bar-height-md: 6px;
   
   /* The default background color for the application. */
-  --background: rgba(241, 245, 249, 1.00);  /* slate-100 — gives card surfaces lift */
+  --background: rgba(255, 255, 255, 1.00);
   /* The default color for elements or text that appears on top of the background. */
   --foreground: rgba(15, 23, 42, 1.00);
   /* The background color for cards, modals, and other containers. */
