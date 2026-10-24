@@ -204,7 +204,7 @@ export const router = createBrowserRouter([
         element: <FMSDashboard />,
       },
 
-      // MHE → MMS routes
+      // MHE → FMS routes
       {
         path: "mhe/mms/dashboard",
         element: <FMSDashboard />,

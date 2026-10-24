@@ -93,7 +93,7 @@ export const KANBAN_COLUMNS: KanbanColumn[] = [
 export const SUITE_COLORS: Record<Suite, string> = {
   MEPS: "var(--chart-3)",
   RTSS: "var(--destructive)",
-  MMS:  "var(--chart-2)",
+  FMS:  "var(--chart-2)",
 };
 
 export const SEVERITY_COLORS: Record<Severity, string> = {
