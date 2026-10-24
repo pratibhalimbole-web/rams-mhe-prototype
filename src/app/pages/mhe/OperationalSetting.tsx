@@ -414,7 +414,7 @@ function SessionManagementTab() {
         search={search}
         onSearch={v => { setSearch(v); setPageIndex(0) }}
         action={
-          <Button onClick={handleAdd} className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
+          <Button size="sm" onClick={handleAdd} className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
             <Plus className="w-4 h-4" strokeWidth={1.5} />
             Add Session
           </Button>

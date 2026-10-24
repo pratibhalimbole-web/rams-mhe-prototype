@@ -482,7 +482,7 @@ export function Documents() {
           </div>
           <EntityFilter value={entityFilter} onChange={v => { setEntityFilter(v); setPageIndex(0) }} />
         </div>
-        <Button onClick={() => setUploadOpen(true)} className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
+        <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
           <UploadIcon className="w-4 h-4" strokeWidth={1.5} />
           Upload Document
         </Button>

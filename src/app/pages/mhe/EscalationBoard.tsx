@@ -955,7 +955,7 @@ function DetailDrawer({
                     <SlidersHorizontal size={13} strokeWidth={1.5} />
                     Override to Manual
                   </Button>
-                  <Button className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
+                  <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none"
                     onClick={() => onResolve(item.id)}>
                     <CheckCircle2 size={13} strokeWidth={1.5} />
                     Mark Resolved
@@ -994,14 +994,14 @@ function DetailDrawer({
                     </Button>
                   )}
                   {item.status === "open" && (
-                    <Button className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
+                    <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none"
                       onClick={() => onAcknowledge(item.id)}>
                       <CheckCircle2 size={13} strokeWidth={1.5} />
                       Acknowledge
                     </Button>
                   )}
                   {(item.status === "acknowledged" || item.status === "in_progress") && (
-                    <Button className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
+                    <Button size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none"
                       onClick={() => onResolve(item.id)}>
                       <CheckCircle2 size={13} strokeWidth={1.5} />
                       Mark Resolved

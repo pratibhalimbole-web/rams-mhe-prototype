@@ -667,7 +667,7 @@ export function MheAssetDetails() {
             className="h-9 pl-9 border-[var(--border)] bg-[var(--card)] shadow-none text-[length:var(--text-sm)]"
           />
         </div>
-        <Button onClick={handleAddAsset} className="h-9 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
+        <Button size="sm" onClick={handleAddAsset} className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
           <Plus className="w-4 h-4" strokeWidth={1.5} />
           Add MHE Asset
         </Button>
