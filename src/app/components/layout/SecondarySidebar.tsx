@@ -39,7 +39,7 @@ export function SecondarySidebar({
       type="button"
       variant="ghost"
       className={cn(
-        "w-full justify-start h-7 px-2 text-[12px] font-normal text-sidebar-foreground/65 transition-colors rounded-[4px] hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+        "w-full justify-start h-7 px-2 text-[13px] font-normal text-sidebar-foreground/65 transition-colors rounded-[4px] hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
         activeFeatureId === feature.id
           ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           : ""
@@ -55,8 +55,8 @@ export function SecondarySidebar({
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden min-h-0">
-      <div className="flex shrink-0 items-center gap-1 pl-2 pr-2 border-b border-sidebar-border/50 overflow-hidden" style={{ minHeight: 44 }}>
-        <h2 className="flex-1 min-w-0 pl-1 truncate text-[11px] font-semibold tracking-wide uppercase text-sidebar-foreground/50">
+      <div className="flex shrink-0 items-center gap-1 pl-3 pr-2 border-b border-sidebar-border/50 overflow-hidden" style={{ minHeight: 44 }}>
+        <h2 className="flex-1 min-w-0 truncate text-[14px] font-semibold tracking-tight text-sidebar-foreground">
           {activeDomain.label}
         </h2>
 
