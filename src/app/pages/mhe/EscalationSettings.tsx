@@ -673,7 +673,7 @@ function LevelContactsSection() {
             Email addresses and phone numbers for each escalation level. When an issue escalates, the system emails these contacts automatically.
           </p>
         </div>
-        <Button size="sm" variant="outline" className="h-7 text-[10px] px-3 gap-1 shrink-0"
+        <Button size="sm" variant="outline" className="px-3 gap-1 shrink-0"
           onClick={addLevel}>
           <Plus size={11} strokeWidth={1.5} />
           Add Level
@@ -728,7 +728,7 @@ function LevelContactsSection() {
                 {lc.contacts.length} contact{lc.contacts.length !== 1 ? "s" : ""} configured
               </p>
             </div>
-            <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1 px-2.5"
+            <Button size="sm" variant="outline" className="gap-1 px-2.5"
               onClick={() => setAdding(adding === lc.level ? null : lc.level)}>
               <Plus size={11} strokeWidth={1.5} />
               Add
@@ -1136,11 +1136,11 @@ function TemplatesSection() {
           </div>
 
           <div className="flex items-center gap-2 justify-end">
-            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1.5">
+            <Button size="sm" variant="outline" className="gap-1.5">
               <Send size={11} strokeWidth={1.5} />
               Send Preview
             </Button>
-            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1.5">
+            <Button size="sm" variant="outline" className="gap-1.5">
               <Settings2 size={11} strokeWidth={1.5} />
               Customize
             </Button>

@@ -43,7 +43,7 @@ export function PrimarySidebar({
       onMouseEnter={() => onHoverChange?.(true)}
       onMouseLeave={() => onHoverChange?.(false)}
     >
-      <div className="flex items-center justify-center pb-3">
+      <div className="flex items-center justify-center pb-3 mb-3 border-b border-sidebar-border w-full">
         <img src={isDark ? logoDark : logoLight} alt="RAMS" className="h-6 w-6" />
       </div>
 

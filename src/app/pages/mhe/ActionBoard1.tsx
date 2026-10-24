@@ -1369,7 +1369,7 @@ function FilterSheet({ open, onClose, filters, setFilters, issues, actions }: Fi
           <span className="text-[12px]" style={{ color: "var(--muted-foreground)" }}>
             {liveCount} of {totalCount} results{hasDraftFilters ? " · filtered" : ""}
           </span>
-          <Button className="h-9 px-4 text-[12px] font-semibold" onClick={() => { setFilters(draft); onClose(); }}>
+          <Button size="sm" className="font-semibold" onClick={() => { setFilters(draft); onClose(); }}>
             Apply Filter
           </Button>
         </div>
@@ -1707,7 +1707,7 @@ export function ActionBoard1() {
               )}
             </button>
 
-            <Button className="h-9 gap-2 text-[12px] font-semibold px-4" onClick={() => setCreateOpen(true)}>
+            <Button size="sm" className="gap-2 font-semibold" onClick={() => setCreateOpen(true)}>
               <Plus className="w-3.5 h-3.5" strokeWidth={2} />
               Create Action
             </Button>
