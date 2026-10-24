@@ -263,7 +263,8 @@ const handleDomainSelect = (domainId: string) => {
               className="flex items-center justify-between border-b bg-card shrink-0"
               style={{
                 borderColor: "var(--border)",
-                padding: "10px 20px",
+                height: 44,
+                padding: "0 20px",
                 gap: "16px"
               }}
             >

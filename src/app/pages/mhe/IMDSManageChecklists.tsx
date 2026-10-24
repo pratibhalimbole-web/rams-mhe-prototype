@@ -598,7 +598,7 @@ export function IMDSManageChecklists() {
               type="button"
               onClick={() => { setChecklistForm(emptyForm()); setEditingChecklistId(null); setChecklistSheetOpen(true) }}
               disabled={parts.length === 0 || !selectedPart}
-              className="h-8 gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)] px-3 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="h-8 gap-1.5 font-semibold text-[length:var(--text-sm)] px-3 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Plus strokeWidth={1.5} className="h-3.5 w-3.5" />
               Add Checklist
@@ -814,7 +814,7 @@ export function IMDSManageChecklists() {
             <Button
               type="button"
               onClick={handleSaveChecklist}
-              className="bg-blue-600 hover:bg-blue-500 text-white shadow-none"
+              className="font-semibold"
             >
               {editingChecklistId ? "Update Checklist" : "Save Checklist"}
             </Button>
@@ -865,7 +865,7 @@ export function IMDSManageChecklists() {
             <Button
               type="button"
               onClick={handleSavePart}
-              className="h-9 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
+              className="h-9 font-semibold text-[length:var(--text-sm)]"
             >
               Add Part
             </Button>
@@ -924,7 +924,7 @@ export function IMDSManageChecklists() {
             <Button
               type="button"
               onClick={handleUpdatePart}
-              className="h-9 bg-blue-600 hover:bg-blue-500 text-white shadow-none text-[length:var(--text-sm)]"
+              className="h-9 font-semibold text-[length:var(--text-sm)]"
             >
               Update Part
             </Button>

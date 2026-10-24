@@ -390,7 +390,7 @@ function UploadDocumentSheet({
 
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[var(--border)] shrink-0">
           <Button type="button" variant="outline" onClick={onClose} className="border-[var(--border)] bg-transparent shadow-none">Cancel</Button>
-          <Button type="button" onClick={handleSave} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">Upload</Button>
+          <Button type="button" onClick={handleSave} className="font-semibold">Upload</Button>
         </div>
       </SheetContent>
     </Sheet>
@@ -482,7 +482,7 @@ export function Documents() {
           </div>
           <EntityFilter value={entityFilter} onChange={v => { setEntityFilter(v); setPageIndex(0) }} />
         </div>
-        <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
+        <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5 font-semibold shrink-0">
           <UploadIcon className="w-4 h-4" strokeWidth={1.5} />
           Upload Document
         </Button>

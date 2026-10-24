@@ -367,7 +367,7 @@ function SessionFormSheet({
 
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[var(--border)] shrink-0">
           <Button type="button" variant="outline" onClick={onClose} className="border-[var(--border)] bg-transparent shadow-none">Cancel</Button>
-          <Button type="button" onClick={handleSave} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">
+          <Button type="button" onClick={handleSave} className="font-semibold">
             {initial ? "Update Session" : "Add Session"}
           </Button>
         </div>
@@ -414,7 +414,7 @@ function SessionManagementTab() {
         search={search}
         onSearch={v => { setSearch(v); setPageIndex(0) }}
         action={
-          <Button size="sm" onClick={handleAdd} className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
+          <Button size="sm" onClick={handleAdd} className="gap-1.5 font-semibold shrink-0">
             <Plus className="w-4 h-4" strokeWidth={1.5} />
             Add Session
           </Button>
@@ -548,7 +548,7 @@ function BreakFatigueTab() {
             type="button"
             disabled={!dirty}
             onClick={handleSave}
-            className="bg-blue-600 hover:bg-blue-500 text-white shadow-none disabled:opacity-40"
+            className="font-semibold disabled:opacity-40"
           >
             Save Changes
           </Button>
@@ -667,7 +667,7 @@ function ZoneFormSheet({
 
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[var(--border)] shrink-0">
           <Button type="button" variant="outline" onClick={onClose} className="border-[var(--border)] bg-transparent shadow-none">Cancel</Button>
-          <Button type="button" onClick={() => onSave(form)} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">Update Speed Zone</Button>
+          <Button type="button" onClick={() => onSave(form)} className="font-semibold">Update Speed Zone</Button>
         </div>
       </SheetContent>
     </Sheet>
@@ -861,7 +861,7 @@ function MheSpeedFormSheet({
 
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[var(--border)] shrink-0">
           <Button type="button" variant="outline" onClick={onClose} className="border-[var(--border)] bg-transparent shadow-none">Cancel</Button>
-          <Button type="button" onClick={() => onSave(form)} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">Update Configuration</Button>
+          <Button type="button" onClick={() => onSave(form)} className="font-semibold">Update Configuration</Button>
         </div>
       </SheetContent>
     </Sheet>

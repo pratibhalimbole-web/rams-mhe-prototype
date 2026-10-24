@@ -200,7 +200,7 @@ export function RawData() {
             type="button"
             disabled={!canDownload}
             onClick={handleDownload}
-            className="gap-2 bg-blue-600 hover:bg-blue-500 text-white shadow-none disabled:opacity-50"
+            className="gap-2 font-semibold disabled:opacity-50"
           >
             <Download className="w-4 h-4" strokeWidth={1.5} />
             Download CSV

@@ -246,7 +246,7 @@ function AssignSensorSheet({
 
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[var(--border)] shrink-0">
           <Button type="button" variant="outline" onClick={onClose} className="border-[var(--border)] bg-transparent shadow-none">Cancel</Button>
-          <Button type="button" onClick={() => onSave(selected)} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">Save</Button>
+          <Button type="button" onClick={() => onSave(selected)} className="font-semibold">Save</Button>
         </div>
       </SheetContent>
     </Sheet>

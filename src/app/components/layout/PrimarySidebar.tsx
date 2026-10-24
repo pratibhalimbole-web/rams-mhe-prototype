@@ -39,16 +39,16 @@ export function PrimarySidebar({
 
   return (
     <div
-      className="flex w-12 flex-col items-center border-r border-sidebar-border bg-sidebar py-4 h-full"
+      className="flex w-12 flex-col items-center border-r border-sidebar-border bg-sidebar h-full"
       onMouseEnter={() => onHoverChange?.(true)}
       onMouseLeave={() => onHoverChange?.(false)}
     >
-      <div className="flex items-center justify-center pb-3 mb-3 border-b border-sidebar-border w-full">
+      <div className="flex items-center justify-center w-full border-b border-sidebar-border shrink-0" style={{ height: 44 }}>
         <img src={isDark ? logoDark : logoLight} alt="RAMS" className="h-6 w-6" />
       </div>
 
       <TooltipProvider delayDuration={0}>
-        <div className="flex-1 min-h-0 overflow-y-auto w-full px-1.5 [&::-webkit-scrollbar]:hidden">
+        <div className="flex-1 min-h-0 overflow-y-auto w-full px-1.5 pt-3 pb-4 [&::-webkit-scrollbar]:hidden">
           <div className="flex flex-col py-0.5">
             {GROUPS.map((group, gi) => (
               <div key={gi}>
@@ -89,7 +89,7 @@ export function PrimarySidebar({
         </div>
       </TooltipProvider>
 
-      <div className="mt-auto flex flex-col items-center gap-2 pt-3 pb-1">
+      <div className="mt-auto flex flex-col items-center gap-2 pt-3 pb-4">
         <ModeToggle />
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sidebar-primary)]/15 text-[10px] font-bold text-[var(--sidebar-primary)]">
           WH

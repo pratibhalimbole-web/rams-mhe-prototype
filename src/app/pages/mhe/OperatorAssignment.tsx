@@ -366,7 +366,7 @@ function EditOperatorSheet({
           <Button type="button" variant="outline" onClick={onClose} className="border-[var(--border)] bg-transparent shadow-none">
             Cancel
           </Button>
-          <Button type="button" onClick={handleSave} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">
+          <Button type="button" onClick={handleSave} className="font-semibold">
             Update
           </Button>
         </div>
@@ -499,7 +499,7 @@ function AssignMheSheet({
             type="button"
             disabled={selected.length === 0}
             onClick={() => onAssign(selected)}
-            className="bg-blue-600 hover:bg-blue-500 text-white shadow-none disabled:opacity-40"
+            className="font-semibold disabled:opacity-40"
           >
             Assign
           </Button>

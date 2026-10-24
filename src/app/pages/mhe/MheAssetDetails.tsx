@@ -464,7 +464,7 @@ function AssetFormSheet({
           <Button type="button" variant="outline" onClick={onClose} className="border-[var(--border)] bg-transparent shadow-none">
             Cancel
           </Button>
-          <Button type="button" onClick={handleSave} className="bg-blue-600 hover:bg-blue-500 text-white shadow-none">
+          <Button type="button" onClick={handleSave} className="font-semibold">
             {editing ? "Update Asset" : "Save Asset"}
           </Button>
         </div>
@@ -667,7 +667,7 @@ export function MheAssetDetails() {
             className="h-9 pl-9 border-[var(--border)] bg-[var(--card)] shadow-none text-[length:var(--text-sm)]"
           />
         </div>
-        <Button size="sm" onClick={handleAddAsset} className="gap-1.5 bg-blue-600 hover:bg-blue-500 text-white shadow-none shrink-0">
+        <Button size="sm" onClick={handleAddAsset} className="gap-1.5 font-semibold shrink-0">
           <Plus className="w-4 h-4" strokeWidth={1.5} />
           Add MHE Asset
         </Button>
