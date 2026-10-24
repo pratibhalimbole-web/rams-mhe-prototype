@@ -261,7 +261,7 @@ function severityBadge(s: InspectionSeverity): React.ReactNode {
   const { bg, color } = map[s]
   return (
     <span
-      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+      className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[length:var(--text-xs)] font-normal"
       style={{ backgroundColor: bg, color }}
     >
       {s}
@@ -278,7 +278,7 @@ function statusBadge(s: InspectionStatus): React.ReactNode {
   const { bg, color } = map[s]
   return (
     <span
-      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+      className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[length:var(--text-xs)] font-normal"
       style={{ backgroundColor: bg, color }}
     >
       {s}

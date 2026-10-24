@@ -576,13 +576,13 @@ function Swimlane({ level, items, onCardClick, mode }: {
 
         <div className="flex items-center gap-2 shrink-0">
           {breachedCount > 0 && (
-            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full"
+            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-md"
               style={{ color: "#ef4444", background: "#ef444418" }}>
               <AlertTriangle size={10} strokeWidth={2} />
               {breachedCount} breached
             </span>
           )}
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-md"
             style={{
               color: items.length ? meta.color : "var(--muted-foreground)",
               background: items.length ? meta.bg : "var(--muted)",
@@ -1105,7 +1105,7 @@ function AutoRulesPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
             style={{ background: "#22c55e18", color: "#22c55e" }}>
             Active
           </span>

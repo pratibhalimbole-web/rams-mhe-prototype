@@ -1202,7 +1202,7 @@ function HeatmapEventsPanel({ onClose, onFocusZone, offsetTop = 60, events }: { 
                   <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                     <span className="text-[12.5px] font-semibold">{e.label}</span>
                     {e.count > 1 && (
-                      <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 h-[18px] rounded-full">
+                      <Badge variant="secondary" className="text-[10px] font-semibold px-1.5 h-[18px] rounded-md">
                         ×{e.count}
                       </Badge>
                     )}
@@ -1216,7 +1216,7 @@ function HeatmapEventsPanel({ onClose, onFocusZone, offsetTop = 60, events }: { 
                     )}
                   </div>
                   <Badge
-                    className="text-[10.5px] font-semibold px-2 h-[19px] rounded-full border-transparent shrink-0"
+                    className="text-[10.5px] font-semibold px-2 h-[19px] rounded-md border-transparent shrink-0"
                     style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
                   >
                     {HEATMAP_SEV_LABEL[e.severity]}

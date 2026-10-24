@@ -110,7 +110,7 @@ function buildColumns(navigate: (path: string) => void): ColumnDef<MHETypeRow>[]
         const count = row.getValue("parts") as number
         return (
           <span
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+            className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[length:var(--text-xs)] font-normal"
             style={{ backgroundColor: "rgba(124, 58, 237, 0.12)", color: "#a78bfa" }}
           >
             {count} Parts
@@ -129,7 +129,7 @@ function buildColumns(navigate: (path: string) => void): ColumnDef<MHETypeRow>[]
         const count = row.getValue("checklists") as number
         return (
           <span
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[length:var(--text-xs)] font-normal"
+            className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[length:var(--text-xs)] font-normal"
             style={{ backgroundColor: "rgba(16, 185, 129, 0.12)", color: "#34d399" }}
           >
             {count} Items

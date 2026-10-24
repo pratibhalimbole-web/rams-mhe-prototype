@@ -1701,7 +1701,7 @@ export function ActionBoard1() {
               <Filter className="w-3.5 h-3.5" strokeWidth={1.5} />
               Filters
               {activeFilterCount > 0 && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "var(--foreground)", color: "var(--background)" }}>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style={{ background: "var(--foreground)", color: "var(--background)" }}>
                   {activeFilterCount}
                 </span>
               )}

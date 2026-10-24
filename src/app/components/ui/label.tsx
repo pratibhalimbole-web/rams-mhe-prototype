@@ -16,8 +16,7 @@ const Label = React.forwardRef<
       alignItems: "center",
       gap: "var(--spacing-2)",
       fontSize: "var(--text-sm)",
-      fontWeight: "var(--font-weight-normal)",
-      lineHeight: 1.43,
+      fontWeight: "var(--font-weight-medium)",
       userSelect: "none",
       ...style,
     }}
