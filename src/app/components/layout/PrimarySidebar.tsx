@@ -9,7 +9,9 @@ import { Button } from "../ui/button";
 import { cn } from "../ui/utils";
 import { Domain } from "./sidebar-data";
 import { ModeToggle } from "../mode-toggle";
+import { useTheme } from "../../hooks/useTheme";
 import logoLight from "../../../assets/logo-r-light.png";
+import logoDark from "../../../assets/logo-r-dark.png";
 
 
 // Group domains into logical sections
@@ -33,6 +35,7 @@ export function PrimarySidebar({
   onHoverChange,
 }: PrimarySidebarProps) {
   const domainMap = Object.fromEntries(domains.map((d) => [d.id, d]));
+  const { isDark } = useTheme();
 
   return (
     <div
@@ -41,7 +44,7 @@ export function PrimarySidebar({
       onMouseLeave={() => onHoverChange?.(false)}
     >
       <div className="flex items-center justify-center pb-3">
-        <img src={logoLight} alt="RAMS" className="h-6 w-6" />
+        <img src={isDark ? logoDark : logoLight} alt="RAMS" className="h-6 w-6" />
       </div>
 
       <TooltipProvider delayDuration={0}>

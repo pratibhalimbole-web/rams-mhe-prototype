@@ -200,16 +200,14 @@
   --chart-3: rgba(251, 191, 36, 1.00);
   --chart-4: rgba(239, 68, 68, 1.00);
   --chart-5: rgba(168, 85, 247, 1.00);
-  /* Sidebar stays on the light palette even in dark mode — reference app keeps
-     primary/secondary nav white regardless of content theme. */
-  --sidebar: rgba(255, 255, 255, 1.00);
-  --sidebar-foreground: rgba(15, 23, 42, 1.00);
-  --sidebar-primary: rgba(37, 99, 235, 1.00);
+  --sidebar: rgba(30, 41, 59, 1.00);           /* slate-800 */
+  --sidebar-foreground: rgba(255, 255, 255, 1.00);
+  --sidebar-primary: rgba(59, 130, 246, 1.00); /* blue-500 — active icon fill */
   --sidebar-primary-foreground: rgba(255, 255, 255, 1.00);
-  --sidebar-accent: rgba(241, 245, 249, 1.00);
-  --sidebar-accent-foreground: rgba(15, 23, 42, 1.00);
-  --sidebar-border: rgba(226, 232, 240, 1.00);
-  --sidebar-ring: rgba(148, 163, 184, 1.00);
+  --sidebar-accent: rgba(51, 65, 85, 1.00);    /* slate-700 — hover / active item */
+  --sidebar-accent-foreground: rgba(255, 255, 255, 1.00);
+  --sidebar-border: rgba(51, 65, 85, 1.00);    /* slate-700 */
+  --sidebar-ring: rgba(100, 116, 139, 1.00);   /* slate-500 */
 }
 
 @theme inline {
@@ -354,9 +352,6 @@ html {
   background-color: #1e293b !important; /* slate-800 */
   border-color: #334155 !important;     /* slate-700 */
 }
-
-/* Primary & Secondary navigation sidebars intentionally stay on the light
-   palette in both themes — see --sidebar-* tokens above. No override here. */
 
 /* Active tab underline text */
 .dark [style*="color: rgb(27, 89, 248)"] {
