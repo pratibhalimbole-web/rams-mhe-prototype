@@ -1627,38 +1627,6 @@ export function CommandCenter3D() {
           {analyticsMHE && <MHEAnalyticsPanel mhe={analyticsMHE} onClose={() => setAnalyticsMHE(null)} />}
           {analyticsOperator && <OperatorAnalyticsPanel operator={analyticsOperator} onClose={() => setAnalyticsOperator(null)} />}
 
-          {/* ── Near-miss alert toasts ── */}
-          {nearMissAlerts.length > 0 && (
-            <div style={{
-              position: "absolute", top: 56, left: "50%", transform: "translateX(-50%)",
-              zIndex: 40, display: "flex", flexDirection: "column", gap: 4, pointerEvents: "none",
-            }}>
-              {nearMissAlerts.map(a => (
-                <div key={a.id} style={{
-                  background: "rgba(220,38,38,0.95)", color: "#fff",
-                  borderRadius: 8, padding: "7px 14px",
-                  fontSize: 12, fontWeight: 600, fontFamily: "system-ui,sans-serif",
-                  display: "flex", alignItems: "center", gap: 10,
-                  boxShadow: "0 4px 18px rgba(220,38,38,0.5)",
-                  whiteSpace: "nowrap", pointerEvents: "auto",
-                  border: "1px solid rgba(255,255,255,0.18)",
-                }}>
-                  <span style={{ fontSize: 14 }}>⚠</span>
-                  <span>
-                    <strong>Near Miss</strong> — {a.mheLabel} approaching {a.rackLabel} safety zone
-                  </span>
-                  <button
-                    onClick={() => setNearMissAlerts(prev => prev.filter(x => x.id !== a.id))}
-                    style={{
-                      background: "rgba(255,255,255,0.18)", border: "none", color: "#fff",
-                      borderRadius: 4, cursor: "pointer", padding: "2px 7px", fontSize: 12, marginLeft: 4,
-                      pointerEvents: "auto",
-                    }}>✕</button>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* Floating Live / History pill — centered top */}
           <div style={{
             position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)",
