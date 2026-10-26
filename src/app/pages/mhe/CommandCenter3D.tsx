@@ -704,10 +704,10 @@ function MHELayerPanel({ onViewAnalytics }: { onViewAnalytics: (mhe: MHEItem) =>
 
 // ─── MHE Analytics Panel ─────────────────────────────────────────────────────
 const ACTIVITY_DATA = [
-  { name: "Move Time",    value: 20, color: "#1b59f8" },
-  { name: "Active Time",  value: 12, color: "#38bdf8" },
-  { name: "Without Load", value: 15, color: "#94a3b8" },
-  { name: "Down Time",    value: 11, color: "#334155" },
+  { name: "Move Time",    value: 20, color: "var(--chart-1)" },
+  { name: "Active Time",  value: 12, color: "var(--chart-2)" },
+  { name: "Without Load", value: 15, color: "var(--chart-3)" },
+  { name: "Down Time",    value: 11, color: "var(--muted-foreground)" },
 ];
 
 const SCORE_TREND_DATA = [
