@@ -1617,16 +1617,6 @@ export function CommandCenter3D() {
             onToggleHeatmap={() => setShowHeatmap(p => !p)}
           />
 
-          {/* ── Heatmap event breakdown (severity-sorted, mirrors Incident Actions) ── */}
-          {showHeatmap && (
-            <HeatmapEventsPanel
-              onClose={() => setShowHeatmap(false)}
-              onFocusZone={(zone) => { setFocusZone(zone); setSearchParams({ view: viewMode, heatmap: "1", zone }); }}
-              offsetTop={16}
-              events={visibleHeatmapEvents}
-            />
-          )}
-
           {/* ── Events trigger button (top-right) ── */}
           {!showEvents && !analyticsMHE && !analyticsOperator && <EventsTriggerButton onOpen={() => setShowEvents(true)} />}
 
