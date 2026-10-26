@@ -11,6 +11,7 @@ import {
 import {
   LineChart, Line, XAxis, YAxis, Tooltip as RTooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
+  ScatterChart, Scatter,
 } from "recharts";
 import { WarehouseScene, TaskAssignment, NearMissEvent, ViewMode, EVENT_DATA } from "../digital-twin/WarehouseScene3D";
 import { useTheme } from "../../hooks/useTheme";
@@ -246,13 +247,292 @@ const TRIP_ITEMS = [
   { label: "BPOT",     id: "MHE_15033",  on: true },
 ];
 
-const OPERATOR_ITEMS = [
-  { label: "Jack Wilson",   id: "OP_001", on: true  },
-  { label: "James Wilson",  id: "OP_002", on: true  },
-  { label: "Mahesh Pawar",  id: "OP_003", on: true  },
-  { label: "Ravi Kumar",    id: "OP_004", on: false },
-  { label: "Sameer Varma",  id: "OP_005", on: false },
+// ─── Operator Layer Panel (mirrors MHE Layer Panel) ───────────────────────────
+const OPERATOR_LIST = [
+  { name: "Jack Wilson",  id: "OP_001", online: true,  productivity: 78, safety: 91, ppe: 100, skill: 82, behaviour: 88 },
+  { name: "James Wilson", id: "OP_002", online: true,  productivity: 66, safety: 72, ppe: 95,  skill: 58, behaviour: 64 },
+  { name: "Mahesh Pawar", id: "OP_003", online: true,  productivity: 85, safety: 95, ppe: 100, skill: 90, behaviour: 86 },
+  { name: "Ravi Kumar",   id: "OP_004", online: false, productivity: 54, safety: 68, ppe: 80,  skill: 45, behaviour: 52 },
+  { name: "Sameer Varma", id: "OP_005", online: false, productivity: 71, safety: 80, ppe: 90,  skill: 66, behaviour: 70 },
 ];
+type OperatorItem = typeof OPERATOR_LIST[0];
+
+function OperatorLayerPanel({ onViewAnalytics }: { onViewAnalytics: (op: OperatorItem) => void }) {
+  const [checked, setChecked] = useState<boolean[]>(OPERATOR_LIST.map((_, i) => i < 3));
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const toggle = (i: number) => setChecked(p => p.map((v, idx) => idx === i ? !v : v));
+
+  return (
+    <div style={{
+      position: "absolute", left: 56, top: 12, zIndex: 30,
+      width: 280, background: "var(--card)", borderRadius: 10,
+      border: "1px solid var(--border)",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+      overflow: "hidden",
+    }}>
+      <div style={{ padding: "12px 14px 10px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)", lineHeight: 1.3 }}>Operator Layer</div>
+          <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>Operator visibility control</div>
+        </div>
+        <div style={{
+          flexShrink: 0, border: "1px solid var(--border)", borderRadius: 6,
+          padding: "3px 7px", fontSize: 11, fontWeight: 500, color: "var(--foreground)",
+          whiteSpace: "nowrap", background: "var(--background)",
+        }}>
+          Total = {OPERATOR_LIST.length}
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: "var(--border)" }} />
+
+      <div style={{ maxHeight: 320, overflowY: "auto" }}>
+        {OPERATOR_LIST.map((op, i) => (
+          <div
+            key={i}
+            onMouseEnter={() => setHoveredRow(i)}
+            onMouseLeave={() => setHoveredRow(null)}
+            style={{
+              position: "relative",
+              display: "flex", alignItems: "center", padding: "9px 14px", gap: 10,
+              borderBottom: i < OPERATOR_LIST.length - 1 ? "1px solid var(--border)" : "none",
+              background: hoveredRow === i ? "var(--muted)" : "transparent",
+              transition: "background 0.12s",
+            }}
+          >
+            <div onClick={() => toggle(i)} style={{
+              width: 16, height: 16, borderRadius: 4, flexShrink: 0, cursor: "pointer",
+              background: checked[i] ? "#1b59f8" : "var(--background)",
+              border: checked[i] ? "none" : "1.5px solid var(--border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {checked[i] && (
+                <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                  <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--foreground)", lineHeight: 1.3 }}>{op.name}</div>
+              <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 1 }}>{op.id}</div>
+            </div>
+
+            {hoveredRow === i ? (
+              <button
+                onClick={() => onViewAnalytics(op)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 4,
+                  padding: "3px 8px", borderRadius: 5, border: "none",
+                  background: "#1b59f8", color: "white",
+                  fontSize: 10, fontWeight: 600, cursor: "pointer",
+                  whiteSpace: "nowrap", flexShrink: 0,
+                }}
+              >
+                <TrendingUp size={10} strokeWidth={1.8} />
+                View analytics
+              </button>
+            ) : (
+              <BarChart2 size={13} strokeWidth={1.5} color="var(--muted-foreground)" style={{ flexShrink: 0 }} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Operator Analytics Panel ──────────────────────────────────────────────────
+const OPERATOR_SCORE_TREND = [
+  { date: "Sep 15", productivity: 70, safety: 85, efficiency: 60 },
+  { date: "Sep 16", productivity: 74, safety: 82, efficiency: 64 },
+  { date: "Sep 17", productivity: 68, safety: 88, efficiency: 70 },
+  { date: "Sep 18", productivity: 80, safety: 90, efficiency: 66 },
+  { date: "Sep 19", productivity: 76, safety: 86, efficiency: 72 },
+  { date: "Sep 20", productivity: 82, safety: 92, efficiency: 75 },
+  { date: "Sep 21", productivity: 78, safety: 91, efficiency: 73 },
+];
+
+const OPERATOR_SAFETY_EVENTS = [
+  { label: "Overspeed",     value: 2 },
+  { label: "Harsh Driving", value: 1 },
+  { label: "Fatigue Alerts", value: 0 },
+  { label: "Zone Violations", value: 1 },
+];
+
+function OperatorAnalyticsPanel({ operator, onClose }: { operator: OperatorItem; onClose: () => void }) {
+  const { isDark } = useTheme();
+
+  const kpis = [
+    { label: "Productivity",    value: String(operator.productivity), icon: <TrendingUp size={14} strokeWidth={1.5} />, color: "#1b59f8" },
+    { label: "Safety",          value: String(operator.safety),       icon: <ShieldAlert size={14} strokeWidth={1.5} />, color: "#16a34a" },
+    { label: "PPE Compliance",  value: String(operator.ppe),          icon: <Activity size={14} strokeWidth={1.5} />, color: "#1b59f8" },
+  ];
+
+  return (
+    <div style={{
+      position: "absolute", right: 0, top: 0, bottom: 0, zIndex: 25,
+      width: 380, display: "flex", flexDirection: "column",
+      background: "var(--card)", borderLeft: "1px solid var(--border)",
+      boxShadow: "-4px 0 18px rgba(0,0,0,0.12)",
+    }}>
+      <div style={{ padding: "14px 16px 12px", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "var(--muted-foreground)", display: "flex" }}>
+              <ChevronLeft size={16} strokeWidth={1.8} />
+            </button>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--foreground)", lineHeight: 1.2 }}>{operator.name}</div>
+              <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 1 }}>{operator.id}</div>
+            </div>
+          </div>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+            color: operator.online ? "#16a34a" : "var(--muted-foreground)",
+            background: operator.online ? (isDark ? "rgba(22,163,74,0.15)" : "#f0fdf4") : "var(--muted)",
+            border: `1px solid ${operator.online ? (isDark ? "rgba(22,163,74,0.3)" : "#bbf7d0") : "var(--border)"}`,
+            borderRadius: 6, padding: "3px 9px",
+          }}>{operator.online ? "ONLINE" : "OFFLINE"}</span>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: "var(--border)", flexShrink: 0 }} />
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 24px" }}>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
+          {kpis.map((k, i) => (
+            <div key={i} style={{
+              background: "var(--background)", borderRadius: 12, padding: "14px 12px 14px",
+              border: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 10,
+            }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: 8,
+                background: isDark ? `${k.color}20` : `${k.color}15`,
+                border: `1px solid ${k.color}30`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: k.color, flexShrink: 0,
+              }}>
+                {k.icon}
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginBottom: 4 }}>{k.label}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>{k.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <AnalyticsCard title="Activity Breakdown" subtitle="Last 7 days distribution">
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ position: "relative", width: 120, height: 120, flexShrink: 0 }}>
+              <PieChart width={120} height={120}>
+                <Pie data={ACTIVITY_DATA} cx={60} cy={60} innerRadius={36} outerRadius={54} dataKey="value" strokeWidth={0}>
+                  {ACTIVITY_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                </Pie>
+              </PieChart>
+              <div style={{
+                position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+                textAlign: "center" as const, pointerEvents: "none",
+              }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>{ACTIVITY_DATA.reduce((s, d) => s + d.value, 0)}</div>
+                <div style={{ fontSize: 9, color: "var(--muted-foreground)", marginTop: 2 }}>Total Hrs</div>
+              </div>
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+              {ACTIVITY_DATA.map((d, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: 3, background: d.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, color: "var(--foreground)", flex: 1 }}>{d.name}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "var(--muted-foreground)" }}>{d.value}h</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </AnalyticsCard>
+
+        <AnalyticsCard title="Score Trend" subtitle="Last 7 Days">
+          <ResponsiveContainer width="100%" height={110}>
+            <LineChart data={OPERATOR_SCORE_TREND} margin={{ top: 4, right: 6, left: -16, bottom: 0 }}>
+              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+              <RTooltip
+                contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }}
+                labelStyle={{ color: "var(--foreground)" }}
+              />
+              <Line type="monotone" dataKey="productivity" stroke="#1b59f8" strokeWidth={2} dot={false} name="Productivity" />
+              <Line type="monotone" dataKey="safety"       stroke="#16a34a" strokeWidth={2} dot={false} name="Safety" />
+              <Line type="monotone" dataKey="efficiency"   stroke="#f59e0b" strokeWidth={2} dot={false} name="Efficiency" />
+            </LineChart>
+          </ResponsiveContainer>
+          <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
+            {[
+              { label: "Productivity", color: "#1b59f8" },
+              { label: "Safety",       color: "#16a34a" },
+              { label: "Efficiency",   color: "#f59e0b" },
+            ].map((l, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="20" height="2" viewBox="0 0 20 2"><line x1="0" y1="1" x2="20" y2="1" stroke={l.color} strokeWidth="2" /></svg>
+                <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{l.label}</span>
+              </div>
+            ))}
+          </div>
+        </AnalyticsCard>
+
+        <AnalyticsCard title="Skill vs Behaviour" subtitle="Last 12 weeks · weekly">
+          <ResponsiveContainer width="100%" height={140}>
+            <ScatterChart margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
+              <XAxis type="number" dataKey="skill" name="Skill" domain={[0, 100]} tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+              <YAxis type="number" dataKey="behaviour" name="Behaviour" domain={[0, 100]} tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+              <RTooltip
+                cursor={{ strokeDasharray: "3 3" }}
+                contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }}
+                labelStyle={{ color: "var(--foreground)" }}
+              />
+              <Scatter data={[{ skill: operator.skill, behaviour: operator.behaviour }]} fill="#1b59f8" />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </AnalyticsCard>
+
+        <AnalyticsCard title="Safety Events" subtitle="Last 7 days">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {OPERATOR_SAFETY_EVENTS.map((e, i) => (
+              <div key={i} style={{ paddingBottom: 4 }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>{e.value}</div>
+                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 4 }}>{e.label}</div>
+              </div>
+            ))}
+          </div>
+        </AnalyticsCard>
+
+        <AnalyticsCard title="Best MHE Pairing" subtitle="Optimal equipment">
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: "var(--muted-foreground)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>MHE</span>
+            <span style={{ fontSize: 10, fontWeight: 600, color: "var(--muted-foreground)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>MHE 02</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {[
+              { label: "Productivity",  value: String(operator.productivity) },
+              { label: "Pallets Moved", value: "126" },
+              { label: "Cycle Time",    value: "4h"  },
+            ].map((r, i, arr) => (
+              <div key={i} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "9px 0",
+                borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : "none",
+              }}>
+                <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>{r.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--foreground)" }}>{r.value}</span>
+              </div>
+            ))}
+          </div>
+        </AnalyticsCard>
+
+      </div>
+    </div>
+  );
+}
 
 // ─── Events Panel ─────────────────────────────────────────────────────────────
 const EVENTS_LIST = [
@@ -725,9 +1005,10 @@ function TripsPanel() {
 
 const PANEL_IDS = new Set(["schedule", "mhe", "operator", "layers", "overview", "trips", "alerts"]);
 
-function LeftToolbar({ mode, onViewAnalytics, onExpand, isExpanded, onViewModeChange, viewMode, showHeatmap, onToggleHeatmap }: {
+function LeftToolbar({ mode, onViewAnalytics, onViewOperatorAnalytics, onExpand, isExpanded, onViewModeChange, viewMode, showHeatmap, onToggleHeatmap }: {
   mode: "live" | "history";
   onViewAnalytics: (mhe: MHEItem) => void;
+  onViewOperatorAnalytics: (op: OperatorItem) => void;
   onExpand: () => void;
   isExpanded: boolean;
   onViewModeChange: (mode: ViewMode) => void;
@@ -783,7 +1064,7 @@ function LeftToolbar({ mode, onViewAnalytics, onExpand, isExpanded, onViewModeCh
       {/* Panels */}
       {openPanel === "schedule" && <CalendarPanel historyMode={mode === "history"} />}
       {openPanel === "mhe"      && <MHELayerPanel onViewAnalytics={onViewAnalytics} />}
-      {openPanel === "operator" && <LayerPanel title="Operator Layer" subtitle="Operator visibility control" badge="Total = 05"       items={OPERATOR_ITEMS} />}
+      {openPanel === "operator" && <OperatorLayerPanel onViewAnalytics={onViewOperatorAnalytics} />}
       {openPanel === "trips"    && <TripsPanel />}
       {openPanel === "layers"   && <LayerPanel title="Zone Layer"     subtitle="Zone visibility control"     badge="Total Zone = 06"  items={ZONE_ITEMS}    />}
       {openPanel === "overview" && <EventsPanel />}
@@ -1254,6 +1535,7 @@ export function CommandCenter3D() {
   const [mode, setMode] = useState<"live" | "history">("history");
   const [showEvents, setShowEvents] = useState(false);
   const [analyticsMHE, setAnalyticsMHE] = useState<MHEItem | null>(null);
+  const [analyticsOperator, setAnalyticsOperator] = useState<OperatorItem | null>(null);
   const [taskAssignments, setTaskAssignments] = useState<TaskAssignment[]>(INITIAL_ASSIGNMENTS);
   const [isExpanded, setIsExpanded] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(searchParams.get("view") === "2d" ? "2d" : "3d");
@@ -1281,6 +1563,11 @@ export function CommandCenter3D() {
   const openAnalytics = (mhe: MHEItem) => {
     setShowEvents(false);
     setAnalyticsMHE(mhe);
+  };
+
+  const openOperatorAnalytics = (op: OperatorItem) => {
+    setShowEvents(false);
+    setAnalyticsOperator(op);
   };
 
   const canvasWrapRef = useRef<HTMLDivElement>(null);
@@ -1321,6 +1608,7 @@ export function CommandCenter3D() {
           <LeftToolbar
             mode={mode}
             onViewAnalytics={openAnalytics}
+            onViewOperatorAnalytics={openOperatorAnalytics}
             onExpand={() => setIsExpanded(p => !p)}
             isExpanded={isExpanded}
             viewMode={viewMode}
@@ -1340,13 +1628,14 @@ export function CommandCenter3D() {
           )}
 
           {/* ── Events trigger button (top-right) ── */}
-          {!showEvents && !analyticsMHE && <EventsTriggerButton onOpen={() => setShowEvents(true)} />}
+          {!showEvents && !analyticsMHE && !analyticsOperator && <EventsTriggerButton onOpen={() => setShowEvents(true)} />}
 
           {/* ── Impact events panel ── */}
           {showEvents && <ImpactEventsPanel onClose={() => setShowEvents(false)} />}
 
           {/* ── MHE Analytics panel ── */}
           {analyticsMHE && <MHEAnalyticsPanel mhe={analyticsMHE} onClose={() => setAnalyticsMHE(null)} />}
+          {analyticsOperator && <OperatorAnalyticsPanel operator={analyticsOperator} onClose={() => setAnalyticsOperator(null)} />}
 
           {/* ── Near-miss alert toasts ── */}
           {nearMissAlerts.length > 0 && (
