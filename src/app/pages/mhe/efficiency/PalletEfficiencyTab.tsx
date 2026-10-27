@@ -280,7 +280,7 @@ export function PalletEfficiencyTab() {
           badge="Last 7 days"
           onRefresh={() => {}}
         >
-          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+          <div style={{ height: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>FREQUENCY (PALLETS)</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={cycleTimeData} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
@@ -308,7 +308,7 @@ export function PalletEfficiencyTab() {
             <FilterSelect value={trendDate} onChange={setTrendDate} options={TREND_DATES} minWidth={120} />
           }
         >
-          <div style={{ flex: 1, minHeight: 250, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+          <div style={{ height: 250, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>FREQUENCY (PALLETS)</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hourlyTrend} margin={{ top: 10, right: 10, left: 4, bottom: 16 }}>
@@ -344,7 +344,7 @@ export function PalletEfficiencyTab() {
         </ChartCard>
 
         <ChartCard title="Speed vs Productivity Correlation" subtitle="" legend={<MheTypeLegend />} onRefresh={() => {}}>
-          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+          <div style={{ height: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>PALLETS PER HOUR</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 10, right: 20, left: 4, bottom: 16 }}>
@@ -369,7 +369,7 @@ export function PalletEfficiencyTab() {
       {/* Distance efficiency + operator utilization */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
         <ChartCard title="Distance Efficiency Analysis" subtitle="" badge="Weekly" legend={<MheTypeLegend />} onRefresh={() => {}}>
-          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+          <div style={{ height: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>CYCLE TIME RANGE (H)</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 16, right: 24, left: 0, bottom: 16 }}>
@@ -408,7 +408,7 @@ export function PalletEfficiencyTab() {
           }
           onRefresh={() => {}}
         >
-          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+          <div style={{ height: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>UTILIZATION DISTRIBUTION</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={operatorUtilization} margin={{ top: 10, right: 10, left: 4, bottom: 16 }} barCategoryGap="35%">

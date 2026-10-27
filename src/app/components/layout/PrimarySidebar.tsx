@@ -10,6 +10,7 @@ import { cn } from "../ui/utils";
 import { Domain } from "./sidebar-data";
 import { ModeToggle } from "../mode-toggle";
 import { useTheme } from "../../hooks/useTheme";
+import { Bell } from "lucide-react";
 import logoLight from "../../../assets/logo-r-light.png";
 import logoDark from "../../../assets/logo-r-dark.png";
 
@@ -90,6 +91,25 @@ export function PrimarySidebar({
       </TooltipProvider>
 
       <div className="mt-auto flex flex-col items-center gap-2 pt-3 pb-4">
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="relative h-9 w-9 rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-destructive" />
+                <span className="sr-only">Notifications</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="flex items-center gap-4">
+              Notifications
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <ModeToggle />
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sidebar-primary)]/15 text-[10px] font-bold text-[var(--sidebar-primary)]">
           WH

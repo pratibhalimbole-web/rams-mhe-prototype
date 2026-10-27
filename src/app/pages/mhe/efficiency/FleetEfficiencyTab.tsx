@@ -449,7 +449,7 @@ export function FleetEfficiencyTab() {
       {/* Utilization distribution + shifts */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 16 }}>
         <ChartCard title="MHE Utilization Distribution" subtitle="" badge="Last 7 days" legend={<UtilZoneLegend />} onRefresh={() => {}}>
-          <div style={{ flex: 1, minHeight: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
+          <div style={{ height: 280, overflow: "hidden", display: "flex", alignItems: "stretch" }}>
             <YAxisTitle>UTILIZATION DISTRIBUTION</YAxisTitle>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={utilizationDistribution} margin={{ top: 10, right: 10, left: 4, bottom: 16 }} barCategoryGap="35%">
