@@ -10,7 +10,7 @@ import { cn } from "../ui/utils";
 import { Domain } from "./sidebar-data";
 import { ModeToggle } from "../mode-toggle";
 import { useTheme } from "../../hooks/useTheme";
-import { Bell } from "lucide-react";
+import { Bell, User } from "lucide-react";
 import logoLight from "../../../assets/logo-r-light.png";
 import logoDark from "../../../assets/logo-r-dark.png";
 
@@ -98,10 +98,9 @@ export function PrimarySidebar({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="relative h-9 w-9 rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all"
+                className="h-9 w-9 rounded-md text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all"
               >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-destructive" />
+                <Bell className="h-[18px] w-[18px]" strokeWidth={1.5} />
                 <span className="sr-only">Notifications</span>
               </Button>
             </TooltipTrigger>
@@ -111,8 +110,8 @@ export function PrimarySidebar({
           </Tooltip>
         </TooltipProvider>
         <ModeToggle />
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sidebar-primary)]/15 text-[10px] font-bold text-[var(--sidebar-primary)]">
-          WH
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sidebar-primary)] text-white">
+          <User className="h-4 w-4" strokeWidth={1.75} />
         </div>
       </div>
     </div>
